@@ -1,0 +1,1 @@
+"""Catalog foundation tests."""

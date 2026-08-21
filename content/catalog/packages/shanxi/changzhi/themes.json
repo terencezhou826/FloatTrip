@@ -1,0 +1,28 @@
+{
+  "themes": [
+    {
+      "id": "changzhi.jingwei",
+      "type": "mythology",
+      "name": "精卫填海",
+      "region_id": "cn.shanxi.changzhi.changzi"
+    },
+    {
+      "id": "changzhi.nuwa",
+      "type": "mythology",
+      "name": "女娲补天",
+      "region_id": "cn.shanxi.changzhi.shangdang"
+    },
+    {
+      "id": "changzhi.shennong",
+      "type": "mythology",
+      "name": "神农尝草",
+      "region_id": "cn.shanxi.changzhi.luzhou"
+    },
+    {
+      "id": "changzhi.houyi",
+      "type": "mythology",
+      "name": "羿射九日",
+      "region_id": "cn.shanxi.changzhi.tunliu"
+    }
+  ]
+}

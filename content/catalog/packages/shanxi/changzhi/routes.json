@@ -1,0 +1,40 @@
+{
+  "routes": [
+    {
+      "id": "changzhi.route.jingwei-fajiushan",
+      "name": "精卫填海·发鸠山探秘",
+      "primary_region_id": "cn.shanxi.changzhi.changzi",
+      "coverage_region_ids": ["cn.shanxi.changzhi.changzi"],
+      "theme_id": "changzhi.jingwei",
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "mandatory_anchor_ids": ["changzhi.anchor.fajiushan"]
+    },
+    {
+      "id": "changzhi.route.nuwa-tiantaishan",
+      "name": "女娲补天·天台山寻迹",
+      "primary_region_id": "cn.shanxi.changzhi.shangdang",
+      "coverage_region_ids": ["cn.shanxi.changzhi.shangdang"],
+      "theme_id": "changzhi.nuwa",
+      "anchor_ids": ["changzhi.anchor.tiantaishan"],
+      "mandatory_anchor_ids": ["changzhi.anchor.tiantaishan"]
+    },
+    {
+      "id": "changzhi.route.shennong-laodingshan",
+      "name": "神农尝草·老顶山农耕溯源",
+      "primary_region_id": "cn.shanxi.changzhi.luzhou",
+      "coverage_region_ids": ["cn.shanxi.changzhi.luzhou"],
+      "theme_id": "changzhi.shennong",
+      "anchor_ids": ["changzhi.anchor.laodingshan"],
+      "mandatory_anchor_ids": ["changzhi.anchor.laodingshan"]
+    },
+    {
+      "id": "changzhi.route.houyi-laoyeshan",
+      "name": "羿射九日·老爷山揽胜",
+      "primary_region_id": "cn.shanxi.changzhi.tunliu",
+      "coverage_region_ids": ["cn.shanxi.changzhi.tunliu"],
+      "theme_id": "changzhi.houyi",
+      "anchor_ids": ["changzhi.anchor.laoyeshan"],
+      "mandatory_anchor_ids": ["changzhi.anchor.laoyeshan"]
+    }
+  ]
+}

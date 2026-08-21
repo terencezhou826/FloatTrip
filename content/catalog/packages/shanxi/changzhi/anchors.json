@@ -1,0 +1,24 @@
+{
+  "anchors": [
+    {
+      "id": "changzhi.anchor.fajiushan",
+      "name": "发鸠山",
+      "region_id": "cn.shanxi.changzhi.changzi"
+    },
+    {
+      "id": "changzhi.anchor.tiantaishan",
+      "name": "天台山",
+      "region_id": "cn.shanxi.changzhi.shangdang"
+    },
+    {
+      "id": "changzhi.anchor.laodingshan",
+      "name": "老顶山",
+      "region_id": "cn.shanxi.changzhi.luzhou"
+    },
+    {
+      "id": "changzhi.anchor.laoyeshan",
+      "name": "老爷山",
+      "region_id": "cn.shanxi.changzhi.tunliu"
+    }
+  ]
+}

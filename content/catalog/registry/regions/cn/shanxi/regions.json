@@ -1,0 +1,46 @@
+{
+  "regions": [
+    {
+      "id": "cn.shanxi",
+      "name": "山西省",
+      "parent_id": null,
+      "region_type": "province",
+      "admin_code": null
+    },
+    {
+      "id": "cn.shanxi.changzhi",
+      "name": "长治市",
+      "parent_id": "cn.shanxi",
+      "region_type": "prefecture_city",
+      "admin_code": null
+    },
+    {
+      "id": "cn.shanxi.changzhi.changzi",
+      "name": "长子县",
+      "parent_id": "cn.shanxi.changzhi",
+      "region_type": "county",
+      "admin_code": null
+    },
+    {
+      "id": "cn.shanxi.changzhi.shangdang",
+      "name": "上党区",
+      "parent_id": "cn.shanxi.changzhi",
+      "region_type": "district",
+      "admin_code": null
+    },
+    {
+      "id": "cn.shanxi.changzhi.luzhou",
+      "name": "潞州区",
+      "parent_id": "cn.shanxi.changzhi",
+      "region_type": "district",
+      "admin_code": null
+    },
+    {
+      "id": "cn.shanxi.changzhi.tunliu",
+      "name": "屯留区",
+      "parent_id": "cn.shanxi.changzhi",
+      "region_type": "district",
+      "admin_code": null
+    }
+  ]
+}
