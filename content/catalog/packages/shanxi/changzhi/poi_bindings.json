@@ -1,3 +1,31 @@
 {
-  "poi_bindings": []
+  "poi_bindings": [
+    {
+      "binding_id": "changzhi.binding.fajiushan.amap",
+      "anchor_id": "changzhi.anchor.fajiushan",
+      "provider": "amap",
+      "external_poi_id": "B0FFF49AFB",
+      "external_name": "发鸠山景区",
+      "verification_status": "verified",
+      "provider_region_code": "140428",
+      "provider_address": "326省道附近",
+      "metadata": {
+        "province": "山西省",
+        "city": "长治市",
+        "district": "长子县",
+        "location": {
+          "lng": 112.640827,
+          "lat": 36.146452
+        },
+        "entrance_location": {
+          "lng": 112.640994,
+          "lat": 36.14666
+        },
+        "poi_type": "风景名胜;风景名胜;风景名胜"
+      },
+      "verification_method": "manual_review",
+      "verified_at": "2026-08-21T22:19:34+08:00",
+      "verification_note": "高德 Place Search v3 对发鸠山在长治市限定查询返回唯一候选‘发鸠山景区’，所属山西省长治市长子县，行政区、名称及风景名胜类型与 Catalog Anchor 一致；经人工审核确认作为该 Anchor 的高德运行时实体。"
+    }
+  ]
 }

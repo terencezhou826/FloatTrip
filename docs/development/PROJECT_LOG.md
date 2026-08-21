@@ -138,3 +138,36 @@
   - `KNOWN_FLAKY`: `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` passed one complete run and failed the next with peak concurrency 1. Runtime was not modified.
   - Formal `poi_bindings.json` remains empty, and no real POI verification was performed.
 - Next recommended action: checkpoint the accepted M1B-1/M1B-1.5 work after review, then configure Amap and perform human candidate verification before defining M1B-2 enforcement.
+
+## 2026-08-21 22:35:25 +08:00 - M1B-2 Verified Mandatory Anchor Enforcement
+
+- Files modified:
+  - Added `app/providers/poi_identity.py`, `app/providers/amap/identity.py`, and Amap Place Detail v3 exact-ID lookup support.
+  - Added `app/planning/mandatory_pois.py` with the Provider-neutral resolver, identity merge, constraint formatting, and deterministic validator.
+  - Extended Planning schemas, nodes, prompts, graphs, checkpoints, and Finalize identity projection without changing public API or SSE event semantics.
+  - Added the single approved verified Fajiushan Binding to the Changzhi package; no other Anchor Binding was added.
+  - Added `tests/test_mandatory_pois.py` and `tests/test_mandatory_planning.py`; updated superseded M1A/Catalog assertions.
+- Commands run:
+  - Failing-first and focused Catalog/M1A/M1B pytest runs using repository-local `--basetemp` directories.
+  - `python -m compileall -q app`
+  - Two complete `python -m pytest -q` regression runs.
+  - `node --test tests/chat-state.test.js tests/navigation-state.test.js`
+  - Real read-only Amap exact-ID smoke lookup for `B0FFF49AFB` after `load_local_env()`.
+  - Git whitespace, scope, hardcoding, status, and diff audits.
+- Results:
+  - Catalog/M1A/M1B focused regression: 91 passed.
+  - M1B-2 resolver/planning focused coverage: 31 passed within the focused suites.
+  - Compileall: passed.
+  - Complete Python: 183 passed, 18 subtests passed, 5 existing warnings.
+  - Frontend: 26 passed.
+  - Real Amap Place Detail v3 lookup returned the same ID `B0FFF49AFB`, name `发鸠山景区`, district `长子县`, address `326省道附近`, and the verified coordinates.
+- Runtime behavior:
+  - Mandatory Anchors resolve only through one verified Binding and exact Provider ID; candidate/rejected/missing/ambiguous/unsupported/mismatched identities fail explicitly.
+  - Mandatory POIs merge after ordinary search/rating filtering and deduplicate only by `provider + external_poi_id`.
+  - Every Planner output, including Time Check corrections and revision paths, passes an internal deterministic identity check before continuing.
+  - Internal nodes emit no new public progress events; Finalize never inserts missing POIs.
+- Current problems and risks:
+  - `KNOWN_FLAKY`: `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` remains tracked but did not reproduce in either final full run. Runtime concurrency was not modified.
+  - A saved Catalog snapshot whose package version is no longer present fails mandatory resolution explicitly; multi-version historical Catalog storage remains out of scope.
+  - Existing FastAPI lifespan deprecation and local `JWT_SECRET` warnings remain unrelated.
+- Next recommended action: review and checkpoint M1B-2. M1C may be specified separately after acceptance; do not start it implicitly.

@@ -141,15 +141,16 @@ def test_invalid_binding_fields_are_rejected(field, value):
         ExternalPoiBinding.model_validate(payload)
 
 
-def test_current_catalog_loads_empty_binding_collection():
+def test_current_catalog_loads_verified_fajiushan_binding():
     assert (CATALOG_ROOT / PACKAGE_ROOT / "poi_bindings.json").is_file()
 
     catalog = FileCatalogLoader(CATALOG_ROOT).load()
 
-    assert catalog.list_poi_bindings() == ()
-    assert catalog.list_verified_bindings_for_anchor(
+    bindings = catalog.list_verified_bindings_for_anchor(
         "changzhi.anchor.fajiushan"
-    ) == ()
+    )
+    assert len(bindings) == 1
+    assert bindings[0].external_poi_id == "B0FFF49AFB"
 
 
 def test_old_catalog_without_binding_file_remains_compatible(tmp_path):

@@ -128,7 +128,7 @@ class CuratedRoute(CatalogModel):
     coverage_region_ids: list[StableId] = Field(min_length=1)
     theme_id: StableId
     anchor_ids: list[StableId] = Field(min_length=1)
-    mandatory_anchor_ids: list[StableId] = Field(min_length=1)
+    mandatory_anchor_ids: list[StableId] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def validate_mandatory_anchors(self) -> "CuratedRoute":

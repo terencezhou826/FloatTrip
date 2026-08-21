@@ -221,10 +221,23 @@ def test_revision_restores_context_from_itinerary_checkpoint(
     assert restored.catalog_context == jingwei_context
 
 
-def test_planning_behavior_modules_do_not_consume_catalog_context():
-    for relative in ("app/planning/nodes.py", "app/planning/prompts.py"):
-        source = (PROJECT_ROOT / relative).read_text(encoding="utf-8")
-        assert "catalog_context" not in source
+def test_mandatory_planning_integration_has_no_regional_special_cases():
+    prohibited = {"changzhi", "jingwei", "fajiushan", "mythology"}
+    found = set()
+    for relative in (
+        "app/planning/nodes.py",
+        "app/planning/mandatory_pois.py",
+        "app/planning/prompts.py",
+    ):
+        tree = ast.parse((PROJECT_ROOT / relative).read_text(encoding="utf-8"))
+        found.update(
+            token
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Constant) and isinstance(node.value, str)
+            for token in prohibited
+            if token in node.value.casefold()
+        )
+    assert not found
 
 
 def test_catalog_context_python_has_no_regional_special_cases():

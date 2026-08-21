@@ -1,6 +1,6 @@
 # TODO
 
-Updated: 2026-08-21 20:39:00 +08:00
+Updated: 2026-08-21 22:35:25 +08:00
 
 - [x] Implement the isolated M0 Catalog models, repository, loader, validation, content, and tests.
 - [x] Add the controlled `RegionType` enum and optional `admin_code`.
@@ -21,11 +21,17 @@ Updated: 2026-08-21 20:39:00 +08:00
 - [x] Add provider-neutral POI Binding verification provenance and controlled methods.
 - [x] Require method and timestamp only for verified Bindings.
 - [x] Verify provenance JSON Loader/Repository round-trip and empty-content compatibility.
+- [x] Perform real Fajiushan Amap Discovery and human verification outside runtime enforcement.
+- [x] Persist the single approved Fajiushan verified Binding with audit provenance.
+- [x] Add Provider-neutral exact POI identity lookup and mandatory resolution.
+- [x] Merge mandatory POIs by Provider identity without name-based deduplication.
+- [x] Preserve mandatory identity through Planner output, checkpoints, retries, revisions, and Finalize projection.
+- [x] Enforce mandatory presence after every Planner output with deterministic failure semantics.
+- [x] Verify Amap exact-ID lookup with a real read-only smoke test.
 
 Deferred until explicitly approved:
 
-- [ ] Configure a valid Amap key and perform human review of real Fajiushan candidates.
-- [ ] Create a Git checkpoint for M1B-1 and M1B-1.5 only after user approval; do not commit automatically.
-- [ ] Define and approve M1B-2 before applying verified mandatory anchors to planning.
+- [ ] Review and create a Git checkpoint for M1B-2 only after user approval; do not commit automatically.
+- [ ] Define M1C separately before implementation.
 - [ ] Investigate the Runtime concurrency `KNOWN_FLAKY` in a separate task.
 - [ ] Keep RAG, Story, Experience, Commerce, Video, frontend, and mobile integration deferred until explicitly authorized.

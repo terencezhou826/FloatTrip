@@ -13,6 +13,7 @@ from app.planning.schemas import TravelPlanState
 from app.planning.helpers import invoke_structured  # re-export for convenience
 from app.planning.nodes import (
     attraction_search_node,
+    ensure_mandatory_pois_node,
     finalize_node,
     make_finalize_node,
     make_intent_node,
@@ -22,9 +23,11 @@ from app.planning.nodes import (
     make_reviewer_node,
     make_spot_tips_node,
     make_time_check_node,
+    mandatory_check_node,
+    mandatory_confirm_guard_node,
     meal_search_node,
     route_after_intent,
-    route_after_planner,
+    route_after_mandatory_check,
     route_after_review,
     route_after_time_check,
 )
@@ -81,6 +84,7 @@ def build_graph(
     g.add_node("intent", _with_progress("intent", make_intent_node(model_name, profile_hint=profile_hint)))
     g.add_node("attraction_search", _with_progress("attraction_search", attraction_search_node))
     g.add_node("planner", _with_progress("planner", make_planner_node(model_name)))
+    g.add_node("mandatory_check", mandatory_check_node)
     g.add_node("reviewer", _with_progress("reviewer", make_reviewer_node(model_name)))
     g.add_node("time_check", _with_progress("time_check", make_time_check_node(model_name)))
     g.add_node("meal_search", _with_progress("meal_search", meal_search_node))
@@ -105,10 +109,15 @@ def build_graph(
         )
     g.add_edge("query_rewrite",    "attraction_search")
     g.add_edge("attraction_search", "planner")
-    # planner 输出：time_check_done=False 时进 reviewer 走主循环；True 时进 time_check 重新核查
+    # Every Planner output first passes the internal deterministic identity check.
+    g.add_edge("planner", "mandatory_check")
     g.add_conditional_edges(
-        "planner", route_after_planner,
-        {"reviewer": "reviewer", "time_check": "time_check"},
+        "mandatory_check", route_after_mandatory_check,
+        {
+            "planner": "planner",
+            "reviewer": "reviewer",
+            "time_check": "time_check",
+        },
     )
     # reviewer：通过或达最大轮数 → time_check 阶段；否则打回 planner
     g.add_conditional_edges(
@@ -146,6 +155,13 @@ _NODE_LABELS: dict[str, str] = {
     "meal_recommend":    "🍴 正在为每天挑选餐厅",
     "spot_tips":         "💡 正在为每个景点生成游玩贴士",
     "finalize":          "📦 正在收敛生成最终行程",
+}
+_INTERNAL_STATE_NODES = {
+    "mandatory_prepare",
+    "mandatory_check",
+    "mandatory_guard",
+    "revision_concern",
+    "require_input",
 }
 
 
@@ -189,14 +205,22 @@ def build_modification_graph(model_name: str | None = None, memory_writer=None):
     修改流程暂不接入 time_check 节点。
     """
     g = StateGraph(TravelPlanState)
+    g.add_node("mandatory_prepare", ensure_mandatory_pois_node)
     g.add_node("planner",        make_planner_node(model_name))
+    g.add_node("mandatory_check", mandatory_check_node)
     g.add_node("reviewer",       make_reviewer_node(model_name))
     g.add_node("meal_search",    meal_search_node)
     g.add_node("meal_recommend", make_meal_recommend_node(model_name))
     g.add_node("spot_tips",      make_spot_tips_node(model_name))
     g.add_node("finalize",       make_finalize_node(memory_writer))
-    g.add_edge(START, "planner")
-    g.add_edge("planner", "reviewer")
+    g.add_edge(START, "mandatory_prepare")
+    g.add_edge("mandatory_prepare", "planner")
+    g.add_edge("planner", "mandatory_check")
+    g.add_conditional_edges(
+        "mandatory_check",
+        lambda state: "planner" if state.missing_mandatory_pois else "reviewer",
+        {"planner": "planner", "reviewer": "reviewer"},
+    )
     g.add_conditional_edges(
         "reviewer", _route_after_review_for_modification,
         {"planner": "planner", "meal_search": "meal_search"},
@@ -238,7 +262,9 @@ def build_runtime_revision_graph(
 ):
     """Checkpointed revision graph using the same interrupt lifecycle as planning."""
     graph = StateGraph(TravelPlanState)
+    graph.add_node("mandatory_prepare", ensure_mandatory_pois_node)
     graph.add_node("planner", _with_progress("planner", make_planner_node(model_name)))
+    graph.add_node("mandatory_check", mandatory_check_node)
     graph.add_node("revision_concern", _revision_concern_node)
     graph.add_node("reviewer", _with_progress("reviewer", make_reviewer_node(model_name)))
     graph.add_node("meal_search", _with_progress("meal_search", meal_search_node))
@@ -248,8 +274,16 @@ def build_runtime_revision_graph(
     )
     graph.add_node("spot_tips", _with_progress("spot_tips", make_spot_tips_node(model_name)))
     graph.add_node("finalize", _with_progress("finalize", make_finalize_node(None)))
-    graph.add_edge(START, "planner")
-    graph.add_edge("planner", "revision_concern")
+    graph.add_edge(START, "mandatory_prepare")
+    graph.add_edge("mandatory_prepare", "planner")
+    graph.add_edge("planner", "mandatory_check")
+    graph.add_conditional_edges(
+        "mandatory_check",
+        lambda state: (
+            "planner" if state.missing_mandatory_pois else "revision_concern"
+        ),
+        {"planner": "planner", "revision_concern": "revision_concern"},
+    )
     graph.add_edge("revision_concern", "reviewer")
     graph.add_conditional_edges(
         "reviewer",
@@ -266,11 +300,13 @@ def build_runtime_revision_graph(
 def build_confirm_graph(model_name: str | None = None, memory_writer=None):
     """确认后续跑图：meal_search → meal_recommend → spot_tips → finalize。"""
     g = StateGraph(TravelPlanState)
+    g.add_node("mandatory_guard", mandatory_confirm_guard_node)
     g.add_node("meal_search",    meal_search_node)
     g.add_node("meal_recommend", make_meal_recommend_node(model_name))
     g.add_node("spot_tips",      make_spot_tips_node(model_name))
     g.add_node("finalize",       make_finalize_node(memory_writer))
-    g.add_edge(START,            "meal_search")
+    g.add_edge(START,            "mandatory_guard")
+    g.add_edge("mandatory_guard", "meal_search")
     g.add_edge("meal_search",    "meal_recommend")
     g.add_edge("meal_recommend", "spot_tips")
     g.add_edge("spot_tips",      "finalize")
@@ -296,6 +332,10 @@ async def run_modification_stream(
         catalog_context=checkpoint.get("catalog_context"),
         route=checkpoint.get("route", []),
         pois=checkpoint.get("pois", []),
+        mandatory_pois=checkpoint.get("mandatory_pois", []),
+        max_mandatory_check_rounds=checkpoint.get(
+            "max_mandatory_check_rounds", 3
+        ),
         planner_reviewer_dialogue=checkpoint.get("planner_reviewer_dialogue", []),
         destination=checkpoint.get("destination"),
         travel_start_date=checkpoint.get("travel_start_date"),
@@ -321,10 +361,49 @@ async def run_modification_stream(
         if event.get("event") != "on_chain_end":
             continue
         node = event.get("name")
-        if node not in _NODE_LABELS:
+        if node not in _NODE_LABELS and node not in _INTERNAL_STATE_NODES:
             continue
         upd = (event.get("data") or {}).get("output")
         if not isinstance(upd, dict):
+            continue
+        if node not in _NODE_LABELS:
+            acc.update(upd)
+            if (
+                node == "mandatory_check"
+                and not acc.get("missing_mandatory_pois")
+                and acc.get("modification_concern")
+                and acc.get("review_round") == 1
+            ):
+                pending_state = {
+                    "catalog_context": (
+                        init.catalog_context.model_dump(mode="json")
+                        if init.catalog_context else None
+                    ),
+                    "route": acc.get("route", []),
+                    "pois": acc.get("pois", []),
+                    "mandatory_pois": acc.get("mandatory_pois", []),
+                    "max_mandatory_check_rounds": init.max_mandatory_check_rounds,
+                    "planner_reviewer_dialogue": acc.get(
+                        "planner_reviewer_dialogue", []
+                    ),
+                    "destination": init.destination,
+                    "travel_start_date": str(init.travel_start_date or ""),
+                    "travel_end_date": str(init.travel_end_date or ""),
+                    "days": init.days,
+                    "attraction_preference": init.attraction_preference,
+                    "food_preference": init.food_preference,
+                    "habit_preference": init.habit_preference,
+                    "weather_forecast": init.weather_forecast,
+                    "weather_note": init.weather_note,
+                    "max_per_day": init.max_per_day,
+                    "query": init.query,
+                }
+                yield {
+                    "type": "modification_warning",
+                    "concern": acc["modification_concern"],
+                    "pending_state": pending_state,
+                }
+                return
             continue
 
         # planner 完成后检查顾虑（仅第 1 轮：直接响应用户修改意见时才暂停）
@@ -335,32 +414,7 @@ async def run_modification_stream(
             planner_done = True
             yield _stage_event(node, acc, upd)
             acc.update(upd)
-            concern = acc.get("modification_concern") or ""
-            if concern and acc.get("review_round") == 1:
-                # 有顾虑：构造 pending_state 供调用方存 DB，然后停止
-                pending_state = {
-                    "route": acc.get("route", []),
-                    "pois":  init.pois,
-                    "planner_reviewer_dialogue": acc.get("planner_reviewer_dialogue", []),
-                    "destination": init.destination,
-                    "travel_start_date": str(init.travel_start_date or ""),
-                    "travel_end_date":   str(init.travel_end_date or ""),
-                    "days": init.days,
-                    "attraction_preference": init.attraction_preference,
-                    "food_preference":       init.food_preference,
-                    "habit_preference":      init.habit_preference,
-                    "weather_forecast": init.weather_forecast,
-                    "weather_note":     init.weather_note,
-                    "max_per_day":      init.max_per_day,
-                    "query":            init.query,
-                }
-                yield {
-                    "type": "modification_warning",
-                    "concern": concern,
-                    "pending_state": pending_state,  # 由 main.py 存 DB 并替换为 pending_id
-                }
-                return
-            continue  # 无顾虑，继续
+            continue
 
         acc.update(upd)
         yield _stage_event(node, acc, upd)
@@ -390,8 +444,13 @@ async def run_confirm_stream(
     app = build_confirm_graph(overrides.get("model_name"), memory_writer)
     init = TravelPlanState(
         query=pending_state.get("query", "修改行程"),
+        catalog_context=pending_state.get("catalog_context"),
         route=pending_state.get("route", []),
         pois=pending_state.get("pois", []),
+        mandatory_pois=pending_state.get("mandatory_pois", []),
+        max_mandatory_check_rounds=pending_state.get(
+            "max_mandatory_check_rounds", 3
+        ),
         planner_reviewer_dialogue=pending_state.get("planner_reviewer_dialogue", []),
         destination=pending_state.get("destination"),
         travel_start_date=pending_state.get("travel_start_date"),
@@ -412,10 +471,13 @@ async def run_confirm_stream(
         if event.get("event") != "on_chain_end":
             continue
         node = event.get("name")
-        if node not in _NODE_LABELS:
+        if node not in _NODE_LABELS and node not in _INTERNAL_STATE_NODES:
             continue
         upd = (event.get("data") or {}).get("output")
         if not isinstance(upd, dict):
+            continue
+        if node not in _NODE_LABELS:
+            acc.update(upd)
             continue
         acc.update(upd)
         yield _stage_event(node, acc, upd)
@@ -458,15 +520,22 @@ async def run_stream(
     # 时间修正 planner⇄time_check 最多 max_time_check_rounds 对节点；
     # 其余非循环节点（intent/query_rewrite/attraction_search/meal_search/meal_recommend/spot_tips/finalize）+ 缓冲
     config = {"recursion_limit":
-        2 * (init.max_review_rounds + 1) + 2 * init.max_time_check_rounds + 10}
+        3 * (init.max_review_rounds + 1)
+        + 3 * init.max_time_check_rounds
+        + 2 * init.max_mandatory_check_rounds
+        + 10}
 
     acc: dict[str, Any] = init.model_dump()
     async for event in app.astream_events(init, config=config, version="v2"):
         ev_type = event.get("event")
         node    = event.get("name")
-        if node not in _NODE_LABELS:
+        is_public_node = node in _NODE_LABELS
+        is_internal_node = node in _INTERNAL_STATE_NODES
+        if not is_public_node and not is_internal_node:
             continue
         if ev_type == "on_chain_start":
+            if not is_public_node:
+                continue
             # 节点开始时立即推送进度，避免用户等待长时间后才看到第一条进度
             yield _stage_event(node, acc, {})
         elif ev_type == "on_chain_end":

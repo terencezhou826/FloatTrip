@@ -216,7 +216,20 @@ def _spot_line(s: dict[str, Any]) -> str:
         coord = f"坐标 {loc['lng']:.4f},{loc['lat']:.4f}"
     else:
         coord = "坐标未知"
-    return f"- {s['name']}（区域 {area}，评分 {rating}，开放 {open_t}，{coord}）"
+    identity = ""
+    if s.get("provider") and s.get("external_poi_id"):
+        identity = (
+            f"，identity provider={s['provider']} "
+            f"external_poi_id={s['external_poi_id']}"
+        )
+        if s.get("curated_anchor_id"):
+            identity += f" curated_anchor_id={s['curated_anchor_id']}"
+        if s.get("is_mandatory"):
+            identity += " is_mandatory=true"
+    return (
+        f"- {s['name']}（区域 {area}，评分 {rating}，开放 {open_t}，"
+        f"{coord}{identity}）"
+    )
 
 
 def format_spots_for_llm(

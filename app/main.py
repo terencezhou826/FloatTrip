@@ -230,6 +230,8 @@ async def create_plan_stream(req: PlanRequest, request: Request):
             ),
             "route": state.route,
             "pois":  state.pois,
+            "mandatory_pois": state.mandatory_pois,
+            "max_mandatory_check_rounds": state.max_mandatory_check_rounds,
             "planner_reviewer_dialogue": state.planner_reviewer_dialogue,
             "destination": str(state.destination or ""),
             "travel_start_date": str(state.travel_start_date or ""),

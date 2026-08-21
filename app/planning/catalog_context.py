@@ -24,7 +24,7 @@ class CatalogContext(BaseModel):
     primary_region_id: StableId
     coverage_region_ids: tuple[StableId, ...] = Field(min_length=1)
     anchor_ids: tuple[StableId, ...] = Field(min_length=1)
-    mandatory_anchor_ids: tuple[StableId, ...] = Field(min_length=1)
+    mandatory_anchor_ids: tuple[StableId, ...] = ()
 
 
 class CatalogContextResolutionError(ValueError):

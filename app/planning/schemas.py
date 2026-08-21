@@ -33,6 +33,18 @@ class SpotPlan(BaseModel):
     period: str = Field(description="时段：morning / afternoon / evening")
     start_time: str = Field(description="开始游玩时间，格式 HH:MM")
     end_time: str = Field(description="结束游玩时间，格式 HH:MM")
+    provider: str | None = Field(
+        default=None, description="候选景点的 Provider 身份；普通旧路线可为空"
+    )
+    external_poi_id: str | None = Field(
+        default=None, description="候选景点的 Provider POI ID；普通旧路线可为空"
+    )
+    curated_anchor_id: str | None = Field(
+        default=None, description="策展 Anchor ID；非策展景点为空"
+    )
+    is_mandatory: bool = Field(
+        default=False, description="是否为策展线路 mandatory POI"
+    )
 
 
 class DayRoute(BaseModel):
@@ -179,6 +191,10 @@ class TravelPlanState(BaseModel):
 
     # 高德景点搜索
     pois: list[dict[str, Any]] = Field(default_factory=list)
+    mandatory_pois: list[dict[str, Any]] = Field(default_factory=list)
+    missing_mandatory_pois: list[dict[str, Any]] = Field(default_factory=list)
+    mandatory_check_round: int = 0
+    max_mandatory_check_rounds: int = 3
 
     # Planner / Reviewer 循环
     route: list[dict[str, Any]] = Field(default_factory=list)

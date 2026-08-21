@@ -330,15 +330,15 @@ def test_invalid_theme_type_is_rejected(tmp_path):
         FileCatalogLoader(root).load()
 
 
-def test_empty_mandatory_anchor_list_is_rejected(tmp_path):
+def test_empty_mandatory_anchor_list_is_valid(tmp_path):
     root = _catalog_copy(tmp_path)
     path = root / "packages" / "shanxi" / "changzhi" / "routes.json"
     payload = _json(path)
     payload["routes"][0]["mandatory_anchor_ids"] = []
     _write_json(path, payload)
 
-    with pytest.raises(CatalogLoadError, match="mandatory_anchor_ids"):
-        FileCatalogLoader(root).load()
+    catalog = FileCatalogLoader(root).load()
+    assert catalog.get_route("changzhi.route.jingwei-fajiushan").mandatory_anchor_ids == []
 
 
 def test_invalid_manifest_is_rejected(tmp_path):

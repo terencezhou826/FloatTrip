@@ -11,6 +11,7 @@ from app.core.cache import get_cached, set_cached, poi_cache_key, POI_TTL
 from app.core.http import http_get_json, http_get_json_async
 from app.providers.amap.client import (
     AMAP_AROUND_SEARCH_URL,
+    AMAP_DETAIL_URL,
     AMAP_RATE_LIMIT_INFOS,
     AMAP_TEXT_SEARCH_URL,
     int_or_none,
@@ -46,6 +47,21 @@ async def _text_search_raw_async(url: str) -> list[dict[str, Any]]:
             raise RuntimeError(f"高德搜索失败：{info}")
         await asyncio.sleep(1.2 * (attempt + 1))
     return []
+
+
+async def get_poi_by_id_async(
+    external_poi_id: str,
+    api_key: str,
+) -> list[dict[str, Any]]:
+    """Fetch a POI through Amap Place Detail v3 using its exact provider ID."""
+    params = {
+        "key": api_key,
+        "id": external_poi_id,
+        "extensions": "all",
+        "output": "json",
+    }
+    url = f"{AMAP_DETAIL_URL}?{urllib.parse.urlencode(params)}"
+    return await _text_search_raw_async(url)
 
 
 # ─── 周边搜索 ────────────────────────────────────────────────
@@ -269,6 +285,8 @@ def poi_to_spot(poi: dict[str, Any]) -> dict[str, Any] | None:
     cost_raw = str(biz_ext.get("cost", "")).strip() if isinstance(biz_ext, dict) else ""
 
     return {
+        "provider": "amap",
+        "external_poi_id": str(poi.get("id") or "").strip() or None,
         "name": poi.get("name", ""),
         "rating": rating,
         "open_time": open_time,

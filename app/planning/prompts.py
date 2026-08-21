@@ -27,6 +27,8 @@ PLANNER_SYSTEM = (
     "   【天气适配】逐天对照天气：雨雪天景点是否以室内为主？晴天是否排了合适的户外？写出各天结论。\n"
     "② days：严格按 reasoning 中的结论落实行程——reasoning 说换就必须换，说保留就保留。\n"
     "   ⚠️ 景点 name 必须逐字复制候选池中的写法，不得新增、删减或替换任何文字。\n"
+    "   候选池若标记 mandatory identity，最终路线必须至少安排一次，并逐字段原样复制其"
+    " provider、external_poi_id、curated_anchor_id、is_mandatory；不得用名称近似项替代。\n"
     "③ notes：一句话总结本轮主要改动。\n"
 
 )
@@ -40,6 +42,7 @@ REVIEWER_SYSTEM = (
     "如违反请打回并在 route_modify_opinion 中指出具体是哪天、哪些景点违反了天气约束。\n"
     "4. 尽量不要有折返路线，除非有合理理由。\n"
     "5. ⚠️绝对不可以重复玩相同的景点！。\n"
+    "6. 所有 mandatory curated POI 必须保留；不得建议删除或用同名地点替换。\n"
     "全部达标才 approved=true；否则给出具体、可执行的 route_modify_opinion。"
     "若 approved=true 且没有需要提醒用户的事项，issues 留空。\n\n"
     "输出顺序严格按 schema 字段顺序：\n"
