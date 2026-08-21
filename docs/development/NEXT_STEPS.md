@@ -1,11 +1,11 @@
 # Next Steps
 
-Updated: 2026-08-21 22:35:25 +08:00
+Updated: 2026-08-22 00:04:28 +08:00
 
-1. Review the M1B-2 verified Binding, exact identity adapter, mandatory candidate injection, prompt constraints, and deterministic validator.
-2. Create an M1B-2 Git checkpoint only after explicit approval; no automatic commit was made.
-3. Define M1C as a separate milestone before implementation, keeping its scope independent from this identity-enforcement foundation.
-4. Track `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` as `KNOWN_FLAKY`; investigate it separately from Catalog work.
-5. Plan multi-version Catalog history separately if revisions must resolve mandatory POIs after the frozen content version is no longer installed.
+1. Review the real M1C Run and the exact mandatory/candidate provenance evidence, then create an M1C Git checkpoint only after explicit approval; no automatic commit was made.
+2. Decide whether a concrete lunch recommendation is required before M2. The current generic 1 km restaurant search returned no lunch candidates around Fajiushan and correctly persisted a no-restaurant placeholder.
+3. Keep the approximately 800 RMB preference classified as not currently verifiable until reliable attraction and transport cost data exist.
+4. Keep travel-time feasibility separate from the existing opening-time LLM check unless a deterministic route-time validator is explicitly scoped.
+5. Track `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` as `KNOWN_FLAKY`; investigate it separately.
 
-Boundary to preserve: runtime POIs may come only from verified Bindings and exact Provider IDs. Candidate/rejected Bindings, name search, string similarity, and LLM identity decisions are not runtime fallbacks. RAG, Story, Experience, Commerce, Video, frontend, and mobile remain out of scope.
+Boundary to preserve: the verified Binding and candidate provenance checks passed and must remain hard requirements. Do not broaden meal search, add pricing assumptions, or enter RAG, Story, Experience, Commerce, Video, frontend, mobile, or M2 without explicit scope.

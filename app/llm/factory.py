@@ -11,7 +11,7 @@ from app.core.env import load_local_env
 
 
 SchemaT = TypeVar("SchemaT", bound=BaseModel)
-LLMProvider = Literal["deepseek", "doubao"]
+LLMProvider = Literal["deepseek", "doubao", "openai_compatible"]
 
 DEFAULT_PROVIDER = "deepseek"
 
@@ -20,8 +20,10 @@ def resolve_llm_provider() -> LLMProvider:
     """从环境变量解析 LLM 提供商，默认为 DeepSeek。"""
     load_local_env()
     provider = os.getenv("LLM_PROVIDER", DEFAULT_PROVIDER).strip().lower()
-    if provider not in ("deepseek", "doubao"):
-        raise ValueError(f"未知的 LLM 提供商：{provider}，支持：deepseek, doubao")
+    if provider not in ("deepseek", "doubao", "openai_compatible"):
+        raise ValueError(
+            f"未知的 LLM 提供商：{provider}，支持：deepseek, doubao, openai_compatible"
+        )
     return provider  # type: ignore
 
 
@@ -34,6 +36,9 @@ def build_chat_llm(*, model: str | None = None, temperature: float = 0) -> Any:
     elif provider == "doubao":
         from app.llm.doubao import build_chat_doubao
         return build_chat_doubao(model=model, temperature=temperature)
+    else:
+        from app.llm.openai_compatible import build_chat_openai_compatible
+        return build_chat_openai_compatible(temperature=temperature)
 
 
 def build_structured_llm(
@@ -50,3 +55,6 @@ def build_structured_llm(
     elif provider == "doubao":
         from app.llm.doubao import build_structured_doubao
         return build_structured_doubao(schema, model=model, temperature=temperature)
+    else:
+        from app.llm.openai_compatible import build_structured_openai_compatible
+        return build_structured_openai_compatible(schema, temperature=temperature)

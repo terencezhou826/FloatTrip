@@ -1,6 +1,6 @@
 # TODO
 
-Updated: 2026-08-21 22:35:25 +08:00
+Updated: 2026-08-22 00:04:28 +08:00
 
 - [x] Implement the isolated M0 Catalog models, repository, loader, validation, content, and tests.
 - [x] Add the controlled `RegionType` enum and optional `admin_code`.
@@ -28,10 +28,19 @@ Updated: 2026-08-21 22:35:25 +08:00
 - [x] Preserve mandatory identity through Planner output, checkpoints, retries, revisions, and Finalize projection.
 - [x] Enforce mandatory presence after every Planner output with deterministic failure semantics.
 - [x] Verify Amap exact-ID lookup with a real read-only smoke test.
+- [x] Add a generic OpenAI-compatible ChatOpenAI adapter and factory dispatch.
+- [x] Keep the configured endpoint/model authoritative and strict structured output explicit.
+- [x] Add Provider tests without real service calls or deployment-specific core code.
+- [x] Restore the already-declared `langchain-openai` dependency in the active local environment without changing dependency files.
+- [x] Configure and validate the real generic OpenAI-compatible environment without exposing credentials.
+- [x] Pass real factory Chat and strict Pydantic function-calling smoke tests.
+- [x] Pass real Catalog, verified Binding, exact Amap identity, and weather prerequisites.
+- [x] Run Jingwei through the formal Runtime/API path and verify frozen CatalogContext, mandatory identity, checkpoint retention, and candidate provenance.
+- [x] Complete the real Planner, Reviewer, Time Check, meal, Spot Tips, and Finalize pipeline without retry.
 
 Deferred until explicitly approved:
 
-- [ ] Review and create a Git checkpoint for M1B-2 only after user approval; do not commit automatically.
-- [ ] Define M1C separately before implementation.
+- [ ] Review and create a Git checkpoint for M1C only after real E2E acceptance; do not commit automatically.
+- [ ] Decide whether the Fajiushan lunch-search gap must be addressed before M2 in a separately scoped generic meal-coverage task.
 - [ ] Investigate the Runtime concurrency `KNOWN_FLAKY` in a separate task.
 - [ ] Keep RAG, Story, Experience, Commerce, Video, frontend, and mobile integration deferred until explicitly authorized.

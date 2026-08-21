@@ -171,3 +171,79 @@
   - A saved Catalog snapshot whose package version is no longer present fails mandatory resolution explicitly; multi-version historical Catalog storage remains out of scope.
   - Existing FastAPI lifespan deprecation and local `JWT_SECRET` warnings remain unrelated.
 - Next recommended action: review and checkpoint M1B-2. M1C may be specified separately after acceptance; do not start it implicitly.
+
+## 2026-08-21 23:34:30 +08:00 - M1C OpenAI-Compatible Provider Foundation (Real E2E Blocked)
+
+- Files modified:
+  - Added `app/llm/openai_compatible.py` with generic ChatOpenAI construction and strict Pydantic function calling.
+  - Extended `app/llm/factory.py` with the `openai_compatible` provider while preserving existing DeepSeek and Doubao dispatch.
+  - Added empty OpenAI-compatible settings and comments to `.env.example`.
+  - Added Provider unit coverage in `tests/test_openai_compatible_llm.py`.
+  - Updated the long-term files under `docs/development/`.
+- Local environment repair:
+  - `requirements.txt` already declared `langchain-openai`; only the active local environment was missing it.
+  - Installed `langchain-openai 1.6.0`. The initial resolver chose `openai 3.3.1`, which conflicted with installed `litellm<3`, so the local SDK was corrected to `openai 2.54.0`; `pip check` passes.
+  - No dependency declaration file was changed.
+- Commands run:
+  - Failing-first and passing Provider pytest runs.
+  - Existing LLM/mandatory focused tests.
+  - Catalog, M1A, M1B, and M1C focused regression.
+  - `python -m compileall -q app`.
+  - Complete `python -m pytest -q` regression.
+  - `node --test tests/chat-state.test.js tests/navigation-state.test.js`.
+  - `.env.local` presence-only audit through `load_local_env()`; no secret values were printed.
+  - Provider-brand, regional-branch, whitespace, and Git audits.
+- Results:
+  - Provider red baseline: 6 failed, 2 passed; final Provider suite: 8 passed.
+  - Existing LLM/mandatory focused: 20 passed.
+  - Catalog + M1A + M1B + M1C focused: 99 passed.
+  - Compileall: passed.
+  - Complete Python: 191 passed, 18 subtests passed, 5 existing warnings.
+  - Frontend: 26 passed.
+- Real smoke/E2E result:
+  - `AMAP_API_KEY` is present, but `LLM_PROVIDER`, `OPENAI_COMPATIBLE_API_KEY`, `OPENAI_COMPATIBLE_BASE_URL`, and `OPENAI_COMPATIBLE_MODEL` are absent from `.env.local`.
+  - The first failed layer is LLM Provider configuration. Per M1C rules, no real Chat request, structured-output smoke, exact Amap prerequisite chain, or formal Runtime/API Planning Run was attempted.
+  - No fallback to legacy `DEEPSEEK_API_KEY`, fake data, plain-text parsing, or direct Planner invocation was used.
+- Current problems and risks:
+  - M1C's real Jingwei end-to-end acceptance target remains incomplete until the generic Provider variables are configured and both LLM smokes pass.
+  - `KNOWN_FLAKY`: `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` remains tracked but did not reproduce in this complete run. Runtime was not modified.
+  - Existing FastAPI lifespan deprecation and local `JWT_SECRET` warnings remain unrelated.
+- Next recommended action: configure the four generic LLM variables in the ignored `.env.local`, rerun Chat and structured-output smokes, then execute the Jingwei Run through `POST /api/runs`. Do not enter M2 before that real M1C verification succeeds.
+
+## 2026-08-22 00:04:28 +08:00 - M1C Real Jingwei Runtime/API E2E Completion
+
+- Real environment gates:
+  - Loaded ignored `.env.local` through `load_local_env()`; all five required settings were present without printing keys.
+  - Provider `openai_compatible`, endpoint host `127.0.0.1`, model `gpt-5.6-sol`.
+  - Real factory Chat returned `OK`.
+  - Real strict function calling returned a typed `SmokeSchema(ok=True, message="OK")`; no text fallback occurred.
+- Catalog/Amap/weather prerequisites:
+  - Catalog validation passed for schema `1.0`, content `0.1.0`, package `shanxi.changzhi`, route `changzhi.route.jingwei-fajiushan`.
+  - Mandatory Anchor `changzhi.anchor.fajiushan` resolved through the unique verified Binding `amap / B0FFF49AFB`.
+  - Live Amap Place Detail v3 returned `B0FFF49AFB / 发鸠山景区`, district `长子县`, coordinates `112.640827,36.146452`.
+  - Live weather selected the nearest future date `2026-08-22`: daytime light rain, night clear, 29/19 C.
+- Formal Runtime/API result:
+  - Created Run `c380a146-1be1-4cdc-8f72-a4cf10ad46a4` through `POST /api/runs`; it succeeded and persisted itinerary `77de3ade-b773-477b-9112-c69bccc629e2`.
+  - Public pipeline completed intent, query rewrite, attraction search, Planner, Reviewer, Time Check, meal search/recommendation, Spot Tips, and Finalize with no retry.
+  - Candidate pool contained 26 normal Amap candidates plus one verified mandatory candidate.
+  - Final attractions were mandatory `发鸠山景区 / B0FFF49AFB` and dynamic `翠云山法兴寺景区 / B016300KB2`; both trace to the real candidate pool.
+  - Mandatory machine validation passed with the exact Provider ID, curated Anchor ID, and `is_mandatory=true`; no missing mandatory identity remained.
+  - Run CatalogContext exactly matched the saved checkpoint snapshot.
+  - Reviewer passed on round 1 with score 91 and a rain-safety advisory. Time Check passed round 1 with no reported opening-time violations. Spot Tips covered both attractions.
+  - Meal search found no lunch candidate within the existing search boundary around Fajiushan, so the plan explicitly records no lunch restaurant; dinner is the real Amap candidate `老地方风味饭店`.
+- Automated regression:
+  - First focused run exposed three missing-config tests reloading the now-populated real `.env.local`; test isolation was corrected without production changes.
+  - Catalog + M1A + M1B + M1C focused: 99 passed.
+  - Complete Python: 191 passed, 18 subtests passed, 5 existing warnings.
+  - Compileall: passed. Frontend: 26 passed.
+- Files modified in this completion phase:
+  - Test-only isolation adjustment in `tests/test_openai_compatible_llm.py`.
+  - Long-term tracking files under `docs/development/`.
+  - No Provider, Planning, Runtime, API, Catalog, frontend, or mobile production code was changed after the successful real call.
+- Current problems and risks:
+  - Lunch is unresolved for this result; the current 1 km restaurant search around Fajiushan returned no candidates. The pipeline handled this honestly but the itinerary lacks a concrete midday meal.
+  - Exact 800 RMB total cost is not verifiable because attraction and transport price data are incomplete.
+  - Time Check verifies reported opening-time compatibility through the existing LLM stage; travel-time feasibility is not a deterministic hard validator.
+  - Local Redis was unavailable and cache disabled itself; provider calls continued normally.
+  - Existing FastAPI lifespan and missing `JWT_SECRET` warnings remain. The known Runtime concurrency flaky did not reproduce.
+- Next recommended action: review and checkpoint M1C. Before M2, explicitly accept the lunch-search limitation or define a separate generic meal-coverage improvement; do not hide it as a successful lunch recommendation.
