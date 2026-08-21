@@ -1,10 +1,12 @@
 # Next Steps
 
-Updated: 2026-08-21 20:01:43 +08:00
+Updated: 2026-08-21 20:39:00 +08:00
 
-1. Review the M1A CatalogContext, resolver, explicit Run input, and snapshot preservation contract.
-2. Stage and commit M1A only after user approval; no automatic commit was made.
-3. Define M1B explicitly before mandatory anchors influence POI candidates, prompts, scoring, or generated routes.
-4. Track `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` as `KNOWN_FLAKY`; investigate it separately from Catalog work.
+1. Review the accepted M1B-1 Binding/Discovery foundation together with the M1B-1.5 verification provenance contract.
+2. Configure `AMAP_API_KEY`, run real candidate discovery for `changzhi.anchor.fajiushan`, and have a human decide whether any candidate is the same real-world entity.
+3. Author a `verified` Binding only after that review; never promote a search result automatically.
+4. Stage and commit M1B-1 and M1B-1.5 only after user approval; no automatic commit was made.
+5. Define M1B-2 separately. Its future runtime path must use only verified Bindings and must fail explicitly or require review when none exists.
+6. Track `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` as `KNOWN_FLAKY`; investigate it separately from Catalog work.
 
-Boundary to preserve: M1A may carry CatalogContext but must remain behavior-neutral. RAG, Story, Experience, Commerce, Video, frontend, and mobile remain out of scope.
+Boundary to preserve: verification provenance records evidence but does not verify any current POI, affect Planning behavior, enforce mandatory Anchors, or change candidate pools, prompts, scoring, or generated routes. RAG, Story, Experience, Commerce, Video, frontend, and mobile remain out of scope.

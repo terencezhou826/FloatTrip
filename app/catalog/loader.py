@@ -39,6 +39,7 @@ class FileCatalogLoader:
             themes=[item for package in enabled for item in package.themes],
             routes=[item for package in enabled for item in package.routes],
             anchors=[item for package in enabled for item in package.anchors],
+            poi_bindings=[item for package in enabled for item in package.poi_bindings],
         )
 
     def _load_regions(self) -> list[Region]:
@@ -66,6 +67,9 @@ class FileCatalogLoader:
                 "themes": self._read_collection(directory / "themes.json", "themes"),
                 "routes": self._read_collection(directory / "routes.json", "routes"),
                 "anchors": self._read_collection(directory / "anchors.json", "anchors"),
+                "poi_bindings": self._read_optional_collection(
+                    directory / "poi_bindings.json", "poi_bindings"
+                ),
             }
             packages.append(ContentPackage.model_validate(package_payload))
         return packages
@@ -75,6 +79,11 @@ class FileCatalogLoader:
         if not isinstance(payload, dict) or key not in payload:
             raise CatalogLoadError(f"{path} must contain a {key} list")
         return payload[key]
+
+    def _read_optional_collection(self, path: Path, key: str) -> Any:
+        if not path.is_file():
+            return []
+        return self._read_collection(path, key)
 
     @staticmethod
     def _read_json(path: Path) -> Any:

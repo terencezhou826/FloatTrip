@@ -4,7 +4,14 @@ from __future__ import annotations
 
 from collections import Counter
 
-from app.catalog.models import Anchor, CatalogTheme, ContentPackage, CuratedRoute, Region
+from app.catalog.models import (
+    Anchor,
+    CatalogTheme,
+    ContentPackage,
+    CuratedRoute,
+    ExternalPoiBinding,
+    Region,
+)
 
 
 SUPPORTED_SCHEMA_VERSIONS = frozenset({"1.0"})
@@ -20,9 +27,10 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
     themes = [item for package in packages for item in package.themes]
     routes = [item for package in packages for item in package.routes]
     anchors = [item for package in packages for item in package.anchors]
+    poi_bindings = [item for package in packages for item in package.poi_bindings]
     issues: list[str] = []
 
-    _check_duplicate_ids(regions, themes, routes, anchors, issues)
+    _check_duplicate_ids(regions, themes, routes, anchors, poi_bindings, issues)
 
     region_ids = {item.id for item in regions}
     parents = {item.id: item.parent_id for item in regions}
@@ -59,6 +67,26 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
     for anchor in anchors:
         if anchor.region_id not in region_ids:
             issues.append(f"anchor {anchor.id} references missing region {anchor.region_id}")
+
+    for binding in poi_bindings:
+        if binding.anchor_id not in anchor_ids:
+            issues.append(
+                f"binding {binding.binding_id} references missing anchor "
+                f"{binding.anchor_id}"
+            )
+
+    binding_identities: dict[tuple[str, str], set[str]] = {}
+    for binding in poi_bindings:
+        identity = (binding.provider.value, binding.external_poi_id)
+        binding_identities.setdefault(identity, set()).add(binding.anchor_id)
+    for (provider, external_poi_id), bound_anchor_ids in sorted(
+        binding_identities.items()
+    ):
+        if len(bound_anchor_ids) > 1:
+            issues.append(
+                f"provider identity {provider}:{external_poi_id} has conflicting anchors "
+                f"{', '.join(sorted(bound_anchor_ids))}"
+            )
 
     for route in routes:
         if route.primary_region_id not in region_ids:
@@ -112,6 +140,7 @@ def _check_duplicate_ids(
     themes: list[CatalogTheme],
     routes: list[CuratedRoute],
     anchors: list[Anchor],
+    poi_bindings: list[ExternalPoiBinding],
     issues: list[str],
 ) -> None:
     typed_items = (
@@ -119,6 +148,7 @@ def _check_duplicate_ids(
         + [("theme", item.id) for item in themes]
         + [("route", item.id) for item in routes]
         + [("anchor", item.id) for item in anchors]
+        + [("poi_binding", item.binding_id) for item in poi_bindings]
     )
     counts = Counter(item_id for _, item_id in typed_items)
     for duplicate in sorted(item_id for item_id, count in counts.items() if count > 1):
