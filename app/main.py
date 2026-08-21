@@ -224,6 +224,10 @@ async def create_plan_stream(req: PlanRequest, request: Request):
 
     def memory_writer(final_plan: dict, state) -> None:
         planner_checkpoint = {
+            **(
+                {"catalog_context": state.catalog_context.model_dump(mode="json")}
+                if state.catalog_context else {}
+            ),
             "route": state.route,
             "pois":  state.pois,
             "planner_reviewer_dialogue": state.planner_reviewer_dialogue,

@@ -1,6 +1,6 @@
 # TODO
 
-Updated: 2026-08-21 19:28:24 +08:00
+Updated: 2026-08-21 20:01:43 +08:00
 
 - [x] Implement the isolated M0 Catalog models, repository, loader, validation, content, and tests.
 - [x] Add the controlled `RegionType` enum and optional `admin_code`.
@@ -9,9 +9,14 @@ Updated: 2026-08-21 19:28:24 +08:00
 - [x] Restore the already-declared checkpoint dependency in the local environment.
 - [x] Run Catalog, compileall, complete Python, and frontend tests.
 - [x] Consolidate long-term project tracking under `docs/development/`.
+- [x] Add immutable, versioned CatalogContext and a generic package-scoped resolver.
+- [x] Freeze explicit Catalog selection into Run and itinerary snapshots.
+- [x] Preserve CatalogContext through checkpoint, retry, revision, and legacy modification flows.
+- [x] Verify M1A remains behavior-neutral for ordinary planning.
 
 Deferred until explicitly approved:
 
-- [ ] Define and approve M1 scope.
+- [ ] Review and create an independent Git checkpoint for M1A.
+- [ ] Define and approve M1B scope before applying mandatory anchors to planning.
 - [ ] Investigate the Runtime concurrency `KNOWN_FLAKY` in a separate task.
-- [ ] Connect Catalog to Planning, API, Runtime, database, Web, Mobile, RAG, Story, or Video only in an explicitly authorized later phase.
+- [ ] Keep RAG, Story, Experience, Commerce, Video, frontend, and mobile integration deferred until explicitly authorized.

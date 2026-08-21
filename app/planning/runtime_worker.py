@@ -59,6 +59,7 @@ async def revision_snapshot_to_state(run: dict[str, Any]) -> TravelPlanState:
     checkpoint = base["planner_state"]
     return TravelPlanState(
         query=checkpoint.get("query", "修改行程"),
+        catalog_context=checkpoint.get("catalog_context"),
         route=checkpoint.get("route", []),
         pois=checkpoint.get("pois", []),
         planner_reviewer_dialogue=checkpoint.get("planner_reviewer_dialogue", []),
@@ -128,6 +129,8 @@ class PlanningFinalizer:
             for key, value in state.model_dump(mode="json").items()
             if key != "final_plan"
         }
+        if state.catalog_context is None:
+            checkpoint.pop("catalog_context", None)
         with get_conn() as conn:
             itinerary_id = save_itinerary(
                 run["user_id"],

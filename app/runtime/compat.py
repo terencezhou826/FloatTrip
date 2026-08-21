@@ -58,13 +58,17 @@ def legacy_parent_constraint_snapshot(
         return None
     import json
     snapshot = json.loads(row["request_snapshot_json"] or "{}")
-    if not snapshot.get("effective_constraints"):
+    if (
+        not snapshot.get("effective_constraints")
+        and not snapshot.get("catalog_context")
+    ):
         return None
     return {
         key: snapshot[key]
         for key in (
             "memory_profile_revision", "memory_profile_snapshot", "memory_context",
             "effective_constraints", "constraint_coverage", "trip_budget",
+            "package_id", "route_id", "catalog_context",
         )
         if key in snapshot
     }

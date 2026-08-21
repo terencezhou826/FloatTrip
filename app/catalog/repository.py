@@ -8,6 +8,7 @@ from typing import Protocol, runtime_checkable
 from app.catalog.models import (
     Anchor,
     CatalogTheme,
+    ContentPackage,
     ContentPackageManifest,
     CuratedRoute,
     Region,
@@ -16,6 +17,8 @@ from app.catalog.models import (
 
 @runtime_checkable
 class CatalogRepository(Protocol):
+    def get_package(self, package_id: str) -> ContentPackage | None: ...
+
     def get_region(self, region_id: str) -> Region | None: ...
 
     def list_regions(self) -> tuple[Region, ...]: ...
@@ -44,7 +47,9 @@ class InMemoryCatalogRepository:
         routes: Iterable[CuratedRoute],
         anchors: Iterable[Anchor],
         manifests: Iterable[ContentPackageManifest],
+        packages: Iterable[ContentPackage] = (),
     ) -> None:
+        self._packages = tuple(packages)
         self._regions = tuple(regions)
         self._themes = tuple(themes)
         self._routes = tuple(routes)
@@ -54,6 +59,12 @@ class InMemoryCatalogRepository:
         self._themes_by_id = {item.id: item for item in self._themes}
         self._routes_by_id = {item.id: item for item in self._routes}
         self._anchors_by_id = {item.id: item for item in self._anchors}
+        self._packages_by_id = {
+            item.manifest.package_id: item for item in self._packages
+        }
+
+    def get_package(self, package_id: str) -> ContentPackage | None:
+        return self._packages_by_id.get(package_id)
 
     def get_region(self, region_id: str) -> Region | None:
         return self._regions_by_id.get(region_id)

@@ -257,6 +257,110 @@ class RuntimeApiTests(unittest.TestCase):
         self.assertIn("event: custom", text)
         self.assertIn("event: end", text)
 
+    def test_explicit_catalog_selection_freezes_context_and_retry_preserves_it(self):
+        request = {
+            "destination": "长治",
+            "days": 2,
+            "start_date": "2026-09-01",
+            "end_date": "2026-09-02",
+            "package_id": "shanxi.changzhi",
+            "route_id": "changzhi.route.jingwei-fajiushan",
+        }
+        with patch("app.api.runtime_routes.scheduler.notify"):
+            response = self.client.post(
+                "/api/runs",
+                headers=self.owner_headers,
+                json={"kind": "travel_plan", "request": request},
+            )
+        self.assertEqual(response.status_code, 202)
+        run = response.json()
+        context = run["request_snapshot"]["catalog_context"]
+        self.assertEqual(context["package_id"], "shanxi.changzhi")
+        self.assertEqual(context["schema_version"], "1.0")
+        self.assertEqual(context["content_version"], "0.1.0")
+        self.assertEqual(context["route_id"], "changzhi.route.jingwei-fajiushan")
+
+        self.client.post(f"/api/runs/{run['id']}/cancel", headers=self.owner_headers)
+        with patch("app.api.runtime_routes.scheduler.notify"):
+            retried = self.client.post(
+                f"/api/runs/{run['id']}/retry", headers=self.owner_headers
+            )
+        self.assertEqual(retried.status_code, 202)
+        self.assertEqual(
+            retried.json()["request_snapshot"]["catalog_context"], context
+        )
+
+        from app.core.memory import save_itinerary
+        from app.runtime.container import manager
+
+        with get_conn() as conn:
+            itinerary_id = save_itinerary(
+                "owner",
+                {"destination": "长治", "days": []},
+                "长治两日游",
+                conn,
+                planner_state={
+                    "query": "长治两日游",
+                    "catalog_context": context,
+                },
+            )
+        retry_id = retried.json()["id"]
+        manager.runs.transition(retry_id, "running")
+        manager.runs.transition(
+            retry_id, "succeeded", result_itinerary_id=itinerary_id
+        )
+        with patch("app.api.runtime_routes.scheduler.notify"):
+            revision = self.client.post(
+                "/api/runs",
+                headers=self.owner_headers,
+                json={
+                    "kind": "revision",
+                    "related_itinerary_id": itinerary_id,
+                    "request": {"modification_notes": "第二天轻松一些"},
+                },
+            )
+        self.assertEqual(revision.status_code, 202)
+        self.assertEqual(
+            revision.json()["request_snapshot"]["catalog_context"], context
+        )
+
+    def test_ordinary_run_does_not_gain_catalog_context(self):
+        with patch("app.api.runtime_routes.scheduler.notify"):
+            response = self.client.post(
+                "/api/runs",
+                headers=self.owner_headers,
+                json={
+                    "kind": "travel_plan",
+                    "request": {
+                        "destination": "成都",
+                        "days": 2,
+                        "start_date": "2026-08-01",
+                        "end_date": "2026-08-02",
+                    },
+                },
+            )
+        self.assertEqual(response.status_code, 202)
+        self.assertNotIn("catalog_context", response.json()["request_snapshot"])
+
+    def test_invalid_catalog_route_is_rejected_before_run_creation(self):
+        response = self.client.post(
+            "/api/runs",
+            headers=self.owner_headers,
+            json={
+                "kind": "travel_plan",
+                "request": {
+                    "destination": "长治",
+                    "days": 2,
+                    "start_date": "2026-09-01",
+                    "end_date": "2026-09-02",
+                    "package_id": "shanxi.changzhi",
+                    "route_id": "missing.route",
+                },
+            },
+        )
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("route missing.route not found", response.json()["detail"])
+
     def test_direct_start_requires_complete_request(self):
         response = self.client.post(
             "/api/runs",

@@ -7,6 +7,8 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
+from app.planning.catalog_context import CatalogContext
+
 
 # ─── LLM 结构化输出 Schema ────────────────────────────────────
 
@@ -153,6 +155,7 @@ class DayMealPick(BaseModel):
 class TravelPlanState(BaseModel):
     # 输入（仅 query 必填）
     query: str
+    catalog_context: Optional[CatalogContext] = None
 
     # 意图识别抽取
     destination: Optional[str] = None

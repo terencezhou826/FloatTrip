@@ -34,6 +34,7 @@ class FileCatalogLoader:
         enabled = [package for package in packages if package.manifest.enabled]
         return InMemoryCatalogRepository(
             regions=regions,
+            packages=packages,
             manifests=[package.manifest for package in enabled],
             themes=[item for package in enabled for item in package.themes],
             routes=[item for package in enabled for item in package.routes],

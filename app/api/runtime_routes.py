@@ -5,12 +5,14 @@ from __future__ import annotations
 import asyncio
 import json
 from collections.abc import AsyncIterator
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from app.catalog.loader import FileCatalogLoader
 from app.core.auth import decode_token
 from app.core.database import get_conn
 from app.core.travel_memory import (
@@ -19,6 +21,10 @@ from app.core.travel_memory import (
     MemoryJobRepository,
     MemoryNotFound,
     MemoryRepository,
+)
+from app.planning.catalog_context import (
+    CatalogContextResolver,
+    freeze_catalog_selection,
 )
 from app.runtime.container import chat_service, manager, scheduler
 from app.runtime.models import RunKind, RunStatus, TERMINAL_STATUSES
@@ -35,6 +41,7 @@ briefs = PlanningBriefRepository()
 conversation_memories = ConversationMemoryRepository()
 memory_jobs = MemoryJobRepository()
 memory_facts = MemoryRepository()
+_CATALOG_ROOT = Path(__file__).resolve().parents[2] / "content" / "catalog"
 
 
 @router.get("/runtime/metrics")
@@ -339,9 +346,22 @@ async def create_run(
     request_snapshot = dict(body.request)
     for server_field in (
         "memory_profile_revision", "memory_profile_snapshot", "memory_context",
-        "effective_constraints", "constraint_coverage",
+        "effective_constraints", "constraint_coverage", "catalog_context",
     ):
         request_snapshot.pop(server_field, None)
+    if body.kind is RunKind.TRAVEL_PLAN and (
+        "package_id" in request_snapshot or "route_id" in request_snapshot
+    ):
+        try:
+            request_snapshot = freeze_catalog_selection(
+                request_snapshot,
+                CatalogContextResolver(FileCatalogLoader(_CATALOG_ROOT).load()),
+            )
+        except (ValueError, OSError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+    elif body.kind is RunKind.REVISION:
+        request_snapshot.pop("package_id", None)
+        request_snapshot.pop("route_id", None)
     if body.conversation_id:
         try:
             def freeze_conversation_memory():
@@ -390,6 +410,7 @@ async def create_run(
             for key in (
                 "memory_profile_revision", "memory_profile_snapshot", "memory_context",
                 "effective_constraints", "constraint_coverage", "trip_budget",
+                "package_id", "route_id", "catalog_context",
             ):
                 if key in inherited:
                     request_snapshot[key] = inherited[key]

@@ -293,6 +293,7 @@ async def run_modification_stream(
     app = build_modification_graph(overrides.get("model_name"), memory_writer)
     init = TravelPlanState(
         query=checkpoint.get("query", "修改行程"),
+        catalog_context=checkpoint.get("catalog_context"),
         route=checkpoint.get("route", []),
         pois=checkpoint.get("pois", []),
         planner_reviewer_dialogue=checkpoint.get("planner_reviewer_dialogue", []),

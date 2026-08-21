@@ -43,3 +43,34 @@
   - `KNOWN_FLAKY`: `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` failed once in the restored baseline and passed in the final run. Runtime was not modified.
   - All M0/M0.5 files remain untracked until explicitly staged or committed.
 - Next recommended action: review and approve M0.5 before defining M1. Do not start M1 implicitly.
+
+## 2026-08-21 20:01:43 +08:00 - M1A Catalog Context Integration
+
+- Files modified:
+  - Added `app/planning/catalog_context.py` with immutable `CatalogContext`, generic resolver, and request snapshot freezing helper.
+  - Updated Catalog Repository/Loader to retain package-scoped lookup, including disabled package metadata for resolver validation.
+  - Added optional `catalog_context` to `TravelPlanState`.
+  - Updated Runtime and legacy revision/checkpoint copy points without changing graph nodes, prompts, POI, review, time check, meals, scoring, finalize output, or SSE semantics.
+  - Added `tests/test_catalog_context.py` and focused Runtime API coverage.
+- Commands run:
+  - Focused pre-change and iterative M1A pytest runs.
+  - `python -m pytest -q tests/catalog --basetemp <system-temp>`
+  - `python -m pytest -q tests/test_catalog_context.py --basetemp <system-temp>`
+  - `python -m compileall -q app`
+  - `python -m pytest -q --basetemp <system-temp>`
+  - `node --test tests/chat-state.test.js tests/navigation-state.test.js`
+  - Git whitespace, scope, hardcoding, public-schema, and prohibited-module audits.
+- Results:
+  - Catalog: 27 passed.
+  - M1A dedicated tests: 11 passed; explicit Run API selection/retry/revision tests: 3 passed.
+  - Compileall: passed.
+  - Complete Python: 130 passed, 18 subtests passed, 5 existing warnings.
+  - Frontend: 26 passed.
+  - Runtime concurrency known flaky did not reproduce in final runs.
+- Errors resolved:
+  - Initial expected TDD collection failure before the context module existed.
+  - Replaced unsupported `pytest.mark.asyncio` with standard-library `asyncio.run()`; no dependency change.
+- Current problems and risks:
+  - `KNOWN_FLAKY`: `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` remains tracked from M0/M0.5 despite passing here.
+  - M1A carries mandatory anchor IDs but deliberately does not alter candidate POIs or planner behavior.
+- Next recommended action: review and checkpoint M1A, then define M1B explicitly before implementing mandatory-anchor planning behavior.
