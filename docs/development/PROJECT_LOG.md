@@ -1,5 +1,24 @@
 # Project Log
 
+## 2026-08-22 21:27:29 +08:00 - M7 benchmark and readiness hard gates passed
+
+- Added a deterministic offline benchmark corpus with 91 cases and 153 hard metric results across seven domains, including all required Knowledge, Story, Experience, Resource, Product, and cross-layer attacks.
+- Added the unified CLI runner, JSON/Markdown reports, protected global and route-scoped baselines, six-way regression comparator, substantive determinism checks, and explicit exit codes.
+- Added generic `RouteReadinessProfile` evaluation: Jingwei is READY; Nuwa, Shennong, and Houyi remain COMING_SOON from missing capabilities and route-scoped prerequisites. Resources are optional and do not block core cultural READY.
+- Added six evaluation documents and the M8 route template. No production Planner, Runtime, Catalog, Provider, or frontend behavior was changed.
+- Narrowed the existing `.gitignore` `eval*` rule with explicit exceptions for the three formal M7 evaluation directories; legacy `tests/eval/` generated fixture ignores remain unchanged.
+- Results: Evaluation 36 passed; Catalog 255; Planning/Knowledge/Story/Experience 230; Resource/Product/Runtime 96; complete Python 692 plus 18 subtests; frontend 32; compileall, hardcoding, fixture-secret, baseline comparison, and diff checks passed.
+- Live Smoke: SKIPPED because no local frontend service was running; offline baseline remains authoritative. Existing FastAPI deprecation/JWT warnings and Runtime concurrency `KNOWN_FLAKY` remain unchanged.
+- Next: review and establish an M7 Git checkpoint if approved. Do not enter M8 without separate authorization.
+
+## 2026-08-22 21:01:15 +08:00 - M7A evaluation contract hard gate passed
+
+- Added the isolated `app/evaluation/` schemas for suites, cases, metrics, results, reports, benchmark versions, and route-readiness results; no production Planning, Catalog, Runtime, or Product behavior changed.
+- Added 95 route-neutral formal metrics across planning, knowledge, story, experience, resources, product, and cross-layer domains. Hard metrics are deterministic by contract and an LLM judge cannot be a hard gate.
+- Added global uniqueness, reference-integrity, and hard/soft boundary validation for suite, case, and metric definitions.
+- Commands/results: start baseline 655 passed plus one documented Runtime concurrency flaky (passed in isolation), frontend 32 passed, formal four-layer snapshots loaded unchanged, and M7A tests 10 passed; compileall and `git diff --check` passed.
+- Next: build the auditable offline corpus and adversarial fixtures under M7B without introducing route-specific framework conditions.
+
 ## 2026-08-22 19:53:11 +08:00 - M6C snapshot UI hard gate passed
 
 - Added the ownership-protected `/api/runs/{run_id}/trip` read API, exact Story/Experience/Resource association checks, and Experience `load_for_run` persistence symmetry.

@@ -16,6 +16,14 @@ build/
 venv/
 resume.md
 eval*
+!app/evaluation/
+!app/evaluation/**
+app/evaluation/__pycache__/
+!docs/evaluation/
+!docs/evaluation/**
+!tests/evaluation/
+!tests/evaluation/**
+tests/evaluation/__pycache__/
 qr_eval_report.md
 .qoder/
 .gstack/

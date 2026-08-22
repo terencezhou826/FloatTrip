@@ -1,0 +1,60 @@
+{
+  "fixture_id": "jingwei-golden.1.0.0",
+  "source": "Audited Catalog 0.3.0 and formal M5/M6 persisted snapshots; no live Provider data or narration text is copied.",
+  "package_id": "shanxi.changzhi",
+  "catalog_schema_version": "1.0",
+  "catalog_content_version": "0.3.0",
+  "route_id": "changzhi.route.jingwei-fajiushan",
+  "mandatory_anchor_identity": {
+    "anchor_id": "changzhi.anchor.fajiushan",
+    "binding_id": "changzhi.binding.fajiushan.amap",
+    "provider": "amap",
+    "external_poi_id": "B0FFF49AFB"
+  },
+  "expected_chapter_ids": [
+    "changzhi.story.jingwei-fajiushan.chapter.prologue",
+    "changzhi.story.jingwei-fajiushan.chapter.fajiushan",
+    "changzhi.story.jingwei-fajiushan.chapter.nuwa-jingwei",
+    "changzhi.story.jingwei-fajiushan.chapter.fill-sea",
+    "changzhi.story.jingwei-fajiushan.chapter.today"
+  ],
+  "expected_activity_ids": [
+    "changzhi.experience.jingwei-family.activity.arrival-observation",
+    "changzhi.experience.jingwei-family.activity.text-question",
+    "changzhi.experience.jingwei-family.activity.family-question",
+    "changzhi.experience.jingwei-family.activity.persistence-reflection",
+    "changzhi.experience.jingwei-family.activity.today-reflection"
+  ],
+  "approved_claim_ids": [
+    "changzhi.claim.shanhaijing-fajiushan-passage",
+    "changzhi.claim.changzi-official-birthplace",
+    "changzhi.claim.local-history-birthplace",
+    "changzhi.claim.fajiushan-zhemu",
+    "changzhi.claim.jingwei-bird-name",
+    "changzhi.claim.jingwei-bird-appearance",
+    "changzhi.claim.jingwei-nuwa",
+    "changzhi.claim.nuwa-drowning",
+    "changzhi.claim.jingwei-fills-sea",
+    "changzhi.claim.jingwei-heritage-2009"
+  ],
+  "forbidden_claim_ids": ["changzhi.claim.fajiushan-yandi-residence"],
+  "snapshot_identity": {
+    "run_id": "87e1e50d-e4fa-4817-8e8d-563859f46480",
+    "itinerary_id": "84f32a03-2323-468f-b7ca-81459719cf1e",
+    "story_package_id": "story-package.0d7a0337095e6a1e32ccdda8",
+    "story_snapshot_hash": "214abccd53bd1b285c33cd2918166b2da38672040e4c0056752065ac170e754b",
+    "experience_package_id": "experience-package.abbc847bc8ab2e51de0e0733",
+    "experience_snapshot_hash": "209fe0b54622eaacb493a74fd54de25cbabbe39c199e75d718047b2861014456",
+    "resource_package_id": "resource-package.c0a72c99ca7b3accbe323263",
+    "resource_snapshot_hash": "fd4424b3b4d9c949ea1e7250c1561198a8b7297c351a5151f13b4f8492ee55ca"
+  },
+  "capability_expectation": {
+    "planning_available": true,
+    "knowledge_available": true,
+    "story_available": true,
+    "experience_available": true,
+    "resources_available": true,
+    "product_ready": true
+  },
+  "not_locked": ["narration_text", "meal_names", "dynamic_poi_names"]
+}

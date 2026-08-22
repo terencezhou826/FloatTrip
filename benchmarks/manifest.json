@@ -1,0 +1,13 @@
+{
+  "benchmark_version": {"schema_version": "1.0", "content_version": "1.0.0"},
+  "suite_files": [
+    "planning/cases.json",
+    "knowledge/cases.json",
+    "story/cases.json",
+    "experience/cases.json",
+    "resources/cases.json",
+    "product/cases.json",
+    "cross_layer/cases.json"
+  ],
+  "golden_fixture": "cross_layer/jingwei-golden.json"
+}

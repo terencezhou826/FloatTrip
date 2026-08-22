@@ -1,6 +1,8 @@
 # Next Steps
 
-Updated: 2026-08-22 20:28:22 +08:00
+Updated: 2026-08-22 21:27:29 +08:00
+
+M7 is complete against checkpoint `9170633`. Review the evaluation architecture, 91-case corpus, two versioned baselines, readiness outcomes, and complete regression evidence; establish an explicit M7 Git checkpoint if approved. Do not enter M8 without separate authorization. Preserve deterministic offline hard gates, fixture-only route expectations, protected baseline updates, and optional Resource capability semantics.
 
 1. Review the complete M6 diff and browser evidence.
 2. Establish an M6 Git checkpoint only after explicit approval; exclude `.pytest_tmp_m6*` and local runtime database artifacts.

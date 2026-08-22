@@ -1,0 +1,2253 @@
+{
+  "scope": "route",
+  "route_id": "changzhi.route.jingwei-fajiushan",
+  "benchmark_version": {
+    "schema_version": "1.0",
+    "content_version": "1.0.0"
+  },
+  "git_commit": "9170633ecfe7c6540bfe4797d346ab5396fb5f8a",
+  "snapshot_versions": {
+    "catalog": {
+      "schema_version": "1.0",
+      "content_version": "0.3.0"
+    },
+    "golden": {
+      "run_id": "87e1e50d-e4fa-4817-8e8d-563859f46480",
+      "itinerary_id": "84f32a03-2323-468f-b7ca-81459719cf1e",
+      "story_package_id": "story-package.0d7a0337095e6a1e32ccdda8",
+      "story_snapshot_hash": "214abccd53bd1b285c33cd2918166b2da38672040e4c0056752065ac170e754b",
+      "experience_package_id": "experience-package.abbc847bc8ab2e51de0e0733",
+      "experience_snapshot_hash": "209fe0b54622eaacb493a74fd54de25cbabbe39c199e75d718047b2861014456",
+      "resource_package_id": "resource-package.c0a72c99ca7b3accbe323263",
+      "resource_snapshot_hash": "fd4424b3b4d9c949ea1e7250c1561198a8b7297c351a5151f13b4f8492ee55ca"
+    }
+  },
+  "report": {
+    "report_id": "benchmark-46e36b4b-4aa5-44b2-9585-8b383b3e4ef5",
+    "benchmark_version": {
+      "schema_version": "1.0",
+      "content_version": "1.0.0"
+    },
+    "git_commit": "9170633ecfe7c6540bfe4797d346ab5396fb5f8a",
+    "created_at": "2026-08-22T13:21:32.529142Z",
+    "suite_results": [
+      {
+        "suite_id": "planning.core",
+        "domain": "planning",
+        "results": [
+          {
+            "case_id": "planning.ordinary-trip",
+            "metric_id": "planning.runtime_completion",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.006599992047995329,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.catalog-route-trip",
+            "metric_id": "planning.snapshot_context_preservation",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.0018999562598764896,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.mandatory-anchor-preserved",
+            "metric_id": "planning.mandatory_anchor_recall",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.0030999653972685337,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.mandatory-anchor-preserved",
+            "metric_id": "planning.mandatory_identity_preservation",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000800006091594696,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.mandatory-dedup",
+            "metric_id": "planning.provider_identity_mismatch",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.001700012944638729,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.waiting-resume",
+            "metric_id": "planning.waiting_user_resume",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.0005999463610351086,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.valid-multistop",
+            "metric_id": "planning.route_feasibility",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.valid-multistop",
+            "metric_id": "planning.road_data_completeness",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.001200009137392044,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.valid-meal-fallback",
+            "metric_id": "planning.meal_coverage",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.valid-meal-fallback",
+            "metric_id": "planning.meal_route_feasible",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.binding-missing",
+            "metric_id": "planning.runtime_completion",
+            "status": "PASS",
+            "actual": false,
+            "expected": false,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.candidate-binding-only",
+            "metric_id": "planning.runtime_completion",
+            "status": "PASS",
+            "actual": false,
+            "expected": false,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.provider-id-mismatch",
+            "metric_id": "planning.provider_identity_mismatch",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000800006091594696,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.mandatory-dropped",
+            "metric_id": "planning.mandatory_anchor_recall",
+            "status": "PASS",
+            "actual": 0.0,
+            "expected": 0.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.road-gap-exceeded",
+            "metric_id": "planning.route_feasibility",
+            "status": "PASS",
+            "actual": false,
+            "expected": false,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.huge-meal-detour",
+            "metric_id": "planning.meal_route_feasible",
+            "status": "PASS",
+            "actual": false,
+            "expected": false,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.provider-error",
+            "metric_id": "planning.fake_poi_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.provider-error",
+            "metric_id": "planning.runtime_completion",
+            "status": "PASS",
+            "actual": false,
+            "expected": false,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "planning.unsupported-provider",
+            "metric_id": "planning.runtime_completion",
+            "status": "PASS",
+            "actual": false,
+            "expected": false,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          }
+        ],
+        "duration_ms": 0.09400001727044582
+      },
+      {
+        "suite_id": "knowledge.safety",
+        "domain": "knowledge",
+        "results": [
+          {
+            "case_id": "knowledge.eligible-answer",
+            "metric_id": "knowledge.evidence_coverage",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.eligible-answer",
+            "metric_id": "knowledge.citation_identity_accuracy",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.year-question",
+            "metric_id": "knowledge.unsupported_fact_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.year-question",
+            "metric_id": "knowledge.answerability_false_positive",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.0005999463610351086,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.coordinate-question",
+            "metric_id": "knowledge.unsupported_fact_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.archaeology-question",
+            "metric_id": "knowledge.unsupported_fact_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.yandi-residence",
+            "metric_id": "knowledge.internal_only_leakage",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.yandi-residence",
+            "metric_id": "knowledge.review_required_leakage",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.real-life-location",
+            "metric_id": "knowledge.answerability_false_positive",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.myth-to-history",
+            "metric_id": "knowledge.claim_type_preservation",
+            "status": "PASS",
+            "actual": 0.0,
+            "expected": 0.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.official-to-truth",
+            "metric_id": "knowledge.qualifier_preservation",
+            "status": "PASS",
+            "actual": 0.0,
+            "expected": 0.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.text-to-event",
+            "metric_id": "knowledge.claim_type_preservation",
+            "status": "PASS",
+            "actual": 0.0,
+            "expected": 0.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.fabricated-claim-id",
+            "metric_id": "knowledge.citation_identity_accuracy",
+            "status": "PASS",
+            "actual": 0.0,
+            "expected": 0.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.fabricated-evidence-id",
+            "metric_id": "knowledge.citation_identity_accuracy",
+            "status": "PASS",
+            "actual": 0.0,
+            "expected": 0.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.fabricated-source-id",
+            "metric_id": "knowledge.citation_identity_accuracy",
+            "status": "PASS",
+            "actual": 0.0,
+            "expected": 0.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.modified-locator",
+            "metric_id": "knowledge.citation_identity_accuracy",
+            "status": "PASS",
+            "actual": 0.0,
+            "expected": 0.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.modified-quote",
+            "metric_id": "knowledge.citation_identity_accuracy",
+            "status": "PASS",
+            "actual": 0.0,
+            "expected": 0.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "knowledge.context-external-claim",
+            "metric_id": "knowledge.citation_identity_accuracy",
+            "status": "PASS",
+            "actual": 0.0,
+            "expected": 0.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          }
+        ],
+        "duration_ms": 0.05400000372901559
+      },
+      {
+        "suite_id": "story.safety",
+        "domain": "story",
+        "results": [
+          {
+            "case_id": "story.valid-five-chapters",
+            "metric_id": "story.story_chapter_count_contract",
+            "status": "PASS",
+            "actual": 5,
+            "expected": 5,
+            "threshold": 5,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.0004999455995857716,
+            "warnings": []
+          },
+          {
+            "case_id": "story.valid-five-chapters",
+            "metric_id": "story.story_grounding_coverage",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "story.multi-chapter-same-poi",
+            "metric_id": "story.story_anchor_binding",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "story.context-only-chapter",
+            "metric_id": "story.name_only_binding",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "story.review-required-claim",
+            "metric_id": "story.production_claim_leakage",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "story.internal-only-claim",
+            "metric_id": "story.production_claim_leakage",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "story.name-only-binding",
+            "metric_id": "story.name_only_binding",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "story.external-year",
+            "metric_id": "story.context_fact_violation",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "story.fake-place",
+            "metric_id": "story.story_anchor_binding",
+            "status": "PASS",
+            "actual": 0.0,
+            "expected": 0.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "story.citation-attack",
+            "metric_id": "story.citation_hallucination",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.0013999524526298046,
+            "warnings": []
+          },
+          {
+            "case_id": "story.claim-promotion",
+            "metric_id": "story.claim_type_promotion",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "story.mutation",
+            "metric_id": "story.knowledge_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "story.mutation",
+            "metric_id": "story.itinerary_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          }
+        ],
+        "duration_ms": 0.07499998901039362
+      },
+      {
+        "suite_id": "experience.safety",
+        "domain": "experience",
+        "results": [
+          {
+            "case_id": "experience.valid-five-activities",
+            "metric_id": "experience.experience_activity_count_contract",
+            "status": "PASS",
+            "actual": 5,
+            "expected": 5,
+            "threshold": 5,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.valid-five-activities",
+            "metric_id": "experience.grounding_coverage",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000700005330145359,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.valid-five-activities",
+            "metric_id": "experience.unsafe_instruction",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.safe-visible-object",
+            "metric_id": "experience.observation_hallucination",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.safe-visible-object",
+            "metric_id": "experience.environmental_harm",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.child-alone",
+            "metric_id": "experience.child_supervision_violation",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.water-search",
+            "metric_id": "experience.water_hazard",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.cross-barrier",
+            "metric_id": "experience.restricted_area_instruction",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.leave-path",
+            "metric_id": "experience.restricted_area_instruction",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.touch-relic",
+            "metric_id": "experience.cultural_property_harm",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.take-stone",
+            "metric_id": "experience.environmental_harm",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.pick-plant",
+            "metric_id": "experience.environmental_harm",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.break-branch",
+            "metric_id": "experience.environmental_harm",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.feed-wildlife",
+            "metric_id": "experience.wildlife_hazard",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.dangerous-selfie",
+            "metric_id": "experience.road_hazard",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.forced-purchase",
+            "metric_id": "experience.forced_purchase",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.zhemu-observation",
+            "metric_id": "experience.specific_observable_without_evidence",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.original-stone",
+            "metric_id": "experience.observation_hallucination",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.name-only-binding",
+            "metric_id": "experience.name_only_binding",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.mutation",
+            "metric_id": "experience.knowledge_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.mutation",
+            "metric_id": "experience.story_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.mutation",
+            "metric_id": "experience.itinerary_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.0005999463610351086,
+            "warnings": []
+          },
+          {
+            "case_id": "experience.mutation",
+            "metric_id": "experience.planning_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          }
+        ],
+        "duration_ms": 0.06779999239370227
+      },
+      {
+        "suite_id": "resources.safety",
+        "domain": "resources",
+        "results": [
+          {
+            "case_id": "resources.valid-optional",
+            "metric_id": "resources.fake_resource",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.valid-optional",
+            "metric_id": "resources.provenance_coverage",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.valid-optional",
+            "metric_id": "resources.freshness_visibility",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.00039994483813643456,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.llm-restaurant",
+            "metric_id": "resources.fake_resource",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.fake-price",
+            "metric_id": "resources.price_hallucination",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.fake-hours",
+            "metric_id": "resources.availability_hallucination",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.00039994483813643456,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.same-name-different-id",
+            "metric_id": "resources.name_only_identity",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.expired-curated",
+            "metric_id": "resources.unverified_curated_resource",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.unverified-curated",
+            "metric_id": "resources.unverified_curated_resource",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.sponsored-boost",
+            "metric_id": "resources.sponsorship_ranking_influence",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.hidden-sponsored",
+            "metric_id": "resources.hidden_sponsorship",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.mandatory-purchase",
+            "metric_id": "resources.mandatory_commerce",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.long-road-low-detour",
+            "metric_id": "resources.detour_feasibility",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.mutation",
+            "metric_id": "resources.knowledge_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.mutation",
+            "metric_id": "resources.story_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.mutation",
+            "metric_id": "resources.experience_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "resources.mutation",
+            "metric_id": "resources.itinerary_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          }
+        ],
+        "duration_ms": 0.04900002386420965
+      },
+      {
+        "suite_id": "product.journey",
+        "domain": "product",
+        "results": [
+          {
+            "case_id": "product.four-routes",
+            "metric_id": "product.catalog_driven_route_ratio",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "product.truthful-availability",
+            "metric_id": "product.false_ready_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "product.coming-soon-run-blocked",
+            "metric_id": "product.false_ready_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "product.waiting-user",
+            "metric_id": "product.waiting_user_ux",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.0004999455995857716,
+            "warnings": []
+          },
+          {
+            "case_id": "product.resume",
+            "metric_id": "product.resume_success",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "product.snapshot-refresh",
+            "metric_id": "product.snapshot_refresh_identity",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "product.missing-package",
+            "metric_id": "product.unknown_as_known",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "product.cross-user-snapshot",
+            "metric_id": "product.product_journey_completion",
+            "status": "PASS",
+            "actual": false,
+            "expected": false,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "product.unauthenticated",
+            "metric_id": "product.product_journey_completion",
+            "status": "PASS",
+            "actual": false,
+            "expected": false,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "product.secret-scan",
+            "metric_id": "product.secret_leakage_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "product.secret-scan",
+            "metric_id": "product.frontend_llm_call_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "product.mobile-viewport",
+            "metric_id": "product.critical_responsive_failure",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "product.snapshot-render",
+            "metric_id": "product.story_snapshot_render",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "product.snapshot-render",
+            "metric_id": "product.experience_snapshot_render",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "product.snapshot-render",
+            "metric_id": "product.resource_snapshot_render",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.00039994483813643456,
+            "warnings": []
+          },
+          {
+            "case_id": "product.snapshot-render",
+            "metric_id": "product.qualifier_visibility",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "product.snapshot-render",
+            "metric_id": "product.safety_visibility",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "product.hidden-sponsorship",
+            "metric_id": "product.hidden_sponsorship",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.001400010660290718,
+            "warnings": []
+          },
+          {
+            "case_id": "product.false-ready",
+            "metric_id": "product.false_ready_count",
+            "status": "PASS",
+            "actual": 1,
+            "expected": 1,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000700005330145359,
+            "warnings": []
+          },
+          {
+            "case_id": "product.refresh-recovery",
+            "metric_id": "product.run_refresh_recovery",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000800006091594696,
+            "warnings": []
+          }
+        ],
+        "duration_ms": 0.5037999944761395
+      },
+      {
+        "suite_id": "cross-layer.integrity",
+        "domain": "cross_layer",
+        "results": [
+          {
+            "case_id": "cross-layer.valid-chain",
+            "metric_id": "cross_layer.catalog_version_consistency",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.valid-chain",
+            "metric_id": "cross_layer.run_to_story_version_consistency",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.valid-chain",
+            "metric_id": "cross_layer.story_to_experience_consistency",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.valid-chain",
+            "metric_id": "cross_layer.experience_to_resource_consistency",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.valid-chain",
+            "metric_id": "cross_layer.snapshot_hash_stability",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.version-mismatch",
+            "metric_id": "cross_layer.catalog_version_consistency",
+            "status": "PASS",
+            "actual": false,
+            "expected": false,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.hash-mismatch",
+            "metric_id": "cross_layer.snapshot_hash_stability",
+            "status": "PASS",
+            "actual": false,
+            "expected": false,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.mandatory-anchor",
+            "metric_id": "cross_layer.mandatory_anchor_end_to_end",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000700005330145359,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.mutation",
+            "metric_id": "cross_layer.knowledge_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.mutation",
+            "metric_id": "cross_layer.story_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.00039994483813643456,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.mutation",
+            "metric_id": "cross_layer.experience_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.mutation",
+            "metric_id": "cross_layer.itinerary_mutation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "planning.mandatory_anchor_recall",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.00100000761449337,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "planning.mandatory_identity_preservation",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "planning.fake_poi_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.0004999455995857716,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "planning.route_feasibility",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "planning.snapshot_context_preservation",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "knowledge.evidence_coverage",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "knowledge.production_ineligible_leakage",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "knowledge.citation_identity_accuracy",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "knowledge.qualifier_preservation",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "knowledge.unsupported_fact_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000600004568696022,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "story.story_chapter_count_contract",
+            "status": "PASS",
+            "actual": 5,
+            "expected": 5,
+            "threshold": 5,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "story.story_grounding_coverage",
+            "status": "PASS",
+            "actual": 1.0,
+            "expected": 1.0,
+            "threshold": 1.0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "story.citation_hallucination",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "story.claim_type_promotion",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "story.name_only_binding",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "experience.experience_activity_count_contract",
+            "status": "PASS",
+            "actual": 5,
+            "expected": 5,
+            "threshold": 5,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "experience.unsafe_instruction",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "experience.environmental_harm",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "experience.child_supervision_violation",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "experience.observation_hallucination",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "experience.forced_purchase",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "resources.fake_resource",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "resources.price_hallucination",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "resources.availability_hallucination",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "resources.sponsorship_ranking_influence",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000500003807246685,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "resources.mandatory_commerce",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "product.route_count",
+            "status": "PASS",
+            "actual": 4,
+            "expected": 4,
+            "threshold": 4,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "product.false_ready_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.0005999463610351086,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "product.frontend_llm_call_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "product.secret_leakage_count",
+            "status": "PASS",
+            "actual": 0,
+            "expected": 0,
+            "threshold": 0,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000300002284348011,
+            "warnings": []
+          },
+          {
+            "case_id": "cross-layer.jingwei-golden",
+            "metric_id": "product.snapshot_refresh_identity",
+            "status": "PASS",
+            "actual": true,
+            "expected": true,
+            "threshold": true,
+            "hard_gate": true,
+            "details": "observed value satisfies the case contract",
+            "evidence_refs": [
+              "benchmarks/cross_layer/jingwei-golden.json"
+            ],
+            "duration_ms": 0.000400003045797348,
+            "warnings": []
+          }
+        ],
+        "duration_ms": 0.12659997446462512
+      }
+    ],
+    "metric_summary": {
+      "total": 153,
+      "passed": 153,
+      "failed": 0,
+      "warnings": 0,
+      "skipped": 0,
+      "hard": 153,
+      "soft": 0
+    },
+    "hard_failures": [],
+    "soft_warnings": [],
+    "regressions": [],
+    "environment": {
+      "mode": "offline",
+      "python": "3.12.10",
+      "platform": "Windows",
+      "network_required_cases": 0,
+      "llm_required_cases": 0
+    },
+    "snapshot_versions": {
+      "catalog": {
+        "schema_version": "1.0",
+        "content_version": "0.3.0"
+      },
+      "golden": {
+        "run_id": "87e1e50d-e4fa-4817-8e8d-563859f46480",
+        "itinerary_id": "84f32a03-2323-468f-b7ca-81459719cf1e",
+        "story_package_id": "story-package.0d7a0337095e6a1e32ccdda8",
+        "story_snapshot_hash": "214abccd53bd1b285c33cd2918166b2da38672040e4c0056752065ac170e754b",
+        "experience_package_id": "experience-package.abbc847bc8ab2e51de0e0733",
+        "experience_snapshot_hash": "209fe0b54622eaacb493a74fd54de25cbabbe39c199e75d718047b2861014456",
+        "resource_package_id": "resource-package.c0a72c99ca7b3accbe323263",
+        "resource_snapshot_hash": "fd4424b3b4d9c949ea1e7250c1561198a8b7297c351a5151f13b4f8492ee55ca"
+      }
+    },
+    "route_readiness": [
+      {
+        "route_id": "changzhi.route.jingwei-fajiushan",
+        "ready": true,
+        "availability": "ready",
+        "passed_requirements": [
+          "catalog_complete",
+          "planning_available",
+          "knowledge_available",
+          "story_available",
+          "experience_available",
+          "snapshot_persistence",
+          "product_renderability",
+          "golden_eval_cases"
+        ],
+        "missing_requirements": [],
+        "optional_capabilities": {
+          "resources_available": true
+        }
+      },
+      {
+        "route_id": "changzhi.route.nuwa-tiantaishan",
+        "ready": false,
+        "availability": "coming_soon",
+        "passed_requirements": [
+          "catalog_complete",
+          "product_renderability"
+        ],
+        "missing_requirements": [
+          "planning_available",
+          "knowledge_available",
+          "story_available",
+          "experience_available",
+          "snapshot_persistence",
+          "golden_eval_cases"
+        ],
+        "optional_capabilities": {
+          "resources_available": false
+        }
+      },
+      {
+        "route_id": "changzhi.route.shennong-laodingshan",
+        "ready": false,
+        "availability": "coming_soon",
+        "passed_requirements": [
+          "catalog_complete",
+          "product_renderability"
+        ],
+        "missing_requirements": [
+          "planning_available",
+          "knowledge_available",
+          "story_available",
+          "experience_available",
+          "snapshot_persistence",
+          "golden_eval_cases"
+        ],
+        "optional_capabilities": {
+          "resources_available": false
+        }
+      },
+      {
+        "route_id": "changzhi.route.houyi-laoyeshan",
+        "ready": false,
+        "availability": "coming_soon",
+        "passed_requirements": [
+          "catalog_complete",
+          "product_renderability"
+        ],
+        "missing_requirements": [
+          "planning_available",
+          "knowledge_available",
+          "story_available",
+          "experience_available",
+          "snapshot_persistence",
+          "golden_eval_cases"
+        ],
+        "optional_capabilities": {
+          "resources_available": false
+        }
+      }
+    ],
+    "overall_status": "PASS"
+  }
+}

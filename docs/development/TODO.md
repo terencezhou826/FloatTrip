@@ -1,6 +1,18 @@
 # TODO
 
-Updated: 2026-08-22 20:28:22 +08:00
+Updated: 2026-08-22 21:27:29 +08:00
+
+M7 in progress on 2026-08-22:
+
+- [x] Pass the start gate against checkpoint `9170633`, including formal itinerary/Story/Experience/Resource snapshot recovery.
+- [x] Complete M7A evaluation domain, independent benchmark version, formal metric registry, uniqueness checks, and hard/soft contract.
+- [x] Complete M7B auditable positive, negative, adversarial, regression, and Jingwei golden fixtures.
+- [x] Complete M7C offline runner, reports, baseline protection, comparator, determinism, and exit codes.
+- [x] Complete M7D readiness profiles, formal baselines, complete regressions, audits, and documentation.
+- [x] Pass 153/153 formal hard metric results, 692 Python tests plus 18 subtests, and 32 frontend tests.
+- [x] Keep the optional Live Smoke out of the offline baseline; record SKIPPED while no frontend service is running.
+- [ ] Do not commit, push, or enter M8.
+- [ ] Review M7 and establish an explicit Git checkpoint.
 
 M6 completed on 2026-08-22:
 
