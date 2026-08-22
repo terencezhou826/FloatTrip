@@ -26,6 +26,15 @@ from app.catalog.models import (
     ThemeType,
 )
 from app.catalog.repository import CatalogRepository
+from app.catalog.retrieval import (
+    KnowledgeContext,
+    KnowledgeEvidenceSnapshot,
+    KnowledgeHit,
+    KnowledgeQuery,
+    KnowledgeRetrievalError,
+    KnowledgeRetriever,
+    KnowledgeSourceSnapshot,
+)
 from app.catalog.validation import CatalogValidationError
 
 __all__ = [
@@ -43,7 +52,14 @@ __all__ = [
     "KnowledgeClaim",
     "KnowledgeClaimType",
     "KnowledgeEvidence",
+    "KnowledgeEvidenceSnapshot",
+    "KnowledgeContext",
+    "KnowledgeHit",
+    "KnowledgeQuery",
+    "KnowledgeRetrievalError",
+    "KnowledgeRetriever",
     "KnowledgeSource",
+    "KnowledgeSourceSnapshot",
     "KnowledgeSourceType",
     "KnowledgeVerificationStatus",
     "Region",

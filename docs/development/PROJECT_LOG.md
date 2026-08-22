@@ -1,5 +1,48 @@
 # Project Log
 
+## 2026-08-22 12:43:06 +08:00 - M2B Evidence-Aware Knowledge Retrieval
+
+- Files modified:
+  - Added `app/catalog/retrieval.py` with frozen `KnowledgeQuery`,
+    `KnowledgeHit`, Evidence/Source snapshots, `KnowledgeContext`, and a
+    package-scoped `KnowledgeRetriever`.
+  - Exported the retrieval contracts from `app/catalog/__init__.py`.
+  - Added `tests/catalog/test_knowledge_retrieval.py` and
+    `docs/knowledge/RETRIEVAL.md`.
+  - Updated only the canonical tracking documents under `docs/development/`.
+- Architecture and safety:
+  - Production eligibility runs before ranking and reuses the Repository gate;
+    package-local verified `supports` Evidence and verified Sources are also
+    required.
+  - Structured Region/Theme/Anchor/Claim-type filters combine with deterministic
+    Unicode normalization, Chinese character bigrams/trigrams, generic query
+    expansions, causal markers, and ordered subsequence matching.
+  - Hits retain complete promotion qualifiers, all verified Evidence relations,
+    deduplicated Source snapshots, stable IDs, scores, and match reasons.
+  - Authority contributes only a small Source-relationship tie-break and is not
+    interpreted as truth probability.
+- Commands and results:
+  - Retriever tests: 25 passed.
+  - Catalog tests: 101 passed.
+  - Catalog + M1A-M1E focused regression: 203 passed, 5 existing warnings.
+  - `python -m compileall -q app`: passed.
+  - Complete Python regression: 281 passed, 18 subtests passed, 5 existing
+    warnings.
+  - Frontend Node tests: 26 passed.
+  - Standalone A-F local Catalog demo: all queries completed; production-
+    ineligible leakage was 0. The Yandi-residence query returned only weak
+    eligible context and `insufficient_direct_match`.
+- Current risks:
+  - V1 ranking is intentionally lexical and uses a small generic Chinese query
+    vocabulary; it is deterministic but not a semantic-search replacement.
+  - `include_disputed=true` is explicitly review-oriented and produces a
+    warning; default production retrieval excludes disputed Claims.
+  - Existing FastAPI lifespan/JWT warnings remain unrelated. Runtime
+    concurrency `KNOWN_FLAKY` did not reproduce and Runtime was not modified.
+- Next recommended action: review and checkpoint M2B. Do not connect
+  `KnowledgeContext` to Planning or LLM generation until M2C is explicitly
+  scoped.
+
 ## 2026-08-22 12:22:28 +08:00 - M2A Final Audit
 
 - Files modified in this phase:

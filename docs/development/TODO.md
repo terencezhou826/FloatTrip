@@ -1,6 +1,17 @@
 # TODO
 
-Updated: 2026-08-22 12:22:28 +08:00
+Updated: 2026-08-22 12:43:06 +08:00
+
+M2B completed 2026-08-22 12:43:06 +08:00:
+
+- [x] Add frozen, serializable KnowledgeQuery, KnowledgeHit, and KnowledgeContext schemas.
+- [x] Gate retrieval through package-scoped production eligibility before ranking.
+- [x] Add deterministic Chinese lexical matching and explainable ranking without Embedding or LLM calls.
+- [x] Preserve qualifiers, verified Evidence, Source provenance, locators, excerpts, and Catalog versions.
+- [x] Support multiple Evidence records and Sources without treating contradicts as supports.
+- [x] Run A-F standalone retrieval with zero production-ineligible leakage.
+- [x] Document production filtering, ranking, hydration, disputed handling, network isolation, and the future Embedding boundary.
+- [x] Pass Retriever, Catalog, focused, compileall, complete Python, and frontend regressions.
 
 M2A Final Audit completed 2026-08-22 12:22:28 +08:00:
 
@@ -82,6 +93,6 @@ Deferred until explicitly approved:
 - [ ] Add a deterministic multi-attraction real E2E fixture or acceptance Run if stronger live route-gate evidence is required.
 - [ ] Investigate the Runtime concurrency `KNOWN_FLAKY` in a separate task.
 - [ ] Keep RAG, Story, Experience, Commerce, Video, frontend, and mobile integration deferred until explicitly authorized.
-- [ ] Create an M2A Git checkpoint only after explicit approval.
+- [ ] Create an M2B Git checkpoint only after explicit approval.
 - [ ] Keep `changzhi.claim.fajiushan-yandi-residence` as `review_required` and `internal_only` unless stronger historical evidence is supplied.
-- [ ] Scope M2B retrieval without adding unverified Claims, weakening promotion policy, or treating mythology as historical fact.
+- [ ] Scope M2C without weakening production eligibility or qualifier preservation.
