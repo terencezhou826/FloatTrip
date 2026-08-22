@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 from app.core.env import load_local_env
 from app.core.async_resources import provider_slot
+from app.providers.amap.client import int_or_none
 from app.providers.amap.poi import (
     parse_location,
     normalize_address,
@@ -559,6 +560,8 @@ def restaurant_to_dict(poi: dict[str, Any]) -> dict[str, Any] | None:
     category = (type_str.split(";")[-1].strip() if ";" in type_str else type_str.strip()) or None
 
     return {
+        "provider": "amap",
+        "external_poi_id": str(poi.get("id") or "").strip() or None,
         "name": str(poi.get("name", "")),
         "cost": cost_raw or None,
         "rating": rating,
@@ -569,4 +572,5 @@ def restaurant_to_dict(poi: dict[str, Any]) -> dict[str, Any] | None:
         "open_time": open_time_r,
         "tel": tel_r,
         "category": category,
+        "provider_distance_m": int_or_none(poi.get("distance")),
     }

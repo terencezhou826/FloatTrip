@@ -247,3 +247,49 @@
   - Local Redis was unavailable and cache disabled itself; provider calls continued normally.
   - Existing FastAPI lifespan and missing `JWT_SECRET` warnings remain. The known Runtime concurrency flaky did not reproduce.
 - Next recommended action: review and checkpoint M1C. Before M2, explicitly accept the lunch-search limitation or define a separate generic meal-coverage improvement; do not hide it as a successful lunch recommendation.
+
+## 2026-08-22 08:08:11 +08:00 - M1D Generic Meal Coverage Fallback
+
+- Files modified:
+  - Added `app/planning/meal_coverage.py` with a Provider-neutral bounded coverage policy.
+  - Extended `app/planning/helpers.py` to retain Amap POI identity and reported distance for restaurant candidates.
+  - Extended `app/planning/nodes.py` with staged meal discovery, route-aware lunch fallback, coverage metadata, identity-based duplicate handling, and honest uncovered output.
+  - Added `tests/test_meal_coverage.py` for policy, node integration, provenance, ordinary non-Catalog behavior, Provider failures, and Finalize output.
+  - Updated the three long-term documents under `docs/development/`.
+- Policy:
+  - Search levels are 1000 m, 3000 m, and 5000 m; 5000 m is the hard maximum.
+  - Each level searches the primary meal anchor and then an optional secondary route anchor, stopping on the first identified non-empty candidate set.
+  - Candidate identity is `provider + external_poi_id`; same identity is deduplicated while same-name/different-ID candidates remain distinct.
+  - Status is `COVERED` only for the primary anchor at level 0, `FALLBACK_EXPANDED` for a secondary anchor or later radius, and `UNCOVERED` after every bounded attempt is empty.
+  - Provider errors propagate and are never converted into empty results. No Planner, mandatory POI, Catalog, Runtime/SSE, frontend, or mobile behavior was changed.
+- Commands run:
+  - Focused Meal/mandatory tests and Catalog/M1A/M1B/M1C/M1D regression with repository-local `--basetemp` directories.
+  - `python -m compileall -q app`.
+  - Complete `python -m pytest -q --basetemp .pytest_tmp_m1d_full` regression.
+  - `node --test tests/chat-state.test.js tests/navigation-state.test.js`.
+  - Live Amap meal discovery for the approved Fajiushan and Cuiyunshan Faxingsi POIs.
+  - Formal Jingwei Runtime/API E2E, plus hardcoding, secret, whitespace, and Git audits.
+- Results:
+  - Meal/mandatory focused: 44 passed.
+  - Final post-cleanup Meal verification: 13 passed.
+  - Catalog + M1A + M1B + M1C + M1D focused: 112 passed.
+  - Compileall: passed.
+  - Complete Python: 204 passed, 18 subtests passed, 5 existing warnings.
+  - Frontend: 26 passed.
+  - The known Runtime concurrency flaky did not reproduce; Runtime was not modified.
+- Live discovery:
+  - Fajiushan primary anchor at level 0/1000 m returned 0 identified candidates.
+  - Cuiyunshan Faxingsi secondary anchor at level 0/1000 m returned 9 identified real Amap candidates, so levels 1 and 2 were not attempted and status was `FALLBACK_EXPANDED`.
+  - A representative candidate was `老地方风味饭店 / amap / B0FFFZ7ZGA`, address `丹慈路与平安街交叉口西南80米`, coordinates `112.92015,35.982461`, rating 4.3, reported cost 30, and Provider distance 690 m from the secondary anchor.
+- Formal Runtime/API E2E:
+  - Run `40f2defd-070e-41df-9a93-34d7212886b3` succeeded and persisted itinerary `7b266426-8271-4299-bb67-05431241cf74` without retry.
+  - Frozen CatalogContext, exact mandatory Fajiushan identity, attraction and meal provenance, Reviewer, Time Check, Spot Tips, and Finalize all passed.
+  - Lunch was the real Amap candidate `桂花蒸饺馆 / B0G2SSJUAM`, found at level 1/3000 m around the afternoon secondary anchor `漳泽湖国家城市湿地公园`; status was `FALLBACK_EXPANDED`.
+  - The final-route straight-line distance from Fajiushan to lunch was 39.82 km. M1D improves truthful candidate coverage but does not implement corridor or route optimization, so this result must not be represented as distance-optimal.
+  - Dinner was `申一刀厨师班 / B0JUJAJKUD`, 126 m from Shangdang Gate at level 0/1000 m with status `COVERED`.
+- Current problems and risks:
+  - The 39.82 km lunch detour remains a route-feasibility limitation for a future explicitly scoped corridor-aware policy.
+  - Exact 800 RMB total remains unverifiable because reliable attraction and transport pricing is incomplete.
+  - Existing FastAPI lifespan deprecation and local `JWT_SECRET` warnings remain unrelated.
+  - `KNOWN_FLAKY`: `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` remains tracked but did not reproduce.
+- Next recommended action: review M1D and create a Git checkpoint only after explicit approval. Decide separately whether the residual lunch detour blocks M2; do not enter M2 implicitly.

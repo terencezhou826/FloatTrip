@@ -20,6 +20,11 @@ from app.planning.mandatory_pois import (
     missing_mandatory_pois as find_missing_mandatory_pois,
 )
 from app.planning.catalog_context import CatalogContext
+from app.planning.meal_coverage import (
+    MealCoverageStatus,
+    MealSearchAnchor,
+    discover_meal_coverage,
+)
 from app.providers.amap.identity import AmapExactPoiProvider
 
 logger = logging.getLogger(__name__)
@@ -42,7 +47,7 @@ def _constraints_block(
     )
 
 from app.llm.factory import build_structured_llm
-from app.providers.amap.poi import search_around_pois, search_around_pois_async
+from app.providers.amap.poi import search_around_pois_async
 from app.planning.schemas import (
     DayMealPick,
     IntentExtraction,
@@ -705,26 +710,56 @@ async def meal_search_node(state: TravelPlanState) -> dict[str, Any]:
         day_no = day.get("day")
         entry: dict[str, Any] = {"day": day_no, "lunch": {}, "dinner": {}}
 
-        lunch_anchor  = last_spot_of_period(day, "morning")
+        lunch_anchor = last_spot_of_period(day, "morning")
+        afternoon_spots = [
+            spot for spot in day.get("spots", [])
+            if spot.get("period") == "afternoon"
+        ]
+        lunch_secondary = afternoon_spots[0] if afternoon_spots else None
         dinner_anchor = dinner_anchor_spot(day)
 
-        for meal, anchor in (("lunch", lunch_anchor), ("dinner", dinner_anchor)):
-            center = loc_map.get(anchor["name"]) if anchor else None
-            if not center:
-                warnings.append(f"Day{day_no} {meal} 无中心景点坐标")
-                entry[meal] = {"anchor": anchor["name"] if anchor else None, "candidates": []}
-                continue
-            raw = await search_around_pois_async(
-                center,
-                api_key,
-                types="餐饮服务",
-                radius=1000,
-                offset=20,
-            )
-            cands = [r for r in (restaurant_to_dict(p) for p in raw) if r][:20]
-            if not cands:
-                warnings.append(f"Day{day_no} {meal}（{anchor['name']} 周边）无餐饮")
-            entry[meal] = {"anchor": anchor["name"], "center": center, "candidates": cands}
+        for meal, primary, secondary in (
+            ("lunch", lunch_anchor, lunch_secondary),
+            ("dinner", dinner_anchor, None),
+        ):
+            anchors: list[MealSearchAnchor] = []
+            seen_anchor_names: set[str] = set()
+            for role, anchor in (("primary", primary), ("secondary", secondary)):
+                name = str((anchor or {}).get("name") or "").strip()
+                center = loc_map.get(name)
+                if not name or not center or name in seen_anchor_names:
+                    continue
+                seen_anchor_names.add(name)
+                anchors.append(
+                    MealSearchAnchor(name=name, location=center, role=role)
+                )
+
+            async def search(location: dict[str, float], radius_m: int):
+                raw = await search_around_pois_async(
+                    location,
+                    api_key,
+                    types="餐饮服务",
+                    radius=radius_m,
+                    offset=20,
+                )
+                return [
+                    candidate
+                    for candidate in (restaurant_to_dict(poi) for poi in raw)
+                    if candidate is not None
+                ][:20]
+
+            coverage = await discover_meal_coverage(anchors, search)
+            if coverage.status is MealCoverageStatus.UNCOVERED:
+                warnings.append(
+                    f"Day{day_no} {meal} 达到 {coverage.max_search_radius_m}m 后仍无可靠餐饮"
+                )
+            entry[meal] = {
+                "anchor": anchors[0].name if anchors else None,
+                "candidates": list(coverage.candidates),
+                "coverage_status": coverage.status.value,
+                "search_attempts": list(coverage.attempts),
+                "max_search_radius_m": coverage.max_search_radius_m,
+            }
         meal_candidates.append(entry)
 
     note = "周边餐饮搜索完成" + (f"（提醒：{'; '.join(warnings)}）" if warnings else "")
@@ -747,9 +782,23 @@ def make_meal_recommend_node(model_name: str | None):
                 return "（无候选）"
             return "\n".join(
                 f"  · {c['name']}（评分 {c['rating'] or '无'}，人均 {c['cost'] or '无'}，"
-                f"标签 {c['keytag'] or '无'}）"
+                f"标签 {c['keytag'] or '无'}，搜索锚点 {c.get('search_anchor_name') or '无'}，"
+                f"半径 {c.get('search_radius_m') or '无'}m，层级 {c.get('search_level')}）"
                 for c in cands
             )
+
+        def _coverage_note(slot: dict[str, Any], candidate: dict[str, Any] | None) -> str:
+            status = slot.get("coverage_status")
+            if status == MealCoverageStatus.UNCOVERED.value:
+                radius = slot.get("max_search_radius_m") or 0
+                return f"该时段在最大 {radius} 米搜索范围内暂无可靠餐饮候选，建议提前自备补给。"
+            if status != MealCoverageStatus.FALLBACK_EXPANDED.value or not candidate:
+                return ""
+            radius = candidate.get("search_radius_m") or 0
+            anchor_name = candidate.get("search_anchor_name") or "后续景点"
+            if candidate.get("search_anchor_role") == "secondary":
+                return f"当前景点周边餐饮较少，候选来自路线后续的{anchor_name}周边约 {radius} 米范围。"
+            return f"当前景点默认范围餐饮较少，候选来自扩大至约 {radius} 米的搜索范围。"
 
         async def _recommend_day(entry: dict[str, Any]) -> DayMealPick:
             """单天 LLM 调用；失败时取评分最高的餐厅降级兜底。"""
@@ -785,7 +834,7 @@ def make_meal_recommend_node(model_name: str | None):
             )
         )
 
-        def _lookup(name: str, cands_dict: dict[str, Any], cands_list: list[dict]) -> dict | None:
+        def _lookup(name: str, cands_list: list[dict]) -> dict | None:
             """子串匹配候选餐厅；LLM 名称改写时宽松匹配（含子串即算）。
 
             name 为空字符串代表"LLM 认为无偏好匹配而主动放弃"，不等于候选列表为空。
@@ -793,9 +842,10 @@ def make_meal_recommend_node(model_name: str | None):
             正确语义：只要 cands_list 非空就必有返回，None 只意味着候选列表确实为空。
             """
             if name:
-                for key, val in cands_dict.items():
-                    if name in key or key in name:
-                        return val
+                for candidate in cands_list:
+                    candidate_name = candidate["name"]
+                    if name in candidate_name or candidate_name in name:
+                        return candidate
             return cands_list[0] if cands_list else None
 
         pick_map = {p.day: p for p in day_picks}
@@ -804,34 +854,72 @@ def make_meal_recommend_node(model_name: str | None):
             pick              = pick_map.get(entry["day"])
             lunch_cands_list  = sorted(entry["lunch"].get("candidates", []),  key=lambda c: -(c.get("rating") or 0))
             dinner_cands_list = sorted(entry["dinner"].get("candidates", []), key=lambda c: -(c.get("rating") or 0))
-            lunch_cands       = {c["name"]: c for c in lunch_cands_list}
-            dinner_cands      = {c["name"]: c for c in dinner_cands_list}
-            lunch_info   = _lookup(pick.lunch_name,  lunch_cands,  lunch_cands_list)  if pick else None
-            dinner_info  = _lookup(pick.dinner_name, dinner_cands, dinner_cands_list) if pick else None
+            lunch_info = _lookup(pick.lunch_name, lunch_cands_list) if pick else None
+            dinner_info = _lookup(pick.dinner_name, dinner_cands_list) if pick else None
 
             if lunch_info is not None:
-                lunch_info  = {**lunch_info,  "reason": pick.lunch_reason}
+                coverage_note = _coverage_note(entry["lunch"], lunch_info)
+                lunch_info = {
+                    **lunch_info,
+                    "meal_coverage_status": entry["lunch"].get("coverage_status"),
+                    "meal_coverage_note": coverage_note or None,
+                    "reason": " ".join(filter(None, (coverage_note, pick.lunch_reason))),
+                }
             if dinner_info is not None:
-                dinner_info = {**dinner_info, "reason": pick.dinner_reason}
+                coverage_note = _coverage_note(entry["dinner"], dinner_info)
+                dinner_info = {
+                    **dinner_info,
+                    "meal_coverage_status": entry["dinner"].get("coverage_status"),
+                    "meal_coverage_note": coverage_note or None,
+                    "reason": " ".join(filter(None, (coverage_note, pick.dinner_reason))),
+                }
 
             # 确定性兜底：午/晚餐重复时换评分次高的一家
-            if (lunch_info is not None and dinner_info is not None
-                    and pick and pick.lunch_name == pick.dinner_name):
+            lunch_identity = (
+                lunch_info.get("provider"), lunch_info.get("external_poi_id")
+            ) if lunch_info else None
+            dinner_identity = (
+                dinner_info.get("provider"), dinner_info.get("external_poi_id")
+            ) if dinner_info else None
+            if lunch_identity and lunch_identity == dinner_identity:
                 alt = next(
                     (c for c in sorted(
                         entry["dinner"].get("candidates", []),
                         key=lambda c: -(c.get("rating") or 0),
-                    ) if c["name"] != pick.lunch_name),
+                    ) if (c.get("provider"), c.get("external_poi_id")) != lunch_identity),
                     None,
                 )
                 if alt:
-                    dinner_info = {**alt, "reason": f"（系统调整：避免与午餐重复，改选 {alt['name']}）"}
+                    coverage_note = _coverage_note(entry["dinner"], alt)
+                    dinner_info = {
+                        **alt,
+                        "meal_coverage_status": entry["dinner"].get("coverage_status"),
+                        "meal_coverage_note": coverage_note or None,
+                        "reason": " ".join(filter(None, (
+                            coverage_note,
+                            f"（系统调整：避免与午餐重复，改选 {alt['name']}）",
+                        ))),
+                    }
                 else:
                     dinner_info = {**dinner_info,
                                    "reason": (dinner_info.get("reason") or "")
                                    + " ⚠️ 该区域仅此一家餐厅，午晚餐相同，出行前请确认周边餐饮。"}
 
-            meals.append({"day": entry["day"], "lunch": lunch_info, "dinner": dinner_info})
+            meals.append({
+                "day": entry["day"],
+                "lunch": lunch_info,
+                "dinner": dinner_info,
+                "lunch_coverage": {
+                    "status": entry["lunch"].get("coverage_status"),
+                    "note": _coverage_note(entry["lunch"], lunch_info),
+                    "search_attempts": entry["lunch"].get("search_attempts", []),
+                },
+                "dinner_coverage": {
+                    "status": entry["dinner"].get("coverage_status"),
+                    "note": _coverage_note(entry["dinner"], dinner_info),
+                    "search_attempts": entry["dinner"].get("search_attempts", []),
+                },
+            })
 
         note = "餐厅推荐完成：" + "，".join(
             f"Day{m['day']} 午={m['lunch']['name'] if m['lunch'] else '无'}"
@@ -984,13 +1072,27 @@ def _finalize_impl(state: TravelPlanState) -> dict[str, Any]:
                 if meal.get("lunch"):
                     timeline.append({"type": "lunch", **meal["lunch"]})
                 else:
-                    timeline.append({"type": "lunch", "name": None, "no_restaurant": True})
+                    coverage = meal.get("lunch_coverage") or {}
+                    timeline.append({
+                        "type": "lunch",
+                        "name": None,
+                        "no_restaurant": True,
+                        "meal_coverage_status": coverage.get("status"),
+                        "meal_coverage_note": coverage.get("note"),
+                    })
             if spot.get("name") == afternoon_anchor_name and not dinner_inserted:
                 dinner_inserted = True
                 if meal.get("dinner"):
                     timeline.append({"type": "dinner", **meal["dinner"]})
                 else:
-                    timeline.append({"type": "dinner", "name": None, "no_restaurant": True})
+                    coverage = meal.get("dinner_coverage") or {}
+                    timeline.append({
+                        "type": "dinner",
+                        "name": None,
+                        "no_restaurant": True,
+                        "meal_coverage_status": coverage.get("status"),
+                        "meal_coverage_note": coverage.get("note"),
+                    })
 
         # 相邻地点 haversine 距离
         for i in range(1, len(timeline)):

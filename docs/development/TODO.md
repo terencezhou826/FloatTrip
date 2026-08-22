@@ -1,6 +1,6 @@
 # TODO
 
-Updated: 2026-08-22 00:04:28 +08:00
+Updated: 2026-08-22 08:08:11 +08:00
 
 - [x] Implement the isolated M0 Catalog models, repository, loader, validation, content, and tests.
 - [x] Add the controlled `RegionType` enum and optional `admin_code`.
@@ -37,10 +37,17 @@ Updated: 2026-08-22 00:04:28 +08:00
 - [x] Pass real Catalog, verified Binding, exact Amap identity, and weather prerequisites.
 - [x] Run Jingwei through the formal Runtime/API path and verify frozen CatalogContext, mandatory identity, checkpoint retention, and candidate provenance.
 - [x] Complete the real Planner, Reviewer, Time Check, meal, Spot Tips, and Finalize pipeline without retry.
+- [x] Create the accepted M1C Git checkpoint (`08687a1`).
+- [x] Add Provider-neutral staged meal coverage at 1 km, 3 km, and 5 km with a bounded maximum.
+- [x] Add route-aware lunch fallback from the morning primary anchor to the afternoon secondary anchor.
+- [x] Preserve meal Provider identity, distance, search level, radius, anchor role, and anchor name provenance.
+- [x] Distinguish `COVERED`, `FALLBACK_EXPANDED`, and `UNCOVERED` without allowing LLM-created restaurants.
+- [x] Verify real Fajiushan meal discovery and rerun the formal Jingwei Runtime/API E2E.
+- [x] Preserve mandatory Anchor enforcement, Reviewer, Time Check, Spot Tips, and Finalize behavior through M1D.
 
 Deferred until explicitly approved:
 
-- [ ] Review and create a Git checkpoint for M1C only after real E2E acceptance; do not commit automatically.
-- [ ] Decide whether the Fajiushan lunch-search gap must be addressed before M2 in a separately scoped generic meal-coverage task.
+- [ ] Review and create a Git checkpoint for M1D only after explicit approval; do not commit automatically.
+- [ ] Decide whether the observed 39.82 km Fajiushan-to-lunch detour requires a separately scoped corridor-aware feasibility policy before M2.
 - [ ] Investigate the Runtime concurrency `KNOWN_FLAKY` in a separate task.
 - [ ] Keep RAG, Story, Experience, Commerce, Video, frontend, and mobile integration deferred until explicitly authorized.
