@@ -1,11 +1,11 @@
 # Next Steps
 
-Updated: 2026-08-22 18:05:52 +08:00
+Updated: 2026-08-22 19:22:34 +08:00
 
-1. Review the complete M4 working tree and create an explicit Git checkpoint only after approval. Do not stage repository-local pytest temporary directories.
-2. Preserve the four-mode ObservationTarget contract and deterministic renderer. Trusted targets and hard safety remain system-owned; raw LLM prose remains separately auditable and fully validated.
-3. Preserve immutable StoryPackage and ExperiencePackage SQLite snapshots, their canonical hashes, and Run/itinerary/Catalog association checks. Downstream retries must load snapshots without another LLM call.
-4. Preserve exact `provider + external_poi_id` placement and all evidence, qualifier, current-presence, child-safety, environmental, cultural-property, and mutation gates.
-5. Scope M5 separately. Do not implicitly add Video, Commerce, GPS/AR, frontend/mobile presentation, completion tracking, additional routes, or new cultural facts.
+1. Review the complete M5 diff and create an explicit Git checkpoint only after approval. Do not stage repository-local `.pytest_tmp_m5*` directories.
+2. Preserve formal LocalResourcePackage `resource-package.c0a72c99ca7b3accbe323263` and hash `fd4424b3b4d9c949ea1e7250c1561198a8b7297c351a5151f13b4f8492ee55ca` with its upstream Run, itinerary, Story, Experience, and Catalog associations.
+3. Keep the curated Resource Catalog empty until separate human or official verification supplies real long-term records. Runtime Amap candidates must remain candidates.
+4. Preserve exact identity, price/operational freshness, deterministic editorial ranking, disclosure, and optional-only commerce gates in every downstream surface.
+5. Define M6 separately. Do not implicitly add payment, inventory, merchant administration, Video, GPS/AR, frontend/mobile resource UI, other routes, or new cultural facts.
 
-Boundary to preserve: M4 is complete. Formal StoryPackage and ExperiencePackage snapshots are persisted for Run `87e1e50d-e4fa-4817-8e8d-563859f46480` and itinerary `84f32a03-2323-468f-b7ca-81459719cf1e`; all M4 hard metrics are zero and final regressions pass. Establish the M4 checkpoint before any separately authorized M5 work.
+Boundary to preserve: M5 is complete. The formal package contains 7 real Amap runtime candidates and 5 optional recommendations; all commerce, identity, hallucination, disclosure, and mutation metrics are zero. Full Python and frontend regressions pass. Do not enter M6 without a separate approved scope.

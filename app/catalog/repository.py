@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from datetime import date
 from typing import Protocol, runtime_checkable
 
 from app.catalog.models import (
@@ -20,11 +21,16 @@ from app.catalog.models import (
     KnowledgeEvidence,
     KnowledgeSource,
     KnowledgeVerificationStatus,
+    LocalResource,
+    LocalResourceType,
     PoiProvider,
     PromotionPolicyStatus,
     Region,
+    ResourceSource,
+    ResourceVerificationStatus,
     StoryBlueprint,
     StoryChapter,
+    is_resource_recommendation_eligible,
 )
 
 
@@ -117,6 +123,23 @@ class CatalogRepository(Protocol):
         self, experience_id: str
     ) -> tuple[ExperienceActivity, ...]: ...
 
+    def get_resource_source(self, source_id: str) -> ResourceSource | None: ...
+
+    def get_resource(self, resource_id: str) -> LocalResource | None: ...
+
+    def list_resources(
+        self,
+        *,
+        resource_type: LocalResourceType | None = None,
+        region_id: str | None = None,
+        anchor_id: str | None = None,
+        verification_status: ResourceVerificationStatus | None = None,
+    ) -> tuple[LocalResource, ...]: ...
+
+    def is_resource_recommendation_eligible(
+        self, resource_id: str, *, as_of: date | None = None
+    ) -> bool: ...
+
 
 class InMemoryCatalogRepository:
     def __init__(
@@ -135,6 +158,8 @@ class InMemoryCatalogRepository:
         story_chapters: Iterable[StoryChapter] = (),
         experience_blueprints: Iterable[ExperienceBlueprint] = (),
         experience_activities: Iterable[ExperienceActivity] = (),
+        resource_sources: Iterable[ResourceSource] = (),
+        local_resources: Iterable[LocalResource] = (),
         packages: Iterable[ContentPackage] = (),
     ) -> None:
         self._packages = tuple(packages)
@@ -150,6 +175,8 @@ class InMemoryCatalogRepository:
         self._story_chapters = tuple(story_chapters)
         self._experience_blueprints = tuple(experience_blueprints)
         self._experience_activities = tuple(experience_activities)
+        self._resource_sources = tuple(resource_sources)
+        self._local_resources = tuple(local_resources)
         self._manifests = tuple(manifests)
         self._regions_by_id = {item.id: item for item in self._regions}
         self._themes_by_id = {item.id: item for item in self._themes}
@@ -178,6 +205,12 @@ class InMemoryCatalogRepository:
         }
         self._experience_activities_by_id = {
             item.activity_id: item for item in self._experience_activities
+        }
+        self._resource_sources_by_id = {
+            item.source_id: item for item in self._resource_sources
+        }
+        self._local_resources_by_id = {
+            item.resource_id: item for item in self._local_resources
         }
         self._packages_by_id = {
             item.manifest.package_id: item for item in self._packages
@@ -371,6 +404,48 @@ class InMemoryCatalogRepository:
                 ),
                 key=lambda item: (item.sequence, item.activity_id),
             )
+        )
+
+    def get_resource_source(self, source_id: str) -> ResourceSource | None:
+        return self._resource_sources_by_id.get(source_id)
+
+    def get_resource(self, resource_id: str) -> LocalResource | None:
+        return self._local_resources_by_id.get(resource_id)
+
+    def list_resources(
+        self,
+        *,
+        resource_type: LocalResourceType | None = None,
+        region_id: str | None = None,
+        anchor_id: str | None = None,
+        verification_status: ResourceVerificationStatus | None = None,
+    ) -> tuple[LocalResource, ...]:
+        return tuple(
+            resource
+            for resource in self._local_resources
+            if (resource_type is None or resource.resource_type is resource_type)
+            and (region_id is None or region_id in resource.region_ids)
+            and (anchor_id is None or anchor_id in resource.anchor_ids)
+            and (
+                verification_status is None
+                or resource.verification_status is verification_status
+            )
+        )
+
+    def is_resource_recommendation_eligible(
+        self, resource_id: str, *, as_of: date | None = None
+    ) -> bool:
+        resource = self.get_resource(resource_id)
+        if resource is None or not is_resource_recommendation_eligible(
+            resource, as_of=as_of
+        ):
+            return False
+        sources = [
+            self.get_resource_source(source_id)
+            for source_id in resource.source_refs
+        ]
+        return all(source is not None for source in sources) and any(
+            source.verified_at is not None for source in sources if source is not None
         )
 
     @staticmethod

@@ -24,7 +24,10 @@ from app.catalog.models import (
     KnowledgeEvidence,
     KnowledgeSource,
     KnowledgeVerificationStatus,
+    LocalResource,
     Region,
+    ResourceSource,
+    ResourceVerificationStatus,
     StoryBlueprint,
     StoryChapter,
     StoryVerificationStatus,
@@ -66,6 +69,12 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
     experience_activities = [
         item for package in packages for item in package.experience_activities
     ]
+    resource_sources = [
+        item for package in packages for item in package.resource_sources
+    ]
+    local_resources = [
+        item for package in packages for item in package.local_resources
+    ]
     issues: list[str] = []
 
     _check_duplicate_ids(
@@ -81,6 +90,8 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
         story_chapters,
         experience_blueprints,
         experience_activities,
+        resource_sources,
+        local_resources,
         issues,
     )
 
@@ -102,6 +113,18 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
     activities_by_id = {
         item.activity_id: item for item in experience_activities
     }
+
+    resource_identities: dict[tuple[str, str], set[str]] = {}
+    for resource in local_resources:
+        for binding in resource.provider_bindings:
+            identity = (binding.provider.value, binding.external_id)
+            resource_identities.setdefault(identity, set()).add(resource.resource_id)
+    for (provider, external_id), resource_ids in sorted(resource_identities.items()):
+        if len(resource_ids) > 1:
+            issues.append(
+                f"resource provider identity {provider}:{external_id} has conflicting "
+                f"resources {', '.join(sorted(resource_ids))}"
+            )
 
     for region in regions:
         if region.parent_id and region.parent_id not in region_ids:
@@ -350,6 +373,24 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
                 production_claim_ids,
                 issues,
             )
+        package_resource_source_ids = {
+            item.source_id for item in package.resource_sources
+        }
+        resource_sources_by_id = {
+            item.source_id: item for item in package.resource_sources
+        }
+        for resource in package.local_resources:
+            _validate_local_resource(
+                resource,
+                package.manifest.package_id,
+                package_resource_source_ids,
+                resource_sources_by_id,
+                region_ids,
+                anchor_ids,
+                claim_ids,
+                production_claim_ids,
+                issues,
+            )
 
     if issues:
         raise CatalogValidationError(issues)
@@ -368,6 +409,8 @@ def _check_duplicate_ids(
     story_chapters: list[StoryChapter],
     experience_blueprints: list[ExperienceBlueprint],
     experience_activities: list[ExperienceActivity],
+    resource_sources: list[ResourceSource],
+    local_resources: list[LocalResource],
     issues: list[str],
 ) -> None:
     typed_items = (
@@ -389,11 +432,87 @@ def _check_duplicate_ids(
             ("experience_activity", item.activity_id)
             for item in experience_activities
         ]
+        + [("resource_source", item.source_id) for item in resource_sources]
+        + [("local_resource", item.resource_id) for item in local_resources]
     )
     counts = Counter(item_id for _, item_id in typed_items)
     for duplicate in sorted(item_id for item_id, count in counts.items() if count > 1):
         kinds = sorted(kind for kind, item_id in typed_items if item_id == duplicate)
         issues.append(f"duplicate id {duplicate} ({', '.join(kinds)})")
+
+
+def _validate_local_resource(
+    resource: LocalResource,
+    package_id: str,
+    package_source_ids: set[str],
+    sources_by_id: dict[str, ResourceSource],
+    region_ids: set[str],
+    anchor_ids: set[str],
+    claim_ids: set[str],
+    production_claim_ids: set[str],
+    issues: list[str],
+) -> None:
+    if resource.package_id != package_id:
+        issues.append(
+            f"resource {resource.resource_id} package_id {resource.package_id} does "
+            f"not match owning package {package_id}"
+        )
+    for region_id in resource.region_ids:
+        if region_id not in region_ids:
+            issues.append(
+                f"resource {resource.resource_id} references missing region {region_id}"
+            )
+    for anchor_id in resource.anchor_ids:
+        if anchor_id not in anchor_ids:
+            issues.append(
+                f"resource {resource.resource_id} references missing anchor {anchor_id}"
+            )
+    for source_id in resource.source_refs:
+        if source_id not in package_source_ids:
+            issues.append(
+                f"resource {resource.resource_id} references missing provenance source "
+                f"{source_id}"
+            )
+    if (
+        resource.verification_status is ResourceVerificationStatus.VERIFIED
+        and not any(
+            source.verified_at is not None
+            for source_id in resource.source_refs
+            if (source := sources_by_id.get(source_id)) is not None
+        )
+    ):
+        issues.append(
+            f"verified resource {resource.resource_id} has no verified provenance"
+        )
+    if (
+        resource.verification_status is ResourceVerificationStatus.VERIFIED
+        and not resource.has_complete_identity
+    ):
+        issues.append(
+            f"verified resource {resource.resource_id} has incomplete identity"
+        )
+    referenced_freshness_sources = {
+        resource.price_info.source_ref,
+        resource.availability_info.source_ref,
+        resource.business_hours.source_ref if resource.business_hours else None,
+    } - {None}
+    for source_id in sorted(referenced_freshness_sources):
+        if source_id not in package_source_ids:
+            issues.append(
+                f"resource {resource.resource_id} references missing freshness source "
+                f"{source_id}"
+            )
+    for claim_id in resource.cultural_claim_ids:
+        if claim_id not in claim_ids:
+            issues.append(
+                f"resource {resource.resource_id} references missing cultural Claim "
+                f"{claim_id}"
+            )
+        elif claim_id not in production_claim_ids:
+            issues.append(
+                f"resource {resource.resource_id} cultural Claim {claim_id} is not "
+                "production eligible"
+            )
 
 
 def _validate_story(

@@ -173,6 +173,23 @@ def init_db(path: str | Path | None = None) -> None:
                 UNIQUE(run_id, itinerary_id, experience_id)
             );
 
+            CREATE TABLE IF NOT EXISTS local_resource_package_snapshots (
+                resource_package_id TEXT PRIMARY KEY,
+                run_id               TEXT NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+                itinerary_id         TEXT NOT NULL REFERENCES itineraries(id) ON DELETE CASCADE,
+                story_package_id     TEXT NOT NULL REFERENCES story_package_snapshots(package_id),
+                story_snapshot_hash  TEXT NOT NULL,
+                experience_package_id TEXT NOT NULL REFERENCES experience_package_snapshots(package_id),
+                experience_snapshot_hash TEXT NOT NULL,
+                catalog_package_id   TEXT NOT NULL,
+                schema_version       TEXT NOT NULL,
+                content_version      TEXT NOT NULL,
+                snapshot_json        TEXT NOT NULL,
+                snapshot_hash        TEXT NOT NULL,
+                created_at           TEXT NOT NULL,
+                UNIQUE(run_id, itinerary_id)
+            );
+
             CREATE TABLE IF NOT EXISTS user_memory_states (
                 user_id     TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
                 revision    INTEGER NOT NULL DEFAULT 0,
@@ -261,6 +278,8 @@ def init_db(path: str | Path | None = None) -> None:
                 ON story_package_snapshots(run_id, itinerary_id, story_id);
             CREATE INDEX IF NOT EXISTS idx_experience_snapshots_run
                 ON experience_package_snapshots(run_id, itinerary_id, experience_id);
+            CREATE INDEX IF NOT EXISTS idx_resource_snapshots_run
+                ON local_resource_package_snapshots(run_id, itinerary_id);
             CREATE INDEX IF NOT EXISTS idx_memory_facts_owner_status
                 ON memory_facts(user_id,status,updated_at DESC);
             CREATE INDEX IF NOT EXISTS idx_memory_facts_scope

@@ -61,6 +61,12 @@ class FileCatalogLoader:
             experience_activities=[
                 item for package in enabled for item in package.experience_activities
             ],
+            resource_sources=[
+                item for package in enabled for item in package.resource_sources
+            ],
+            local_resources=[
+                item for package in enabled for item in package.local_resources
+            ],
         )
 
     def _load_regions(self) -> list[Region]:
@@ -95,6 +101,7 @@ class FileCatalogLoader:
             package_payload.update(self._load_knowledge(directory / "knowledge"))
             package_payload.update(self._load_stories(directory / "stories"))
             package_payload.update(self._load_experiences(directory / "experiences"))
+            package_payload.update(self._load_resources(directory / "resources"))
             packages.append(ContentPackage.model_validate(package_payload))
         return packages
 
@@ -175,6 +182,37 @@ class FileCatalogLoader:
             if not isinstance(payload, dict):
                 raise CatalogLoadError(
                     f"{path} must contain one experience collection"
+                )
+            recognized = [key for key in key_map if key in payload]
+            if len(recognized) != 1 or len(payload) != 1:
+                raise CatalogLoadError(
+                    f"{path} must contain exactly one of: {', '.join(key_map)}"
+                )
+            key = recognized[0]
+            if not isinstance(payload[key], list):
+                raise CatalogLoadError(f"{path} must contain a {key} list")
+            collections[key_map[key]].extend(payload[key])
+        return collections
+
+    def _load_resources(self, resources_root: Path) -> dict[str, list[Any]]:
+        collections: dict[str, list[Any]] = {
+            "resource_sources": [],
+            "local_resources": [],
+        }
+        key_map = {
+            "sources": "resource_sources",
+            "resources": "local_resources",
+        }
+        paths = (
+            sorted(resources_root.rglob("*.json"))
+            if resources_root.is_dir()
+            else []
+        )
+        for path in paths:
+            payload = self._read_json(path)
+            if not isinstance(payload, dict):
+                raise CatalogLoadError(
+                    f"{path} must contain one local resource collection"
                 )
             recognized = [key for key in key_map if key in payload]
             if len(recognized) != 1 or len(payload) != 1:

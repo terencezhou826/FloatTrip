@@ -619,3 +619,46 @@
   - Provider facilitation and deterministic safety wording may repeat slightly; this is a documented soft warning, not a safety failure.
   - Repository-local `.pytest_tmp_m4*` directories remain untracked test artifacts because this environment blocks their deletion. They must not be staged.
 - Next recommended action: review the complete M4 diff and establish an explicit Git checkpoint. Enter M5 only after that checkpoint and a separately approved M5 scope.
+
+## 2026-08-22 19:08:59 +08:00 - M5A and M5B hard gates passed
+
+- Starting gates:
+  - Started from clean checkpoint `81b0fb6`. Formal Run `87e1e50d-e4fa-4817-8e8d-563859f46480`, itinerary `84f32a03-2323-468f-b7ca-81459719cf1e`, StoryPackage `story-package.0d7a0337095e6a1e32ccdda8`, and ExperiencePackage `experience-package.abbc847bc8ab2e51de0e0733` loaded and round-tripped with frozen Catalog `1.0 / 0.3.0`.
+- M5A files and architecture:
+  - Extended `app/catalog/` with provider-neutral LocalResource, ResourceSource, identity, verification, operational, price, availability, editorial, commercial relationship, disclosure, and recommendation-eligibility contracts.
+  - Added optional hierarchical `resources/` loading, immutable Repository queries, cross-file provenance/reference/identity validation, and empty long-term Changzhi resource collections without fabricated records.
+  - Added `tests/catalog/test_resources.py` with 60 tests. Resource tests: 60 passed; complete Catalog: 255 passed; compileall and `git diff --check`: passed.
+- M5B files and real Provider result:
+  - Added `app/resources/` runtime candidate/freshness/provenance contracts and a generic discovery service, plus `app/providers/amap/resources.py` reusing Amap Place Around v3.
+  - M5A/M5B focused tests: 76 passed. Amap was loaded through `load_local_env()` without exposing the key.
+  - Real formal-itinerary discovery succeeded around all three attraction stops: 1 candidate around Fajiushan, 20 around Cuiyunshan Faxing Temple, and 16 around Wufenglou, totaling 37 unique `amap + external_poi_id` identities.
+  - All results remain runtime `candidate`; Provider provenance and `retrieved_at` coverage are 100%. Amap `biz_ext.cost` is retained only as Provider-reported per-person data; absent/invalid prices remain unknown. Operational status remains unknown even when Provider hours exist.
+- Hard metrics and risks:
+  - Fake resource, name-only identity, price hallucination, hidden sponsorship, commercial ranking influence, unverified production resource, and Knowledge/Story/Experience/itinerary mutation: all 0.
+  - Soft warning: only one restaurant candidate was found within 5 km of Fajiushan itself; the formal itinerary's later stops have sufficient candidates. No curated product, lodging, heritage-experience, partner, or sponsored resources were added.
+  - Repository-local `.pytest_tmp_m5*` directories are untracked test artifacts and must not be staged.
+- Next recommended action: implement and gate M5C deterministic, optional-only recommendation. Do not regenerate Planning, Story, or Experience and do not enter M5D until M5C passes.
+
+## 2026-08-22 19:22:34 +08:00 - M5 Local Resource & Commerce Engine complete
+
+- M5C deterministic recommendation:
+  - Added a unified read-only recommendation projection for runtime Provider candidates and eligible verified Catalog resources.
+  - Reused `TravelTimeMatrix` and `assess_meal_detour`; exact selected meals are recognized only by Provider identity. All results are optional and contextual, never cultural identity or mandatory commerce.
+  - Ranking reads route feasibility, detour, Provider distance/rating/review data, real price visibility, freshness, operation, and lexical user preferences. Commercial relationship is excluded from score and retained only for disclosure.
+  - Resource/recommendation focused: 93 passed. Catalog, Meal, Route Feasibility, Story, Experience, and M5 combined gate: 352 passed. Production hardcoding scan found no conditionals for Jingwei, Fajiushan, Changzhi, or the formal POI ID.
+- M5D formal package and persistence:
+  - Loaded the unchanged formal itinerary and persisted M4 Story/Experience snapshots; no Planning, Story, or Experience generation ran.
+  - Real Amap discovery selected 7 unique runtime restaurant candidates from bounded queries around the three formal attraction stops. Real Amap driving-time checks produced 5 deterministic optional recommendations.
+  - Persisted `resource-package.c0a72c99ca7b3accbe323263` with hash `fd4424b3b4d9c949ea1e7250c1561198a8b7297c351a5151f13b4f8492ee55ca` in the formal Runtime database.
+  - Resource package persistence tests: 105 passed, including save/load/round-trip, hash, version and upstream association checks, corruption rejection, and load without Provider calls.
+- Formal result:
+  - Recommended exact selected lunch `amap / B0FFFZ7ZGA`, three low-detour resources near Wufenglou, and one route-feasible resource context near Fajiushan. All are `restaurant`, runtime `candidate`, `optional=true`, with `commercial_relationship=unknown` and operational status `unknown`.
+  - Price amounts appear only where Amap returned `biz_ext.cost`, marked Provider-reported per-person and fresh. Unknown price remains unknown.
+  - Fake resource, unverified curated resource, name-only identity, price/availability hallucination, sponsorship influence, hidden sponsorship, mandatory commerce, and Knowledge/Story/Experience/itinerary mutation: all 0.
+- Final verification:
+  - Resource/Discovery/Recommendation/Persistence focused: 105 passed. Complete Python: 642 passed plus 18 subtests, with 5 existing warnings. Frontend Node: 26 passed. Compileall, `git diff --check`, and production hardcoding audit passed.
+  - Runtime concurrency `KNOWN_FLAKY` did not reproduce. Existing FastAPI lifespan and local JWT warnings remain unrelated.
+  - Added five documents under `docs/resources/` covering model, provenance, recommendation, commercial policy, and persistence.
+- Workspace note:
+  - Cleanup of repository-local `.pytest_tmp_m5*` directories was rejected by the environment command policy. They remain untracked test artifacts and must not be staged.
+- Next recommended action: review M5 and establish an explicit Git checkpoint. Do not commit/push automatically and do not enter M6 without a separately approved scope.

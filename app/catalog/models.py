@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
+from decimal import Decimal
 from enum import StrEnum
 from typing import Annotated, Any
 
@@ -58,6 +59,95 @@ class PoiVerificationMethod(StrEnum):
     PROVIDER_EXACT_ID = "provider_exact_id"
     OFFICIAL_SOURCE = "official_source"
     OTHER = "other"
+
+
+class LocalResourceType(StrEnum):
+    RESTAURANT = "restaurant"
+    LODGING = "lodging"
+    LOCAL_PRODUCT = "local_product"
+    AGRICULTURAL_PRODUCT = "agricultural_product"
+    CULTURAL_PRODUCT = "cultural_product"
+    HERITAGE_EXPERIENCE = "heritage_experience"
+    PAID_EXPERIENCE = "paid_experience"
+    TOUR_SERVICE = "tour_service"
+    TRANSPORT_SERVICE = "transport_service"
+    TICKET = "ticket"
+    EVENT = "event"
+    OTHER = "other"
+
+
+class ResourceIdentityProvider(StrEnum):
+    AMAP = "amap"
+    BAIDU = "baidu"
+    TENCENT = "tencent"
+    OFFICIAL_CATALOG = "official_catalog"
+    INTERNAL = "internal"
+    OTHER = "other"
+    CUSTOM = "custom"
+
+
+class ResourceVerificationStatus(StrEnum):
+    CANDIDATE = "candidate"
+    REVIEW_REQUIRED = "review_required"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
+    EXPIRED = "expired"
+
+
+class ResourceOperationalStatus(StrEnum):
+    UNKNOWN = "unknown"
+    OPEN = "open"
+    TEMPORARILY_CLOSED = "temporarily_closed"
+    SEASONAL = "seasonal"
+    APPOINTMENT_REQUIRED = "appointment_required"
+    INACTIVE = "inactive"
+
+
+class ResourceSourceType(StrEnum):
+    PROVIDER = "provider"
+    GOVERNMENT = "government"
+    SCENIC_OFFICIAL = "scenic_official"
+    HERITAGE_REGISTRY = "heritage_registry"
+    BUSINESS_OFFICIAL = "business_official"
+    MANUAL_REVIEW = "manual_review"
+    OTHER = "other"
+
+
+class PriceStatus(StrEnum):
+    UNKNOWN = "unknown"
+    FREE = "free"
+    FIXED = "fixed"
+    RANGE = "range"
+    PER_PERSON = "per_person"
+    FROM_PRICE = "from_price"
+
+
+class CurrencyCode(StrEnum):
+    CNY = "CNY"
+
+
+class AvailabilityStatus(StrEnum):
+    UNKNOWN = "unknown"
+    AVAILABLE = "available"
+    SEASONAL = "seasonal"
+    APPOINTMENT_REQUIRED = "appointment_required"
+    SOLD_OUT = "sold_out"
+    INACTIVE = "inactive"
+
+
+class CommercialRelationship(StrEnum):
+    NONE = "none"
+    PUBLIC_RESOURCE = "public_resource"
+    PARTNER = "partner"
+    SPONSORED = "sponsored"
+    UNKNOWN = "unknown"
+
+
+class ResourceEditorialStatus(StrEnum):
+    DRAFT = "draft"
+    REVIEW_REQUIRED = "review_required"
+    APPROVED = "approved"
+    REJECTED = "rejected"
 
 
 class KnowledgeSourceType(StrEnum):
@@ -396,6 +486,245 @@ class ExternalPoiBinding(CatalogModel):
         return self.verification_status is PoiVerificationStatus.VERIFIED
 
 
+class ResourceProviderBinding(CatalogModel):
+    provider: ResourceIdentityProvider
+    external_id: str = Field(min_length=1, max_length=256)
+    external_name: str | None = Field(default=None, min_length=1, max_length=256)
+    provider_region_code: str | None = Field(default=None, min_length=1, max_length=64)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ResourceSource(CatalogModel):
+    source_id: StableId
+    source_type: ResourceSourceType
+    source_url: str | None = Field(default=None, min_length=1, max_length=2048)
+    external_source_id: str | None = Field(
+        default=None, min_length=1, max_length=256
+    )
+    document_reference: str | None = Field(
+        default=None, min_length=1, max_length=500
+    )
+    provider: ResourceIdentityProvider | None = None
+    retrieved_at: datetime
+    verified_at: datetime | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_source_identity(self) -> "ResourceSource":
+        if not any(
+            (self.source_url, self.external_source_id, self.document_reference)
+        ):
+            raise ValueError(
+                "resource source requires source_url, external_source_id, or "
+                "document_reference"
+            )
+        if self.source_type is ResourceSourceType.PROVIDER and self.provider is None:
+            raise ValueError("provider resource source requires provider")
+        return self
+
+
+class ResourceCoordinates(CatalogModel):
+    longitude: float = Field(ge=-180, le=180)
+    latitude: float = Field(ge=-90, le=90)
+
+
+class ResourceContactInfo(CatalogModel):
+    phone: str | None = Field(default=None, min_length=1, max_length=64)
+    email: str | None = Field(default=None, min_length=3, max_length=320)
+
+    @model_validator(mode="after")
+    def validate_contact(self) -> "ResourceContactInfo":
+        if self.phone is None and self.email is None:
+            raise ValueError("contact_info requires phone or email")
+        return self
+
+
+class PriceInfo(CatalogModel):
+    price_status: PriceStatus = PriceStatus.UNKNOWN
+    currency: CurrencyCode | None = None
+    amount: Decimal | None = Field(default=None, ge=0)
+    min_amount: Decimal | None = Field(default=None, ge=0)
+    max_amount: Decimal | None = Field(default=None, ge=0)
+    unit: str | None = Field(default=None, min_length=1, max_length=64)
+    source_ref: StableId | None = None
+    updated_at: datetime | None = None
+
+    @model_validator(mode="after")
+    def validate_price_shape(self) -> "PriceInfo":
+        if self.price_status is PriceStatus.UNKNOWN:
+            if any(
+                value is not None
+                for value in (
+                    self.currency,
+                    self.amount,
+                    self.min_amount,
+                    self.max_amount,
+                    self.unit,
+                    self.source_ref,
+                    self.updated_at,
+                )
+            ):
+                raise ValueError("unknown price cannot carry price details")
+            return self
+        if self.price_status is PriceStatus.FREE:
+            if any(
+                value is not None
+                for value in (
+                    self.amount,
+                    self.min_amount,
+                    self.max_amount,
+                    self.unit,
+                )
+            ):
+                raise ValueError("free price cannot carry an amount")
+        elif self.price_status is PriceStatus.RANGE:
+            if self.min_amount is None or self.max_amount is None:
+                raise ValueError("range price requires min_amount and max_amount")
+            if self.min_amount > self.max_amount:
+                raise ValueError("min_amount must not exceed max_amount")
+            if self.amount is not None:
+                raise ValueError("range price cannot carry amount")
+        else:
+            if self.amount is None:
+                raise ValueError(f"{self.price_status.value} price requires amount")
+            if self.min_amount is not None or self.max_amount is not None:
+                raise ValueError(
+                    f"{self.price_status.value} price cannot carry range amounts"
+                )
+        if self.currency is None:
+            raise ValueError("known price requires currency")
+        if self.source_ref is None or self.updated_at is None:
+            raise ValueError("known price requires source_ref and updated_at")
+        return self
+
+    def is_stale(self, *, as_of: datetime, max_age: timedelta) -> bool:
+        if self.updated_at is None:
+            return True
+        reference = as_of
+        updated = self.updated_at
+        if reference.tzinfo is None:
+            reference = reference.replace(tzinfo=timezone.utc)
+        if updated.tzinfo is None:
+            updated = updated.replace(tzinfo=timezone.utc)
+        return reference - updated > max_age
+
+
+class AvailabilityInfo(CatalogModel):
+    status: AvailabilityStatus = AvailabilityStatus.UNKNOWN
+    source_ref: StableId | None = None
+    updated_at: datetime | None = None
+    note: str | None = Field(default=None, min_length=1, max_length=500)
+
+    @model_validator(mode="after")
+    def validate_availability_source(self) -> "AvailabilityInfo":
+        if self.status is AvailabilityStatus.UNKNOWN:
+            if self.source_ref is not None or self.updated_at is not None:
+                raise ValueError("unknown availability cannot claim sourced freshness")
+        elif self.source_ref is None or self.updated_at is None:
+            raise ValueError("known availability requires source_ref and updated_at")
+        return self
+
+
+class ResourceBusinessHours(CatalogModel):
+    display_text: str = Field(min_length=1, max_length=500)
+    source_ref: StableId
+    updated_at: datetime
+
+
+class LocalResource(CatalogModel):
+    resource_id: StableId
+    package_id: StableId
+    resource_type: LocalResourceType
+    name: str = Field(min_length=1, max_length=256)
+    region_ids: list[StableId] = Field(min_length=1)
+    anchor_ids: list[StableId] = Field(default_factory=list)
+    provider_bindings: list[ResourceProviderBinding] = Field(default_factory=list)
+    description: str | None = Field(default=None, min_length=1, max_length=2000)
+    verification_status: ResourceVerificationStatus
+    operational_status: ResourceOperationalStatus = ResourceOperationalStatus.UNKNOWN
+    source_refs: list[StableId] = Field(default_factory=list)
+    official_url: str | None = Field(default=None, min_length=1, max_length=2048)
+    contact_info: ResourceContactInfo | None = None
+    address: str | None = Field(default=None, min_length=1, max_length=500)
+    coordinates: ResourceCoordinates | None = None
+    price_info: PriceInfo = Field(default_factory=PriceInfo)
+    availability_info: AvailabilityInfo = Field(default_factory=AvailabilityInfo)
+    business_hours: ResourceBusinessHours | None = None
+    tags: list[str] = Field(default_factory=list)
+    commercial_relationship: CommercialRelationship = CommercialRelationship.UNKNOWN
+    editorial_status: ResourceEditorialStatus = ResourceEditorialStatus.DRAFT
+    disclosure_required: StrictBool = False
+    disclosure_text: str | None = Field(default=None, min_length=1, max_length=500)
+    cultural_claim_ids: list[StableId] = Field(default_factory=list)
+    last_verified_at: datetime | None = None
+    valid_from: date | None = None
+    valid_to: date | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_resource_contract(self) -> "LocalResource":
+        if self.valid_from is not None and self.valid_to is not None:
+            if self.valid_from > self.valid_to:
+                raise ValueError("valid_from must not be after valid_to")
+        if len(set(self.region_ids)) != len(self.region_ids):
+            raise ValueError("region_ids must not contain duplicates")
+        if len(set(self.anchor_ids)) != len(self.anchor_ids):
+            raise ValueError("anchor_ids must not contain duplicates")
+        identities = {
+            (binding.provider, binding.external_id)
+            for binding in self.provider_bindings
+        }
+        if len(identities) != len(self.provider_bindings):
+            raise ValueError("provider_bindings must not contain duplicate identities")
+        if self.verification_status is ResourceVerificationStatus.VERIFIED:
+            if not self.source_refs:
+                raise ValueError("verified resource requires provenance source_refs")
+            if self.last_verified_at is None:
+                raise ValueError("verified resource requires last_verified_at")
+        if self.commercial_relationship in {
+            CommercialRelationship.PARTNER,
+            CommercialRelationship.SPONSORED,
+        }:
+            if not self.disclosure_required or self.disclosure_text is None:
+                raise ValueError(
+                    "partner or sponsored resource requires commercial disclosure"
+                )
+        return self
+
+    @property
+    def has_complete_identity(self) -> bool:
+        if self.provider_bindings:
+            return True
+        return self.resource_type in {
+            LocalResourceType.LOCAL_PRODUCT,
+            LocalResourceType.AGRICULTURAL_PRODUCT,
+            LocalResourceType.CULTURAL_PRODUCT,
+        } and bool(self.source_refs)
+
+
+def is_resource_recommendation_eligible(
+    resource: LocalResource, *, as_of: date | None = None
+) -> bool:
+    effective_date = as_of or datetime.now(timezone.utc).date()
+    return (
+        resource.verification_status is ResourceVerificationStatus.VERIFIED
+        and resource.operational_status is not ResourceOperationalStatus.INACTIVE
+        and resource.editorial_status is ResourceEditorialStatus.APPROVED
+        and (resource.valid_from is None or resource.valid_from <= effective_date)
+        and (resource.valid_to is None or resource.valid_to >= effective_date)
+        and resource.has_complete_identity
+        and bool(resource.source_refs)
+        and (
+            resource.commercial_relationship
+            not in {CommercialRelationship.PARTNER, CommercialRelationship.SPONSORED}
+            or (
+                resource.disclosure_required
+                and resource.disclosure_text is not None
+            )
+        )
+    )
+
+
 class PromotionPolicy(CatalogModel):
     status: PromotionPolicyStatus
     approved_wording: str | None = Field(
@@ -644,3 +973,5 @@ class ContentPackage(CatalogModel):
     story_chapters: list[StoryChapter] = Field(default_factory=list)
     experience_blueprints: list[ExperienceBlueprint] = Field(default_factory=list)
     experience_activities: list[ExperienceActivity] = Field(default_factory=list)
+    resource_sources: list[ResourceSource] = Field(default_factory=list)
+    local_resources: list[LocalResource] = Field(default_factory=list)

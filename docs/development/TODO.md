@@ -1,6 +1,18 @@
 # TODO
 
-Updated: 2026-08-22 18:05:52 +08:00
+Updated: 2026-08-22 19:22:34 +08:00
+
+M5 completed on 2026-08-22:
+
+- [x] Pass M5 start gates against clean checkpoint `81b0fb6`, the formal M4 itinerary, StoryPackage, and ExperiencePackage snapshots, and zero M4 safety/mutation metrics.
+- [x] Complete M5A provider-neutral LocalResource, provenance, identity, price, availability, commercial disclosure, eligibility, Catalog loading/validation, Repository filtering, and legacy compatibility.
+- [x] Pass 60 Resource tests and 255 complete Catalog tests with all M5A hard metrics at zero.
+- [x] Complete M5B runtime Amap restaurant normalization with exact identity, Provider provenance, explicit freshness, candidate-only status, and no automatic Catalog writes.
+- [x] Pass 76 M5A/M5B tests and the real Amap gate: 37 unique restaurant candidates across three formal itinerary attraction stops; all remain runtime candidates.
+- [x] Complete M5C deterministic contextual recommendation and its HARD GATE; pass 93 focused and 352 combined tests.
+- [x] Complete M5D formal Jingwei LocalResourcePackage, persistence, full regressions, documentation, and final audit.
+- [ ] Do not commit, push, or enter M6.
+- [ ] Review M5 and establish an explicit Git checkpoint; do not stage `.pytest_tmp_m5*` artifacts, whose cleanup was blocked by the local command policy.
 
 M4 completed on 2026-08-22 18:05:52 +08:00:
 
@@ -21,8 +33,8 @@ M4 completed on 2026-08-22 18:05:52 +08:00:
 - [x] Generate, validate, bind, and persist all five real Experience Activities with every hard metric at zero.
 - [x] Pass final focused (479), complete Python (537 plus 18 subtests), compileall, and frontend (26) regressions.
 - [x] Complete Experience model/generation/binding/safety and Story persistence documentation.
-- [ ] Review M4 and establish an explicit Git checkpoint; do not stage `.pytest_tmp_m4*` artifacts.
-- [ ] Do not enter M5 without a separate approved scope.
+- [x] Review M4 and establish explicit checkpoint `81b0fb6`.
+- [x] Enter M5 only under the separately approved Local Resource & Commerce scope.
 
 M3 completed 2026-08-22 14:14:56 +08:00:
 
