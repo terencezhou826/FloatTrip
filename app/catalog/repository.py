@@ -11,6 +11,8 @@ from app.catalog.models import (
     ContentPackage,
     ContentPackageManifest,
     CuratedRoute,
+    ExperienceActivity,
+    ExperienceBlueprint,
     ExternalPoiBinding,
     EvidenceRelation,
     KnowledgeClaim,
@@ -98,6 +100,23 @@ class CatalogRepository(Protocol):
 
     def list_story_chapters(self, story_id: str) -> tuple[StoryChapter, ...]: ...
 
+    def get_experience(self, experience_id: str) -> ExperienceBlueprint | None: ...
+
+    def list_experiences(
+        self,
+        *,
+        route_id: str | None = None,
+        story_id: str | None = None,
+        theme_id: str | None = None,
+        region_id: str | None = None,
+    ) -> tuple[ExperienceBlueprint, ...]: ...
+
+    def get_activity(self, activity_id: str) -> ExperienceActivity | None: ...
+
+    def list_activities(
+        self, experience_id: str
+    ) -> tuple[ExperienceActivity, ...]: ...
+
 
 class InMemoryCatalogRepository:
     def __init__(
@@ -114,6 +133,8 @@ class InMemoryCatalogRepository:
         knowledge_evidence: Iterable[KnowledgeEvidence] = (),
         story_blueprints: Iterable[StoryBlueprint] = (),
         story_chapters: Iterable[StoryChapter] = (),
+        experience_blueprints: Iterable[ExperienceBlueprint] = (),
+        experience_activities: Iterable[ExperienceActivity] = (),
         packages: Iterable[ContentPackage] = (),
     ) -> None:
         self._packages = tuple(packages)
@@ -127,6 +148,8 @@ class InMemoryCatalogRepository:
         self._knowledge_evidence = tuple(knowledge_evidence)
         self._story_blueprints = tuple(story_blueprints)
         self._story_chapters = tuple(story_chapters)
+        self._experience_blueprints = tuple(experience_blueprints)
+        self._experience_activities = tuple(experience_activities)
         self._manifests = tuple(manifests)
         self._regions_by_id = {item.id: item for item in self._regions}
         self._themes_by_id = {item.id: item for item in self._themes}
@@ -149,6 +172,12 @@ class InMemoryCatalogRepository:
         }
         self._story_chapters_by_id = {
             item.chapter_id: item for item in self._story_chapters
+        }
+        self._experience_blueprints_by_id = {
+            item.experience_id: item for item in self._experience_blueprints
+        }
+        self._experience_activities_by_id = {
+            item.activity_id: item for item in self._experience_activities
         }
         self._packages_by_id = {
             item.manifest.package_id: item for item in self._packages
@@ -304,6 +333,43 @@ class InMemoryCatalogRepository:
                     if chapter.story_id == story_id
                 ),
                 key=lambda chapter: (chapter.sequence, chapter.chapter_id),
+            )
+        )
+
+    def get_experience(self, experience_id: str) -> ExperienceBlueprint | None:
+        return self._experience_blueprints_by_id.get(experience_id)
+
+    def list_experiences(
+        self,
+        *,
+        route_id: str | None = None,
+        story_id: str | None = None,
+        theme_id: str | None = None,
+        region_id: str | None = None,
+    ) -> tuple[ExperienceBlueprint, ...]:
+        return tuple(
+            item
+            for item in self._experience_blueprints
+            if (route_id is None or item.route_id == route_id)
+            and (story_id is None or item.story_id == story_id)
+            and (theme_id is None or item.theme_id == theme_id)
+            and (region_id is None or item.region_id == region_id)
+        )
+
+    def get_activity(self, activity_id: str) -> ExperienceActivity | None:
+        return self._experience_activities_by_id.get(activity_id)
+
+    def list_activities(
+        self, experience_id: str
+    ) -> tuple[ExperienceActivity, ...]:
+        return tuple(
+            sorted(
+                (
+                    item
+                    for item in self._experience_activities
+                    if item.experience_id == experience_id
+                ),
+                key=lambda item: (item.sequence, item.activity_id),
             )
         )
 

@@ -1,6 +1,28 @@
 # TODO
 
-Updated: 2026-08-22 14:14:56 +08:00
+Updated: 2026-08-22 18:05:52 +08:00
+
+M4 completed on 2026-08-22 18:05:52 +08:00:
+
+- [x] Complete M4A Experience Domain/Catalog and its HARD GATE.
+- [x] Complete M4B deterministic and real-LLM Experience generation HARD GATE.
+- [x] Complete M4C exact POI identity binding and weather adaptation HARD GATE.
+- [x] Diagnose formal Runtime/API Run `9f2911fd-8564-4b4f-a85d-0fafcc49837e` as an E2E harness `waiting_input` versus formal `waiting_user` status mismatch; leave production Runtime semantics unchanged.
+- [x] Rerun the formal Runtime/API flow and persist real itinerary `84f32a03-2323-468f-b7ca-81459719cf1e` from successful Run `87e1e50d-e4fa-4817-8e8d-563859f46480`.
+- [x] Complete real Story generation for the rerun.
+- [x] Diagnose `observation_target_unstructured` as a generic Schema/Prompt/Validator mismatch, including a negated-observation false positive.
+- [x] Add a required four-mode ObservationTarget contract without weakening current-presence or safety validation; pass 132 focused tests.
+- [x] Pass the bounded real family-question retest with all deterministic counters zero.
+- [x] Diagnose arrival-observation initial/repair output: both retained the structured target but omitted the exact curated `target_text` from user-visible LLM prose.
+- [x] Add a deterministic renderer that exposes trusted ObservationTarget and hard safety content while preserving raw LLM output and all validators; pass 145 focused and 342 M4A-C related tests.
+- [x] Use the one-time authorization to regenerate exactly one formal StoryPackage after confirming recovery was impossible; pass all M3 hard gates.
+- [x] Add immutable SQLite StoryPackage and ExperiencePackage snapshot persistence with hashes, association validation, and recovery tests.
+- [x] Pass the single real arrival-observation gate using the deterministic renderer and the persisted Story snapshot.
+- [x] Generate, validate, bind, and persist all five real Experience Activities with every hard metric at zero.
+- [x] Pass final focused (479), complete Python (537 plus 18 subtests), compileall, and frontend (26) regressions.
+- [x] Complete Experience model/generation/binding/safety and Story persistence documentation.
+- [ ] Review M4 and establish an explicit Git checkpoint; do not stage `.pytest_tmp_m4*` artifacts.
+- [ ] Do not enter M5 without a separate approved scope.
 
 M3 completed 2026-08-22 14:14:56 +08:00:
 

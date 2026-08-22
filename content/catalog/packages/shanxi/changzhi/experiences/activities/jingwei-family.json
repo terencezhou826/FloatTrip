@@ -1,0 +1,262 @@
+{
+  "activities": [
+    {
+      "activity_id": "changzhi.experience.jingwei-family.activity.arrival-observation",
+      "experience_id": "changzhi.experience.jingwei-family",
+      "sequence": 0,
+      "title": "抵达与观察",
+      "activity_type": "observation",
+      "content_mode": "facilitation_only",
+      "story_chapter_ids": ["changzhi.story.jingwei-fajiushan.chapter.prologue"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "poi_binding_ids": ["changzhi.binding.fajiushan.amap"],
+      "required_claim_ids": [],
+      "optional_claim_ids": [],
+      "experience_goal": "让同行家庭建立共同的参观起点，不把未经验证的现场对象解释为文化证据。",
+      "instruction_intent": "请家庭成员在正常游客可达区域停留片刻，观察周围的一般环境，并说说准备如何一起完成今天的体验。",
+      "observation_target": {
+        "target_mode": "visitor_selected_visible_object",
+        "target_text": "周围的一般环境",
+        "entity_refs": [],
+        "supporting_claim_ids": [],
+        "interaction_mode": "observe_only",
+        "selection_rule": "currently_visible",
+        "safety_constraints": [
+          "no_touch",
+          "no_move",
+          "no_collect",
+          "no_remove",
+          "no_cross_barrier",
+          "normal_visitor_area_only",
+          "guardian_supervision",
+          "skippable"
+        ]
+      },
+      "visitor_output_type": "spoken_response",
+      "estimated_duration_sec": 90,
+      "audience_tags": ["family", "child", "student", "culture"],
+      "requires_guardian": true,
+      "weather_sensitive": true,
+      "risk_level": "low",
+      "safety_constraints": [
+        "仅在正常游客可达区域内完成。",
+        "儿童始终与同行成年人一起行动并保持在其视线内。"
+      ],
+      "prohibited_actions": [
+        "cross_barrier",
+        "leave_official_path",
+        "child_unsupervised",
+        "child_out_of_sight",
+        "dangerous_selfie"
+      ],
+      "materials_required": [],
+      "requires_purchase": false,
+      "requires_staff": false,
+      "media_slot_ids": [],
+      "content_status": "verified",
+      "metadata": {}
+    },
+    {
+      "activity_id": "changzhi.experience.jingwei-family.activity.text-question",
+      "experience_id": "changzhi.experience.jingwei-family",
+      "sequence": 1,
+      "title": "古籍中的发鸠之山",
+      "activity_type": "question",
+      "content_mode": "knowledge_grounded",
+      "story_chapter_ids": ["changzhi.story.jingwei-fajiushan.chapter.fajiushan"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "poi_binding_ids": ["changzhi.binding.fajiushan.amap"],
+      "required_claim_ids": [
+        "changzhi.claim.shanhaijing-fajiushan-passage",
+        "changzhi.claim.fajiushan-zhemu"
+      ],
+      "optional_claim_ids": [],
+      "experience_goal": "帮助游客区分古籍文本内容与今天现场可以直接观察的现实。",
+      "instruction_intent": "根据刚才讲述的古籍内容进行家庭问答，不要求寻找、采摘或确认现场存在任何特定植物。",
+      "observation_target": {
+        "target_mode": "none",
+        "target_text": null,
+        "entity_refs": [],
+        "supporting_claim_ids": [],
+        "interaction_mode": "none",
+        "selection_rule": null,
+        "safety_constraints": []
+      },
+      "visitor_output_type": "spoken_response",
+      "estimated_duration_sec": 180,
+      "audience_tags": ["family", "child", "student", "culture"],
+      "requires_guardian": true,
+      "weather_sensitive": false,
+      "risk_level": "low",
+      "safety_constraints": [
+        "问题只依据已提供的古籍内容。",
+        "儿童始终与同行成年人一起行动并保持在其视线内。"
+      ],
+      "prohibited_actions": [
+        "leave_official_path",
+        "pick_plants",
+        "collect_natural_specimens",
+        "child_unsupervised",
+        "child_out_of_sight"
+      ],
+      "materials_required": [],
+      "requires_purchase": false,
+      "requires_staff": false,
+      "media_slot_ids": [],
+      "content_status": "verified",
+      "metadata": {}
+    },
+    {
+      "activity_id": "changzhi.experience.jingwei-family.activity.family-question",
+      "experience_id": "changzhi.experience.jingwei-family",
+      "sequence": 2,
+      "title": "女娃与精卫亲子问答",
+      "activity_type": "family_collaboration",
+      "content_mode": "knowledge_grounded",
+      "story_chapter_ids": ["changzhi.story.jingwei-fajiushan.chapter.nuwa-jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "poi_binding_ids": ["changzhi.binding.fajiushan.amap"],
+      "required_claim_ids": [
+        "changzhi.claim.jingwei-bird-name",
+        "changzhi.claim.jingwei-bird-appearance",
+        "changzhi.claim.jingwei-nuwa",
+        "changzhi.claim.nuwa-drowning"
+      ],
+      "optional_claim_ids": [],
+      "experience_goal": "通过家庭合作回顾神话叙事中的角色、形象与转变，并保持其神话属性。",
+      "instruction_intent": "由同行成年人和儿童一起根据刚才的故事回答问题，不要求儿童离开成年人或分头寻找线索。",
+      "observation_target": {
+        "target_mode": "none",
+        "target_text": null,
+        "entity_refs": [],
+        "supporting_claim_ids": [],
+        "interaction_mode": "none",
+        "selection_rule": null,
+        "safety_constraints": []
+      },
+      "visitor_output_type": "spoken_response",
+      "estimated_duration_sec": 180,
+      "audience_tags": ["family", "child", "student", "culture"],
+      "requires_guardian": true,
+      "weather_sensitive": false,
+      "risk_level": "low",
+      "safety_constraints": [
+        "儿童与同行成年人共同完成问答。",
+        "回答只使用已讲述的神话内容。"
+      ],
+      "prohibited_actions": [
+        "child_unsupervised",
+        "child_out_of_sight",
+        "running_race"
+      ],
+      "materials_required": [],
+      "requires_purchase": false,
+      "requires_staff": false,
+      "media_slot_ids": [],
+      "content_status": "verified",
+      "metadata": {}
+    },
+    {
+      "activity_id": "changzhi.experience.jingwei-family.activity.persistence-reflection",
+      "experience_id": "changzhi.experience.jingwei-family",
+      "sequence": 3,
+      "title": "坚持的象征",
+      "activity_type": "reflection",
+      "content_mode": "facilitation_only",
+      "story_chapter_ids": ["changzhi.story.jingwei-fajiushan.chapter.fill-sea"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "poi_binding_ids": ["changzhi.binding.fajiushan.amap"],
+      "required_claim_ids": [],
+      "optional_claim_ids": [],
+      "experience_goal": "通过不改变现场的观察，引导游客形成关于坚持的现代策展反思。",
+      "instruction_intent": "在正常游客可达区域观察一种保持自然状态的普通物体，不触碰、不移动、不采集、不带走，并和家人说说它让你联想到怎样的坚持。",
+      "observation_target": {
+        "target_mode": "visitor_selected_visible_object",
+        "target_text": "保持自然状态的普通物体",
+        "entity_refs": [],
+        "supporting_claim_ids": [],
+        "interaction_mode": "observe_only",
+        "selection_rule": "currently_visible",
+        "safety_constraints": [
+          "no_touch",
+          "no_move",
+          "no_collect",
+          "no_remove",
+          "no_cross_barrier",
+          "normal_visitor_area_only",
+          "guardian_supervision",
+          "skippable"
+        ]
+      },
+      "visitor_output_type": "spoken_response",
+      "estimated_duration_sec": 150,
+      "audience_tags": ["family", "child", "student", "culture"],
+      "requires_guardian": true,
+      "weather_sensitive": true,
+      "risk_level": "low",
+      "safety_constraints": [
+        "只观察自然状态中的普通物体，不触碰、不移动、不采集、不带走。",
+        "儿童始终与同行成年人一起行动并保持在其视线内。"
+      ],
+      "prohibited_actions": [
+        "leave_official_path",
+        "pick_plants",
+        "collect_natural_specimens",
+        "remove_natural_objects",
+        "child_unsupervised",
+        "child_out_of_sight"
+      ],
+      "materials_required": [],
+      "requires_purchase": false,
+      "requires_staff": false,
+      "media_slot_ids": [],
+      "content_status": "verified",
+      "metadata": {}
+    },
+    {
+      "activity_id": "changzhi.experience.jingwei-family.activity.today-reflection",
+      "experience_id": "changzhi.experience.jingwei-family",
+      "sequence": 4,
+      "title": "今天想坚持的事",
+      "activity_type": "reflection",
+      "content_mode": "knowledge_grounded",
+      "story_chapter_ids": ["changzhi.story.jingwei-fajiushan.chapter.today"],
+      "anchor_ids": [],
+      "poi_binding_ids": [],
+      "required_claim_ids": ["changzhi.claim.jingwei-heritage-2009"],
+      "optional_claim_ids": [],
+      "experience_goal": "在已审核的当代文化传承事实之后，引导游客形成个人反思。",
+      "instruction_intent": "先回顾已讲述的当代文化传承事实，再写下或说出一件自己想坚持完成的事情；现代价值表达属于游客反思。",
+      "observation_target": {
+        "target_mode": "none",
+        "target_text": null,
+        "entity_refs": [],
+        "supporting_claim_ids": [],
+        "interaction_mode": "none",
+        "selection_rule": null,
+        "safety_constraints": []
+      },
+      "visitor_output_type": "text_response",
+      "estimated_duration_sec": 120,
+      "audience_tags": ["family", "child", "student", "culture"],
+      "requires_guardian": true,
+      "weather_sensitive": false,
+      "risk_level": "low",
+      "safety_constraints": [
+        "可在休息或离场后完成，不需要额外移动。",
+        "儿童与同行成年人共同完成。"
+      ],
+      "prohibited_actions": [
+        "child_unsupervised",
+        "child_out_of_sight",
+        "required_purchase"
+      ],
+      "materials_required": [],
+      "requires_purchase": false,
+      "requires_staff": false,
+      "media_slot_ids": [],
+      "content_status": "verified",
+      "metadata": {}
+    }
+  ]
+}

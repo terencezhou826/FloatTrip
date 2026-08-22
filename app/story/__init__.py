@@ -21,6 +21,11 @@ from app.story.models import (
     StoryValidationStatus,
 )
 from app.story.binding import StoryBindingError, StoryItineraryBinder
+from app.story.persistence import (
+    StoryPackageSnapshot,
+    StoryPackageSnapshotRepository,
+    StorySnapshotError,
+)
 from app.story.prompts import grounded_story_messages
 from app.story.service import (
     StoryGenerationError,
@@ -47,10 +52,13 @@ __all__ = [
     "StoryItineraryBinder",
     "StoryKnowledgeSnapshot",
     "StoryPackage",
+    "StoryPackageSnapshot",
+    "StoryPackageSnapshotRepository",
     "StoryPackageValidationStatus",
     "StoryPoiIdentity",
     "StoryTone",
     "StoryTriggerHint",
+    "StorySnapshotError",
     "StoryValidationError",
     "StoryValidationStatus",
     "grounded_story_messages",

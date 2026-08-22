@@ -138,6 +138,189 @@ class StoryVerificationStatus(StrEnum):
     REJECTED = "rejected"
 
 
+class ExperienceType(StrEnum):
+    EDUCATIONAL = "educational"
+    FAMILY = "family"
+    CULTURAL = "cultural"
+    NATURE = "nature"
+    HERITAGE = "heritage"
+    FOLK_CULTURE = "folk_culture"
+    FOOD_CULTURE = "food_culture"
+    CUSTOM = "custom"
+
+
+class ExperienceAudience(StrEnum):
+    GENERAL = "general"
+    FAMILY = "family"
+    CHILD = "child"
+    STUDENT = "student"
+    CULTURE = "culture"
+
+
+class ExperienceActivityType(StrEnum):
+    OBSERVATION = "observation"
+    QUESTION = "question"
+    REFLECTION = "reflection"
+    CREATIVE = "creative"
+    FAMILY_COLLABORATION = "family_collaboration"
+    PHOTO_PROMPT = "photo_prompt"
+    COMPARISON = "comparison"
+    SEEK_AND_FIND = "seek_and_find"
+    SENSORY = "sensory"
+    MICRO_CHALLENGE = "micro_challenge"
+    CONTEXT = "context"
+
+
+class ExperienceContentMode(StrEnum):
+    FACILITATION_ONLY = "facilitation_only"
+    KNOWLEDGE_GROUNDED = "knowledge_grounded"
+
+
+class ExperienceRiskLevel(StrEnum):
+    LOW = "low"
+    MODERATE = "moderate"
+    PROHIBITED = "prohibited"
+
+
+class VisitorOutputType(StrEnum):
+    NONE = "none"
+    SPOKEN_RESPONSE = "spoken_response"
+    TEXT_RESPONSE = "text_response"
+    PHOTO = "photo"
+    SELECTION = "selection"
+    OBSERVATION = "observation"
+    DRAWING = "drawing"
+
+
+class ExperienceVerificationStatus(StrEnum):
+    DRAFT = "draft"
+    REVIEW_REQUIRED = "review_required"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
+
+
+class ExperienceProhibitedAction(StrEnum):
+    CLIMB_UNOFFICIAL_FACILITY = "climb_unofficial_facility"
+    CROSS_BARRIER = "cross_barrier"
+    LEAVE_OFFICIAL_PATH = "leave_official_path"
+    ENTER_WATER = "enter_water"
+    APPROACH_HAZARDOUS_WATER = "approach_hazardous_water"
+    CROSS_ROAD = "cross_road"
+    TOUCH_WILDLIFE = "touch_wildlife"
+    FEED_WILDLIFE = "feed_wildlife"
+    PICK_PLANTS = "pick_plants"
+    COLLECT_NATURAL_SPECIMENS = "collect_natural_specimens"
+    REMOVE_NATURAL_OBJECTS = "remove_natural_objects"
+    TOUCH_OR_CLIMB_CULTURAL_PROPERTY = "touch_or_climb_cultural_property"
+    WRITE_ON_CULTURAL_PROPERTY = "write_on_cultural_property"
+    MOVE_SITE_FACILITIES = "move_site_facilities"
+    ENTER_RESTRICTED_AREA = "enter_restricted_area"
+    CHILD_UNSUPERVISED = "child_unsupervised"
+    CHILD_OUT_OF_SIGHT = "child_out_of_sight"
+    RUNNING_RACE = "running_race"
+    DANGEROUS_SELFIE = "dangerous_selfie"
+    REQUIRED_PURCHASE = "required_purchase"
+
+
+class ExperienceObservationTargetMode(StrEnum):
+    NONE = "none"
+    VERIFIED_ENTITY = "verified_entity"
+    VISITOR_SELECTED_VISIBLE_OBJECT = "visitor_selected_visible_object"
+    SPECIFIC_CURRENT_OBSERVABLE = "specific_current_observable"
+
+
+class ExperienceObservationInteractionMode(StrEnum):
+    NONE = "none"
+    OBSERVE_ONLY = "observe_only"
+
+
+class ExperienceObservationSelectionRule(StrEnum):
+    CURRENTLY_VISIBLE = "currently_visible"
+
+
+class ExperienceObservationSafetyConstraint(StrEnum):
+    NO_TOUCH = "no_touch"
+    NO_MOVE = "no_move"
+    NO_COLLECT = "no_collect"
+    NO_REMOVE = "no_remove"
+    NO_CROSS_BARRIER = "no_cross_barrier"
+    NORMAL_VISITOR_AREA_ONLY = "normal_visitor_area_only"
+    GUARDIAN_SUPERVISION = "guardian_supervision"
+    SKIPPABLE = "skippable"
+
+
+VISITOR_SELECTED_OBSERVATION_SAFETY = frozenset(
+    {
+        ExperienceObservationSafetyConstraint.NO_TOUCH,
+        ExperienceObservationSafetyConstraint.NO_MOVE,
+        ExperienceObservationSafetyConstraint.NO_COLLECT,
+        ExperienceObservationSafetyConstraint.NO_REMOVE,
+        ExperienceObservationSafetyConstraint.NO_CROSS_BARRIER,
+        ExperienceObservationSafetyConstraint.NORMAL_VISITOR_AREA_ONLY,
+        ExperienceObservationSafetyConstraint.SKIPPABLE,
+    }
+)
+
+
+class ExperienceObservationTarget(CatalogModel):
+    target_mode: ExperienceObservationTargetMode
+    target_text: str | None = Field(default=None, min_length=1, max_length=300)
+    entity_refs: tuple[StableId, ...] = ()
+    supporting_claim_ids: tuple[StableId, ...] = ()
+    interaction_mode: ExperienceObservationInteractionMode
+    selection_rule: ExperienceObservationSelectionRule | None = None
+    safety_constraints: tuple[ExperienceObservationSafetyConstraint, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_mode_contract(self) -> "ExperienceObservationTarget":
+        mode = self.target_mode
+        if mode is ExperienceObservationTargetMode.NONE:
+            if any(
+                (
+                    self.target_text,
+                    self.entity_refs,
+                    self.supporting_claim_ids,
+                    self.selection_rule,
+                    self.safety_constraints,
+                )
+            ) or self.interaction_mode is not ExperienceObservationInteractionMode.NONE:
+                raise ValueError("no-external-target mode cannot carry a target")
+            return self
+        if not self.target_text:
+            raise ValueError("observation target requires target_text")
+        if self.interaction_mode is not ExperienceObservationInteractionMode.OBSERVE_ONLY:
+            raise ValueError("external observation must be observe-only")
+        if mode is ExperienceObservationTargetMode.VERIFIED_ENTITY:
+            if not self.entity_refs:
+                raise ValueError("verified entity requires a stable identity")
+            if self.supporting_claim_ids or self.selection_rule is not None:
+                raise ValueError("verified entity cannot use selection or presence Claims")
+        elif mode is ExperienceObservationTargetMode.VISITOR_SELECTED_VISIBLE_OBJECT:
+            if self.entity_refs or self.supporting_claim_ids:
+                raise ValueError("visitor-selected target cannot assert an entity")
+            if self.selection_rule is not ExperienceObservationSelectionRule.CURRENTLY_VISIBLE:
+                raise ValueError("visitor-selected target must already be visible")
+            if not VISITOR_SELECTED_OBSERVATION_SAFETY.issubset(
+                self.safety_constraints
+            ):
+                raise ValueError("visitor-selected target lacks safety constraints")
+        elif mode is ExperienceObservationTargetMode.SPECIFIC_CURRENT_OBSERVABLE:
+            if not self.supporting_claim_ids:
+                raise ValueError(
+                    "specific current observable requires current-presence Evidence"
+                )
+            if self.entity_refs or self.selection_rule is not None:
+                raise ValueError(
+                    "specific current observable cannot use entity or selection refs"
+                )
+        return self
+
+
+PRODUCTION_EXPERIENCE_PROHIBITED_ACTIONS = frozenset(
+    ExperienceProhibitedAction
+)
+
+
 class EvidenceRelation(StrEnum):
     SUPPORTS = "supports"
     CONTRADICTS = "contradicts"
@@ -389,6 +572,57 @@ class StoryChapter(CatalogModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
+class ExperienceBlueprint(CatalogModel):
+    experience_id: StableId
+    title: str = Field(min_length=1, max_length=200)
+    package_id: StableId
+    region_id: StableId
+    theme_id: StableId
+    route_id: StableId
+    story_id: StableId
+    experience_type: ExperienceType
+    target_audiences: list[ExperienceAudience] = Field(min_length=1)
+    experience_goal: str = Field(min_length=1, max_length=1000)
+    activity_ids: list[StableId] = Field(min_length=1)
+    verification_status: ExperienceVerificationStatus
+    enabled: StrictBool
+    version: str = Field(pattern=r"^\d+\.\d+\.\d+$")
+    estimated_total_duration_sec: int = Field(ge=1, le=86400)
+    media_slot_ids: list[StableId] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ExperienceActivity(CatalogModel):
+    activity_id: StableId
+    experience_id: StableId
+    sequence: int = Field(ge=0)
+    title: str = Field(min_length=1, max_length=200)
+    activity_type: ExperienceActivityType
+    content_mode: ExperienceContentMode
+    story_chapter_ids: list[StableId] = Field(default_factory=list)
+    anchor_ids: list[StableId] = Field(default_factory=list)
+    poi_binding_ids: list[StableId] = Field(default_factory=list)
+    required_claim_ids: list[StableId] = Field(default_factory=list)
+    optional_claim_ids: list[StableId] = Field(default_factory=list)
+    experience_goal: str = Field(min_length=1, max_length=1000)
+    instruction_intent: str = Field(min_length=1, max_length=1500)
+    observation_target: ExperienceObservationTarget
+    visitor_output_type: VisitorOutputType
+    estimated_duration_sec: int = Field(ge=1, le=3600)
+    audience_tags: list[ExperienceAudience] = Field(default_factory=list)
+    requires_guardian: StrictBool
+    weather_sensitive: StrictBool
+    risk_level: ExperienceRiskLevel
+    safety_constraints: list[str] = Field(default_factory=list)
+    prohibited_actions: list[ExperienceProhibitedAction] = Field(default_factory=list)
+    materials_required: list[str] = Field(default_factory=list)
+    requires_purchase: StrictBool
+    requires_staff: StrictBool
+    media_slot_ids: list[StableId] = Field(default_factory=list)
+    content_status: ExperienceVerificationStatus
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
 class ContentPackageManifest(CatalogModel):
     package_id: StableId
     schema_version: str = Field(pattern=r"^\d+\.\d+$")
@@ -408,3 +642,5 @@ class ContentPackage(CatalogModel):
     knowledge_evidence: list[KnowledgeEvidence] = Field(default_factory=list)
     story_blueprints: list[StoryBlueprint] = Field(default_factory=list)
     story_chapters: list[StoryChapter] = Field(default_factory=list)
+    experience_blueprints: list[ExperienceBlueprint] = Field(default_factory=list)
+    experience_activities: list[ExperienceActivity] = Field(default_factory=list)

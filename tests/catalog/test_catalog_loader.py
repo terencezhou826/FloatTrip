@@ -167,7 +167,7 @@ def test_manifest_loads_and_repository_contract_is_satisfied(catalog):
     assert manifests[0].model_dump() == {
         "package_id": "shanxi.changzhi",
         "schema_version": "1.0",
-        "content_version": "0.2.0",
+        "content_version": "0.3.0",
         "region_id": "cn.shanxi.changzhi",
         "enabled": True,
     }

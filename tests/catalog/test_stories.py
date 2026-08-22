@@ -168,6 +168,7 @@ def test_qualified_claim_is_valid_story_content(catalog):
 def test_old_package_without_stories_loads_empty(tmp_path):
     root = _catalog_copy(tmp_path)
     shutil.rmtree(root / PACKAGE_ROOT / "stories")
+    shutil.rmtree(root / PACKAGE_ROOT / "experiences")
 
     catalog = FileCatalogLoader(root).load()
 

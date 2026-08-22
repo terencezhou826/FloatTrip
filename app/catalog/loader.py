@@ -55,6 +55,12 @@ class FileCatalogLoader:
             story_chapters=[
                 item for package in enabled for item in package.story_chapters
             ],
+            experience_blueprints=[
+                item for package in enabled for item in package.experience_blueprints
+            ],
+            experience_activities=[
+                item for package in enabled for item in package.experience_activities
+            ],
         )
 
     def _load_regions(self) -> list[Region]:
@@ -88,6 +94,7 @@ class FileCatalogLoader:
             }
             package_payload.update(self._load_knowledge(directory / "knowledge"))
             package_payload.update(self._load_stories(directory / "stories"))
+            package_payload.update(self._load_experiences(directory / "experiences"))
             packages.append(ContentPackage.model_validate(package_payload))
         return packages
 
@@ -136,6 +143,39 @@ class FileCatalogLoader:
             payload = self._read_json(path)
             if not isinstance(payload, dict):
                 raise CatalogLoadError(f"{path} must contain one story collection")
+            recognized = [key for key in key_map if key in payload]
+            if len(recognized) != 1 or len(payload) != 1:
+                raise CatalogLoadError(
+                    f"{path} must contain exactly one of: {', '.join(key_map)}"
+                )
+            key = recognized[0]
+            if not isinstance(payload[key], list):
+                raise CatalogLoadError(f"{path} must contain a {key} list")
+            collections[key_map[key]].extend(payload[key])
+        return collections
+
+    def _load_experiences(
+        self, experiences_root: Path
+    ) -> dict[str, list[Any]]:
+        collections: dict[str, list[Any]] = {
+            "experience_blueprints": [],
+            "experience_activities": [],
+        }
+        key_map = {
+            "blueprints": "experience_blueprints",
+            "activities": "experience_activities",
+        }
+        paths = (
+            sorted(experiences_root.rglob("*.json"))
+            if experiences_root.is_dir()
+            else []
+        )
+        for path in paths:
+            payload = self._read_json(path)
+            if not isinstance(payload, dict):
+                raise CatalogLoadError(
+                    f"{path} must contain one experience collection"
+                )
             recognized = [key for key in key_map if key in payload]
             if len(recognized) != 1 or len(payload) != 1:
                 raise CatalogLoadError(

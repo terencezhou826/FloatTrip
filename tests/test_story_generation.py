@@ -151,7 +151,7 @@ def test_chapter_context_hydrates_only_bound_claims(service):
         chapter.required_claim_ids + chapter.optional_claim_ids
     )
     assert all(hit.evidence and hit.sources for hit in context.claim_hits)
-    assert context.package_version.content_version == "0.2.0"
+    assert context.package_version.content_version == "0.3.0"
 
 
 def test_grounded_prompt_is_context_only(service):

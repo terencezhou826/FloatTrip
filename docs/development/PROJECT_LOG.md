@@ -522,3 +522,100 @@
   - Story prose is intentionally concise because factual text is restricted to approved Claim wording. No Story UI, GPS trigger, Video, Experience, Commerce, or additional route content was implemented.
   - `KNOWN_FLAKY`: Runtime concurrency did not reproduce; Runtime behavior was not modified.
 - Next recommended action: review and create an M3 Git checkpoint only after explicit approval. Do not enter M4 implicitly.
+
+## 2026-08-22 15:24:44 +08:00 - M4 stopped at M4D real Runtime gate
+
+- Files modified before the gate:
+  - Added generic Experience Catalog models, loading, Repository queries, validation, one Jingwei family Blueprint, and five Activities.
+  - Added standalone `app/experience/` evidence-safe generation, deterministic safety validation, exact-identity itinerary binding, weather adaptation, and focused tests.
+  - Updated Changzhi Catalog content version to `0.3.0` and compatibility fixtures to omit later `experiences/` data from historical snapshots.
+- Commands and results:
+  - M4 starting Story/Knowledge/Catalog gate: 197 passed.
+  - M4A Experience Catalog: 60 passed; full Catalog: 195 passed; `compileall` and `git diff --check` passed.
+  - M4B generation: 37 passed; relevant Experience/Story/Knowledge gate: 159 passed; real OpenAI-compatible generation produced five validated Activities with grounding coverage 1.0 and all fact/safety counters zero.
+  - M4C binding: 16 passed; combined generation/Story/Experience binding gate: 67 passed; exact identity, weather adaptation, and mutation counters passed.
+  - M4D formal Runtime/API Run `9f2911fd-8564-4b4f-a85d-0fafcc49837e` froze Catalog Context `0.3.0` but did not reach a terminal state within the 1200-second driver deadline.
+- Stop reason and risk:
+  - First failed gate: M4D real itinerary completion. No itinerary was available, so real StoryPackage and final ExperiencePackage generation/binding were not executed.
+  - Full Python/frontend regressions, final hardcoding audit, M4 documentation, and Git final audit were not executed after the HARD FAIL.
+  - Runtime concurrency remains `KNOWN_FLAKY`, but this timeout was a separate real Provider/Runtime non-termination and was not classified as that known flaky test.
+- Safe next action: diagnose the timed-out Run with per-node Runtime events and bounded Provider timings, then rerun M4D from the formal Runtime/API gate. Do not weaken Experience, identity, evidence, or safety validation, and do not enter M5.
+
+## 2026-08-22 16:09:20 +08:00 - M4D-0 diagnosed; M4D stopped at Experience generation
+
+- Read-only timeout diagnosis:
+  - The failed Run `9f2911fd-8564-4b4f-a85d-0fafcc49837e` used an auto-cleaned isolated database, so no record, event, or checkpoint remained in project databases.
+  - The E2E harness polled for the nonexistent `waiting_input` status while the formal Runtime protocol uses `waiting_user`; this classified the prior timeout as `A. WAITING_USER SEMANTICS`.
+  - Existing Runtime/API and checkpoint resume tests passed (`15 passed`), and Mandatory/Route Feasibility tests passed (`32 passed`). No production Runtime, Planning, SSE, or Provider code was changed.
+- Real rerun:
+  - Formal Run `87e1e50d-e4fa-4817-8e8d-563859f46480` entered `waiting_user` after Intent, resumed through `POST /api/runs/{id}/resume`, and succeeded in 174.4 seconds.
+  - Persisted itinerary: `84f32a03-2323-468f-b7ca-81459719cf1e`; 18 durable events and 16 LangGraph checkpoints were retained in an isolated diagnostic directory.
+  - Real Story generation completed successfully.
+- First new HARD FAIL:
+  - Real Experience generation failed after its single permitted repair attempt with `validation_failed: observation_target_unstructured`.
+  - Experience binding, final safety/fact/mutation audits, full regression, M4 documentation, and final Git audit were not executed.
+- Safe next action: inspect the generated Activity failure using a bounded, non-production diagnostic that records only the Activity ID and validator issue, then determine whether the prompt/schema contract has a generic fix. Do not weaken observable-reality validation or retry the full M4D chain until justified.
+
+## 2026-08-22 16:50:39 +08:00 - M4D-1 generic repair passed tests; real five-Activity gate stopped
+
+- Diagnosis and files modified:
+  - Reproduced `observation_target_unstructured` on the family-question Activity when a negated safety clause contained `不分头寻找线索`; the initial output failed and the permitted repair passed.
+  - Replaced the optional generic/Claim-grounded target list with a required, Catalog-owned four-mode ObservationTarget contract shared by curated and generated Activities.
+  - Updated `app/catalog/models.py`, `app/catalog/validation.py`, `app/catalog/__init__.py`, `app/experience/models.py`, `app/experience/prompts.py`, `app/experience/safety.py`, `app/experience/__init__.py`, the five Jingwei Experience Activity records, `tests/test_experience_generation.py`, and added `tests/test_observable_reality_contract.py`.
+- Commands and results:
+  - Read-only recovery confirmed successful Runtime Run `87e1e50d-e4fa-4817-8e8d-563859f46480`, itinerary `84f32a03-2323-468f-b7ca-81459719cf1e`, and frozen Catalog `0.3.0`; no Planning rerun occurred.
+  - `python -m compileall -q app tests`: passed; Catalog load smoke: five Activities.
+  - Observable Reality plus Experience generation: 56 passed.
+  - Experience Domain/Generation/Observable/Safety/Binding with repository-local basetemp: 132 passed.
+  - Bounded real family-question retest: passed with `target_mode=none` and all grounding/safety counters zero.
+- First new HARD FAIL:
+  - Real five-Activity generation stopped on the first Activity, arrival-observation, after the single permitted repair with `validation_failed: observation_target_not_visible`.
+  - No ExperiencePackage was produced; final regressions, hardcoding audit, M4 completion docs, checkpoint, and M5 were not executed.
+- Current risk and safe next action:
+  - The complete structured target contract is now present, but the Provider did not keep the curated target text visible after one repair. Do not weaken the Validator or retry the full five-Activity flow.
+  - Next perform one bounded, non-sensitive capture of arrival-observation initial/repair structured fields to determine whether the remaining mismatch is Prompt wording or Provider adherence.
+
+## 2026-08-22 17:07:40 +08:00 - M4D-2 renderer gates passed; stopped before real retest
+
+- Diagnosis and files modified:
+  - Confirmed the arrival-observation initial and repair outputs retained the structured `visitor_selected_visible_object` target but did not reproduce the exact curated `target_text`; this is display integrity, not fact safety.
+  - Added `RenderedExperienceActivity` and a generic deterministic renderer that combines the trusted ObservationTarget and hard safety constraints with validated LLM facilitation prose. Raw generation remains embedded for audit.
+  - Kept `observation_target_not_visible` on rendered output. Raw output still passes the existing fact, Citation, qualifier, text-safety, identity, and current-presence Evidence validators.
+  - Updated `app/experience/{models,rendering,service,safety,prompts,__init__}.py` and focused Experience tests. No Catalog content, Knowledge, Story, Planning, Runtime, Web, or Mobile logic was changed in M4D-2.
+- Commands and results:
+  - `python -m pytest tests/test_observable_reality_contract.py tests/test_experience_generation.py tests/test_experience_binding.py tests/catalog/test_experiences.py -q --basetemp=.pytest_tmp_m4d2_contract`: 145 passed.
+  - `python -m pytest tests/catalog tests/test_knowledge_answering.py tests/test_story_generation.py tests/test_story_binding.py tests/test_observable_reality_contract.py tests/test_experience_generation.py tests/test_experience_binding.py -q --basetemp=.pytest_tmp_m4d2_m4abc`: 342 passed.
+  - `python -m compileall -q app tests`: passed.
+  - Read-only preserved-database audit found one itinerary, 18 Runtime events, 16 LangGraph checkpoints, and no persisted GeneratedStory or StoryPackage table/file.
+- First failed gate:
+  - The required formal Story input/snapshot for the bounded real arrival Activity is no longer reusable. Only the real itinerary and Planning checkpoints persist; replacing the missing Story with a test fixture or regenerating it would violate the explicit M4D-2 gate.
+  - No real Activity Provider call, five-Activity generation, binding, final regression, M4 completion documentation, commit, or push was performed.
+- Safe next action: obtain or explicitly authorize reconstruction of the exact same-version formal GeneratedStory/StoryPackage snapshot, then resume at the single arrival-observation real gate. Do not rerun Planning and do not substitute test fixture content for a real Story snapshot.
+
+## 2026-08-22 18:05:52 +08:00 - M4 Evidence-Safe Experience Engine Complete
+
+- Formal recovery and persistence:
+  - Final read-only search confirmed the earlier formal Story snapshot was not persisted. User authorized exactly one same-version regeneration; that one call succeeded and was not repeated.
+  - Formal Run `87e1e50d-e4fa-4817-8e8d-563859f46480`, itinerary `84f32a03-2323-468f-b7ca-81459719cf1e`, and frozen Catalog `shanxi.changzhi / 1.0 / 0.3.0` matched.
+  - Added generic immutable SQLite StoryPackage and ExperiencePackage snapshot repositories, canonical SHA-256 hashes, Run/itinerary/Catalog association checks, corruption detection, and no-LLM recovery.
+  - Persisted StoryPackage `story-package.0d7a0337095e6a1e32ccdda8` with hash `214abccd53bd1b285c33cd2918166b2da38672040e4c0056752065ac170e754b`.
+  - Persisted ExperiencePackage `experience-package.abbc847bc8ab2e51de0e0733` with hash `209fe0b54622eaacb493a74fd54de25cbabbe39c199e75d718047b2861014456`.
+- Real generation and binding:
+  - Regenerated five Story Chapters from production-eligible Knowledge, bound four spatial Chapters through exact `amap / B0FFF49AFB`, and retained one context-only Chapter.
+  - The bounded arrival-observation real gate passed: trusted `周围的一般环境` was rendered exactly, while the LLM retained natural facilitation wording. Guardian, no-touch, no-move, and environmental-safety visibility passed.
+  - Generated five real Experience Activities from the same persisted Story hash, placed four by exact Provider identity, retained one context-only reflection, and persisted the final package.
+  - Production/internal-only leakage, Citation hallucination, qualifier violation, Context fact violation, mythology promotion, all safety/hazard counters, name-only identity, dynamic POI forcing, and Knowledge/Story/itinerary/Planning mutation were all 0.
+- Files modified:
+  - Added `app/core/package_snapshots.py`, Story/Experience persistence modules and exports, Runtime SQLite snapshot tables, Experience Story snapshot identity fields, persistence tests, and five M4 documentation files.
+  - Completed the deterministic Experience renderer, rendered model, validator responsibility split, prompts, and related tests from M4D-2.
+- Commands and results:
+  - Persistence/Binder: 45 passed. Persistence plus Runtime compatibility: 53 passed. M4 Domain gate: 357 passed. Persisted StoryPackage input gate: 52 passed.
+  - Final focused regression: 479 passed, 5 existing warnings.
+  - Complete Python: 537 passed, 18 subtests passed, 5 existing warnings.
+  - Frontend Node: 26 passed. `python -m compileall -q app tests frontend mobile-app`: passed.
+  - Runtime concurrency `KNOWN_FLAKY` did not reproduce. Existing FastAPI lifespan and local JWT warnings remain unrelated.
+- Current risks:
+  - Snapshot persistence currently has Repository/domain APIs but no frontend read surface; this is expected for M4.
+  - Provider facilitation and deterministic safety wording may repeat slightly; this is a documented soft warning, not a safety failure.
+  - Repository-local `.pytest_tmp_m4*` directories remain untracked test artifacts because this environment blocks their deletion. They must not be staged.
+- Next recommended action: review the complete M4 diff and establish an explicit Git checkpoint. Enter M5 only after that checkpoint and a separately approved M5 scope.

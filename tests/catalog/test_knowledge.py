@@ -40,6 +40,7 @@ def _catalog_copy(tmp_path: Path) -> Path:
 
 def _remove_stories(root: Path) -> None:
     shutil.rmtree(root / PACKAGE_ROOT / "stories")
+    shutil.rmtree(root / PACKAGE_ROOT / "experiences")
 
 
 def _read_json(path: Path) -> dict:

@@ -1,0 +1,29 @@
+{
+  "blueprints": [
+    {
+      "experience_id": "changzhi.experience.jingwei-family",
+      "title": "精卫亲子现场体验",
+      "package_id": "shanxi.changzhi",
+      "region_id": "cn.shanxi.changzhi.changzi",
+      "theme_id": "changzhi.jingwei",
+      "route_id": "changzhi.route.jingwei-fajiushan",
+      "story_id": "changzhi.story.jingwei-fajiushan",
+      "experience_type": "family",
+      "target_audiences": ["family", "child", "student", "culture"],
+      "experience_goal": "通过安全的观察、问答、想象和反思活动，帮助游客理解经过审核的精卫神话叙事，并把坚持作为现代策展主题进行思考。",
+      "activity_ids": [
+        "changzhi.experience.jingwei-family.activity.arrival-observation",
+        "changzhi.experience.jingwei-family.activity.text-question",
+        "changzhi.experience.jingwei-family.activity.family-question",
+        "changzhi.experience.jingwei-family.activity.persistence-reflection",
+        "changzhi.experience.jingwei-family.activity.today-reflection"
+      ],
+      "verification_status": "verified",
+      "enabled": true,
+      "version": "0.1.0",
+      "estimated_total_duration_sec": 720,
+      "media_slot_ids": [],
+      "metadata": {}
+    }
+  ]
+}

@@ -11,6 +11,14 @@ from app.catalog.models import (
     ContentPackage,
     CuratedRoute,
     EvidenceRelation,
+    ExperienceActivity,
+    ExperienceAudience,
+    ExperienceBlueprint,
+    ExperienceContentMode,
+    ExperienceObservationSafetyConstraint,
+    ExperienceObservationTargetMode,
+    ExperienceRiskLevel,
+    ExperienceVerificationStatus,
     ExternalPoiBinding,
     KnowledgeClaim,
     KnowledgeEvidence,
@@ -52,6 +60,12 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
     story_chapters = [
         item for package in packages for item in package.story_chapters
     ]
+    experience_blueprints = [
+        item for package in packages for item in package.experience_blueprints
+    ]
+    experience_activities = [
+        item for package in packages for item in package.experience_activities
+    ]
     issues: list[str] = []
 
     _check_duplicate_ids(
@@ -65,6 +79,8 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
         knowledge_evidence,
         story_blueprints,
         story_chapters,
+        experience_blueprints,
+        experience_activities,
         issues,
     )
 
@@ -80,6 +96,12 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
     bindings_by_id = {item.binding_id: item for item in poi_bindings}
     stories_by_id = {item.story_id: item for item in story_blueprints}
     chapters_by_id = {item.chapter_id: item for item in story_chapters}
+    experiences_by_id = {
+        item.experience_id: item for item in experience_blueprints
+    }
+    activities_by_id = {
+        item.activity_id: item for item in experience_activities
+    }
 
     for region in regions:
         if region.parent_id and region.parent_id not in region_ids:
@@ -200,6 +222,18 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
         in {"allowed", "allowed_with_qualification"}
         and claim.claim_id in supported_verified_claim_ids
     }
+    current_presence_claim_ids = {
+        evidence.claim_id
+        for evidence in knowledge_evidence
+        if evidence.verification_status is KnowledgeVerificationStatus.VERIFIED
+        and evidence.evidence_relation is EvidenceRelation.SUPPORTS
+        and evidence.metadata.get("current_presence_verified") is True
+        and (
+            source := sources_by_id.get(evidence.source_id)
+        ) is not None
+        and source.verification_status is KnowledgeVerificationStatus.VERIFIED
+        and evidence.claim_id in production_claim_ids
+    }
 
     binding_identities: dict[tuple[str, str], set[str]] = {}
     for binding in poi_bindings:
@@ -271,6 +305,7 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
                 routes_by_id,
                 claim_ids,
                 production_claim_ids,
+                current_presence_claim_ids,
                 issues,
             )
         for chapter in package.story_chapters:
@@ -278,6 +313,37 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
                 chapter,
                 package_story_ids,
                 stories_by_id,
+                anchor_ids,
+                bindings_by_id,
+                claim_ids,
+                production_claim_ids,
+                issues,
+            )
+        package_experience_ids = {
+            item.experience_id for item in package.experience_blueprints
+        }
+        package_activity_ids = {
+            item.activity_id for item in package.experience_activities
+        }
+        for experience in package.experience_blueprints:
+            _validate_experience(
+                experience,
+                package.manifest.package_id,
+                package_activity_ids,
+                activities_by_id,
+                region_ids,
+                theme_ids,
+                routes_by_id,
+                stories_by_id,
+                issues,
+            )
+        for activity in package.experience_activities:
+            _validate_experience_activity(
+                activity,
+                package_experience_ids,
+                experiences_by_id,
+                stories_by_id,
+                chapters_by_id,
                 anchor_ids,
                 bindings_by_id,
                 claim_ids,
@@ -300,6 +366,8 @@ def _check_duplicate_ids(
     knowledge_evidence: list[KnowledgeEvidence],
     story_blueprints: list[StoryBlueprint],
     story_chapters: list[StoryChapter],
+    experience_blueprints: list[ExperienceBlueprint],
+    experience_activities: list[ExperienceActivity],
     issues: list[str],
 ) -> None:
     typed_items = (
@@ -313,6 +381,14 @@ def _check_duplicate_ids(
         + [("knowledge_evidence", item.evidence_id) for item in knowledge_evidence]
         + [("story", item.story_id) for item in story_blueprints]
         + [("story_chapter", item.chapter_id) for item in story_chapters]
+        + [
+            ("experience", item.experience_id)
+            for item in experience_blueprints
+        ]
+        + [
+            ("experience_activity", item.activity_id)
+            for item in experience_activities
+        ]
     )
     counts = Counter(item_id for _, item_id in typed_items)
     for duplicate in sorted(item_id for item_id, count in counts.items() if count > 1):
@@ -330,6 +406,7 @@ def _validate_story(
     routes_by_id: dict[str, CuratedRoute],
     claim_ids: set[str],
     production_claim_ids: set[str],
+    current_presence_claim_ids: set[str],
     issues: list[str],
 ) -> None:
     if story.package_id != package_id:
@@ -458,6 +535,325 @@ def _check_story_claim(
         issues.append(f"story item {owner_id} references missing Claim {claim_id}")
     elif claim_id not in production_claim_ids:
         issues.append(f"story item {owner_id} Claim {claim_id} is not production eligible")
+
+
+def _validate_experience(
+    experience: ExperienceBlueprint,
+    package_id: str,
+    package_activity_ids: set[str],
+    activities_by_id: dict[str, ExperienceActivity],
+    region_ids: set[str],
+    theme_ids: set[str],
+    routes_by_id: dict[str, CuratedRoute],
+    stories_by_id: dict[str, StoryBlueprint],
+    issues: list[str],
+) -> None:
+    if experience.package_id != package_id:
+        issues.append(
+            f"experience {experience.experience_id} package_id "
+            f"{experience.package_id} does not match owning package {package_id}"
+        )
+    if experience.region_id not in region_ids:
+        issues.append(
+            f"experience {experience.experience_id} references missing region "
+            f"{experience.region_id}"
+        )
+    if experience.theme_id not in theme_ids:
+        issues.append(
+            f"experience {experience.experience_id} references missing theme "
+            f"{experience.theme_id}"
+        )
+    route = routes_by_id.get(experience.route_id)
+    if route is None:
+        issues.append(
+            f"experience {experience.experience_id} references missing route "
+            f"{experience.route_id}"
+        )
+    elif route.theme_id != experience.theme_id:
+        issues.append(
+            f"experience {experience.experience_id} theme does not match route theme"
+        )
+    story = stories_by_id.get(experience.story_id)
+    if story is None:
+        issues.append(
+            f"experience {experience.experience_id} references missing story "
+            f"{experience.story_id}"
+        )
+    elif (
+        story.route_id != experience.route_id
+        or story.theme_id != experience.theme_id
+        or story.region_id != experience.region_id
+    ):
+        issues.append(
+            f"experience {experience.experience_id} does not match Story scope"
+        )
+    if (
+        experience.enabled
+        and experience.verification_status
+        is not ExperienceVerificationStatus.VERIFIED
+    ):
+        issues.append(
+            f"enabled experience {experience.experience_id} must be verified"
+        )
+    for duplicate in _duplicates(experience.activity_ids):
+        issues.append(
+            f"experience {experience.experience_id} repeats activity {duplicate}"
+        )
+    for activity_id in experience.activity_ids:
+        if activity_id not in package_activity_ids:
+            issues.append(
+                f"experience {experience.experience_id} references missing activity "
+                f"{activity_id}"
+            )
+    activities = [
+        activities_by_id[activity_id]
+        for activity_id in experience.activity_ids
+        if activity_id in activities_by_id
+    ]
+    sequences = [activity.sequence for activity in activities]
+    if len(sequences) != len(set(sequences)):
+        issues.append(
+            f"experience {experience.experience_id} has duplicate activity sequence"
+        )
+    if sorted(sequences) != list(range(len(sequences))):
+        issues.append(
+            f"experience {experience.experience_id} activity sequence must be "
+            "contiguous from 0"
+        )
+    duration = sum(item.estimated_duration_sec for item in activities)
+    if activities and duration != experience.estimated_total_duration_sec:
+        issues.append(
+            f"experience {experience.experience_id} estimated duration does not "
+            "match activities"
+        )
+
+
+def _validate_experience_activity(
+    activity: ExperienceActivity,
+    package_experience_ids: set[str],
+    experiences_by_id: dict[str, ExperienceBlueprint],
+    stories_by_id: dict[str, StoryBlueprint],
+    chapters_by_id: dict[str, StoryChapter],
+    anchor_ids: set[str],
+    bindings_by_id: dict[str, ExternalPoiBinding],
+    claim_ids: set[str],
+    production_claim_ids: set[str],
+    issues: list[str],
+) -> None:
+    if activity.experience_id not in package_experience_ids:
+        issues.append(
+            f"experience activity {activity.activity_id} references missing experience "
+            f"{activity.experience_id}"
+        )
+        return
+    experience = experiences_by_id[activity.experience_id]
+    if activity.activity_id not in experience.activity_ids:
+        issues.append(f"orphan experience activity {activity.activity_id}")
+    if (
+        experience.enabled
+        and activity.content_status is not ExperienceVerificationStatus.VERIFIED
+    ):
+        issues.append(
+            f"activity {activity.activity_id} in enabled experience must be verified"
+        )
+    story = stories_by_id.get(experience.story_id)
+    for chapter_id in activity.story_chapter_ids:
+        chapter = chapters_by_id.get(chapter_id)
+        if chapter is None:
+            issues.append(
+                f"experience activity {activity.activity_id} references missing story "
+                f"chapter {chapter_id}"
+            )
+        elif story is None or chapter_id not in story.chapter_ids:
+            issues.append(
+                f"experience activity {activity.activity_id} references chapter "
+                "outside Story"
+            )
+    for anchor_id in activity.anchor_ids:
+        if anchor_id not in anchor_ids:
+            issues.append(
+                f"experience activity {activity.activity_id} references missing anchor "
+                f"{anchor_id}"
+            )
+    for binding_id in activity.poi_binding_ids:
+        binding = bindings_by_id.get(binding_id)
+        if binding is None:
+            issues.append(
+                f"experience activity {activity.activity_id} references missing POI "
+                f"binding {binding_id}"
+            )
+        elif not binding.is_runtime_eligible:
+            issues.append(
+                f"experience activity {activity.activity_id} POI binding "
+                f"{binding_id} is not verified"
+            )
+        elif binding.anchor_id not in activity.anchor_ids:
+            issues.append(
+                f"experience activity {activity.activity_id} POI binding "
+                f"{binding_id} does not belong to an activity anchor"
+            )
+    if set(activity.required_claim_ids).intersection(activity.optional_claim_ids):
+        issues.append(
+            f"experience activity {activity.activity_id} repeats a required Claim "
+            "as optional"
+        )
+    bound_claim_ids = set(activity.required_claim_ids) | set(
+        activity.optional_claim_ids
+    )
+    if (
+        activity.content_mode is ExperienceContentMode.KNOWLEDGE_GROUNDED
+        and not activity.required_claim_ids
+    ):
+        issues.append(
+            f"knowledge-grounded activity {activity.activity_id} requires a Claim"
+        )
+    if (
+        activity.content_mode is ExperienceContentMode.FACILITATION_ONLY
+        and bound_claim_ids
+    ):
+        issues.append(
+            f"facilitation-only activity {activity.activity_id} cannot bind Claims"
+        )
+    if story is not None and not bound_claim_ids.issubset(story.knowledge_claim_ids):
+        issues.append(
+            f"experience activity {activity.activity_id} references Claim outside Story"
+        )
+    chapter_claim_ids = {
+        claim_id
+        for chapter_id in activity.story_chapter_ids
+        if (chapter := chapters_by_id.get(chapter_id)) is not None
+        for claim_id in chapter.required_claim_ids + chapter.optional_claim_ids
+    }
+    if activity.story_chapter_ids and not bound_claim_ids.issubset(chapter_claim_ids):
+        issues.append(
+            f"experience activity {activity.activity_id} references Claim outside "
+            "bound Story Chapter"
+        )
+    for claim_id in bound_claim_ids:
+        if claim_id not in claim_ids:
+            issues.append(
+                f"experience activity {activity.activity_id} references missing Claim "
+                f"{claim_id}"
+            )
+        elif claim_id not in production_claim_ids:
+            issues.append(
+                f"experience activity {activity.activity_id} Claim {claim_id} is not "
+                "production eligible"
+            )
+    target = activity.observation_target
+    if target.target_mode is ExperienceObservationTargetMode.VERIFIED_ENTITY:
+        allowed_refs = set(activity.anchor_ids + activity.poi_binding_ids)
+        if not set(target.entity_refs).issubset(allowed_refs):
+            issues.append(
+                f"experience activity {activity.activity_id} observation identity "
+                "is not bound to the Activity"
+            )
+    elif (
+        target.target_mode
+        is ExperienceObservationTargetMode.VISITOR_SELECTED_VISIBLE_OBJECT
+    ):
+        if (
+            activity.requires_guardian
+            and ExperienceObservationSafetyConstraint.GUARDIAN_SUPERVISION
+            not in target.safety_constraints
+        ):
+            issues.append(
+                f"experience activity {activity.activity_id} visitor-selected "
+                "observation requires guardian supervision"
+            )
+    elif (
+        target.target_mode
+        is ExperienceObservationTargetMode.SPECIFIC_CURRENT_OBSERVABLE
+    ):
+        if not set(target.supporting_claim_ids).issubset(bound_claim_ids):
+            issues.append(
+                f"experience activity {activity.activity_id} current observation "
+                "references Claim outside Activity"
+            )
+        for claim_id in target.supporting_claim_ids:
+            if claim_id not in current_presence_claim_ids:
+                issues.append(
+                    f"experience activity {activity.activity_id} current observation "
+                    f"Claim {claim_id} lacks verified current-presence Evidence"
+                )
+    if experience.enabled:
+        if activity.risk_level is not ExperienceRiskLevel.LOW:
+            issues.append(
+                f"production activity {activity.activity_id} must have low risk"
+            )
+        if activity.requires_purchase:
+            issues.append(
+                f"production activity {activity.activity_id} cannot require purchase"
+            )
+        child_audiences = {
+            ExperienceAudience.FAMILY,
+            ExperienceAudience.CHILD,
+            ExperienceAudience.STUDENT,
+        }
+        if child_audiences.intersection(experience.target_audiences) and not (
+            activity.requires_guardian
+        ):
+            issues.append(
+                f"child activity {activity.activity_id} requires guardian"
+            )
+    unsafe = _unsafe_experience_intent(activity.instruction_intent)
+    if unsafe:
+        issues.append(
+            f"experience activity {activity.activity_id} contains unsafe instruction "
+            f"{unsafe}"
+        )
+    if _OBSERVABLE_REALITY_PATTERN.search(activity.instruction_intent):
+        issues.append(
+            f"experience activity {activity.activity_id} converts narrative into "
+            "current observable reality"
+        )
+
+
+_UNSAFE_EXPERIENCE_MARKERS = (
+    "攀爬",
+    "翻越",
+    "跨过护栏",
+    "进入水域",
+    "离开官方步道",
+    "离开步道",
+    "靠近危险水边",
+    "穿越道路",
+    "接触野生动物",
+    "投喂野生动物",
+    "采摘",
+    "折树枝",
+    "采集自然标本",
+    "带走石块",
+    "触摸文物",
+    "攀爬文物",
+    "刻字",
+    "涂写",
+    "移动景区设施",
+    "进入限制区域",
+    "自己去寻找",
+    "分头行动",
+    "奔跑竞赛",
+    "危险自拍",
+    "购买商品才能完成",
+)
+_SAFETY_NEGATIONS = ("不", "不得", "不要", "禁止", "无需", "无须", "避免")
+_OBSERVABLE_REALITY_PATTERN = re.compile(
+    r"(?:寻找|找到|看看|观察|拍摄).{0,12}(?:柘木|精卫.{0,6}石头|女娃.{0,6}溺水|炎帝.{0,6}居住)"
+)
+
+
+def _unsafe_experience_intent(text: str) -> str | None:
+    clauses = re.split(r"[。！？；，]", text)
+    for clause in clauses:
+        for marker in _UNSAFE_EXPERIENCE_MARKERS:
+            index = clause.find(marker)
+            if index < 0:
+                continue
+            prefix = clause[:index]
+            if any(negation in prefix for negation in _SAFETY_NEGATIONS):
+                continue
+            return marker
+    return None
 
 
 def _check_region_cycles(regions: list[Region], issues: list[str]) -> None:

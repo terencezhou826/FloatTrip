@@ -1,7 +1,7 @@
 {
   "package_id": "shanxi.changzhi",
   "schema_version": "1.0",
-  "content_version": "0.2.0",
+  "content_version": "0.3.0",
   "region_id": "cn.shanxi.changzhi",
   "enabled": true
 }

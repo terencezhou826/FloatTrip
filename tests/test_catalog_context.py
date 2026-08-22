@@ -50,7 +50,7 @@ def test_jingwei_route_resolves_complete_versioned_context(jingwei_context):
     assert jingwei_context.model_dump(mode="json") == {
         "package_id": PACKAGE_ID,
         "schema_version": "1.0",
-        "content_version": "0.2.0",
+        "content_version": "0.3.0",
         "region_id": "cn.shanxi.changzhi",
         "theme_id": "changzhi.jingwei",
         "route_id": ROUTE_ID,
@@ -109,7 +109,7 @@ def test_context_serializes_through_travel_plan_state(jingwei_context):
     restored = TravelPlanState.model_validate_json(state.model_dump_json())
 
     assert restored.catalog_context == jingwei_context
-    assert restored.model_dump(mode="json")["catalog_context"]["content_version"] == "0.2.0"
+    assert restored.model_dump(mode="json")["catalog_context"]["content_version"] == "0.3.0"
 
 
 def test_ordinary_state_remains_context_free_and_unchanged():
@@ -157,7 +157,7 @@ def test_itinerary_checkpoint_freezes_context_and_omits_absent_context(
     with get_conn(db_path) as conn:
         themed = load_itinerary(themed_id, conn)
         ordinary = load_itinerary(ordinary_id, conn)
-    assert themed["planner_state"]["catalog_context"]["content_version"] == "0.2.0"
+    assert themed["planner_state"]["catalog_context"]["content_version"] == "0.3.0"
     assert "catalog_context" not in ordinary["planner_state"]
 
 
