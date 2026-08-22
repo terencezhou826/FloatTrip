@@ -122,6 +122,32 @@ class ExperiencePackageSnapshotRepository:
             raise ExperienceSnapshotError("ExperiencePackage Catalog version mismatch")
         return snapshot
 
+    def load_for_run(
+        self,
+        run_id: str,
+        itinerary_id: str,
+        story_package_id: str,
+        *,
+        expected_catalog_version: CatalogVersionSnapshot | None = None,
+    ) -> ExperiencePackageSnapshot:
+        with get_conn(self.db_path) as conn:
+            row = conn.execute(
+                """SELECT package_id FROM experience_package_snapshots
+                   WHERE run_id=? AND itinerary_id=? AND story_package_id=?""",
+                (run_id, itinerary_id, story_package_id),
+            ).fetchone()
+        if row is None:
+            raise ExperienceSnapshotError(
+                "ExperiencePackage snapshot not found for formal run"
+            )
+        return self.load(
+            row["package_id"],
+            expected_run_id=run_id,
+            expected_itinerary_id=itinerary_id,
+            expected_story_package_id=story_package_id,
+            expected_catalog_version=expected_catalog_version,
+        )
+
 
 def _require_story_association(
     conn: sqlite3.Connection, package: ExperiencePackage

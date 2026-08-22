@@ -1,5 +1,28 @@
 # Project Log
 
+## 2026-08-22 19:53:11 +08:00 - M6C snapshot UI hard gate passed
+
+- Added the ownership-protected `/api/runs/{run_id}/trip` read API, exact Story/Experience/Resource association checks, and Experience `load_for_run` persistence symmetry.
+- Added a unified four-layer Trip UI using persisted itinerary, actual coordinates and road metrics, Story chapters/citations/qualifiers, trusted Experience observation and visible safety text, and optional Resource unknown/freshness/detour/disclosure states.
+- Formal database read: Run `87e1e50d-e4fa-4817-8e8d-563859f46480` returned itinerary `84f32a03-2323-468f-b7ca-81459719cf1e`, five Story chapters, five Experience Activities, and five Resource recommendations with all three expected hashes unchanged.
+- Tests/results: 37 persistence/API/ownership tests and 32 frontend state tests passed; compileall, `git diff --check`, and frontend generation/Provider/hardcoding scans passed.
+- Added the five required documents under `docs/product/`. Next: M6D real-browser and complete regression gates.
+
+## 2026-08-22 19:55:00 +08:00 - M6B Runtime journey UX hard gate passed
+
+- Added a route form mapped to the existing Planning request snapshot, including explicit Catalog package/route selection, date range, party, pace, interests, and optional budget preference.
+- Added formal Run creation, durable event recovery, latest-sequence SSE subscription/reconnect, `waiting_user` structured input, official resume, failure retry, and stable `/my-trips/{run_id}` recovery. Refresh recovery contains no Run creation path.
+- Tests/results: 29 focused Runtime/API/frontend-contract tests and 32 frontend state tests passed; compileall and `git diff --check` passed. Provider/LLM/hardcoded fallback scan had zero findings.
+- Next: M6C may expose only ownership-protected persisted itinerary/package reads and must preserve every upstream snapshot association.
+
+## 2026-08-22 19:42:44 +08:00 - M6A Product Contract hard gate passed
+
+- Added a generic, read-only Catalog product projection and public list/detail APIs. Route capability and availability are derived from verified POI bindings, production-eligible Knowledge, and enabled verified Story/Experience data; no route-name condition drives READY.
+- Added the Catalog-driven product home, four-route collection, route preview, loading/error/empty/retry states, accessible status labels, and SPA routes under `/myth-journeys`.
+- Files changed in this phase: `app/product/`, `app/api/catalog_routes.py`, `app/main.py`, `frontend/{api,index,main,navigation-state,product-state,product-pages,style}.*`, and focused Product/frontend tests.
+- Commands/results: complete start baseline 641 passed plus the documented Runtime concurrency flaky; frontend baseline 26 passed; formal Story/Experience/Resource snapshots loaded with unchanged hashes; M6A gate 262 Python and 30 frontend tests passed; compileall, secret/hardcoding scan, and `git diff --check` passed.
+- Risk: the existing Runtime concurrency timing test remains `KNOWN_FLAKY`; it was not modified. Proceed to M6B only through the existing Runtime/SSE contracts.
+
 ## 2026-08-22 12:43:06 +08:00 - M2B Evidence-Aware Knowledge Retrieval
 
 - Files modified:
@@ -662,3 +685,26 @@
 - Workspace note:
   - Cleanup of repository-local `.pytest_tmp_m5*` directories was rejected by the environment command policy. They remain untracked test artifacts and must not be staged.
 - Next recommended action: review M5 and establish an explicit Git checkpoint. Do not commit/push automatically and do not enter M6 without a separately approved scope.
+## 2026-08-22 20:28:22 +08:00 - M6 Product Frontend and User Journey complete
+
+- M6D real-browser validation:
+  - Used the formal M5 snapshot database and the existing owner account; no Story, Experience, or Resource regeneration occurred.
+  - Catalog homepage, all four route cards, Jingwei READY state, three truthful coming-soon previews, route detail, and the formal trip form passed.
+  - Created Runtime Run `a1ee2516-d526-4869-a51a-fa8ff6bfec64`; formal `waiting_user` and `/resume` retained the same Run, then produced itinerary `5c037699-8161-47b8-858f-30f31992663b` with the mandatory Fajiushan identity and road travel times.
+  - The new Run truthfully exposed missing Story/Experience/Resource packages. The persisted formal M5 Run `87e1e50d-e4fa-4817-8e8d-563859f46480` displayed itinerary `84f32a03-2323-468f-b7ca-81459719cf1e`, five Story chapters, five Experience activities, and five optional resource recommendations.
+  - Refresh preserved Story `story-package.0d7a0337095e6a1e32ccdda8` / `214abccd53bd1b285c33cd2918166b2da38672040e4c0056752065ac170e754b`, Experience `experience-package.abbc847bc8ab2e51de0e0733` / `209fe0b54622eaacb493a74fd54de25cbabbe39c199e75d718047b2861014456`, and Resource `resource-package.c0a72c99ca7b3accbe323263` / `fd4424b3b4d9c949ea1e7250c1561198a8b7297c351a5151f13b4f8492ee55ca` unchanged.
+  - `1440x900`, `1024x768`, `768x1024`, and `390x844` had no horizontal overflow, clipped primary controls, or critical map/content overlap. Labels, button names, headings, and visible focus styles passed the accessibility smoke review.
+  - Missing route, missing Run, and partial package states remained truthful and recoverable. Browser console had only the existing React/Babel development warnings.
+- Security, behavior, and quality gates:
+  - Served HTML, scripts, Catalog responses, and configuration were scanned against configured secret values; no Amap Web Service, LLM, JWT, or other server secret leaked. Frontend LLM/cultural generation and route-specific READY conditionals remained zero.
+  - The user journey clearly exposes where to go, why the route matters, what to do, optional nearby resources, and unknown operational/commercial data.
+  - Observable key-page readiness was approximately 0.7-0.8 seconds locally; no SQLite dump or cross-user package collection was sent to the browser.
+- Commands and results:
+  - `python -m pytest -q --basetemp .pytest_tmp_m6_final`: 656 passed, 18 subtests passed, 5 existing warnings.
+  - `node --test tests/*.test.js`: 32 passed. Focused Product/API/persistence: 41 passed. Ownership: 2 passed. Runtime concurrency known-flaky isolated check: passed.
+  - `python -m compileall -q app tests`, `git diff --check`, production hardcoding scan, and served-secret scan: passed.
+  - An initial full-suite attempt without `--basetemp` produced 168 fixture setup errors because the Windows default pytest temp root denied access; rerunning with a repository-local basetemp passed completely.
+- Current risks and next action:
+  - New Runtime Runs currently generate itinerary only; downstream Story/Experience/Resource orchestration remains a truthful separate boundary.
+  - In-browser Babel/React development bundles are a production-readiness soft warning. Repository-local `.pytest_tmp_m6*` directories must not be staged.
+  - Review the M6 diff and establish a checkpoint only after explicit approval. Do not enter M7 without a separately approved scope.

@@ -198,6 +198,21 @@ def test_experience_package_save_load_and_json_round_trip(repository, snapshot_d
 
     assert loaded == saved
     assert ExperiencePackage.model_validate_json(loaded.package.model_dump_json()) == package
+
+
+def test_experience_snapshot_load_for_run_checks_story_association(
+    repository, snapshot_db
+):
+    package, saved = _experience_snapshot(repository, snapshot_db)
+
+    loaded = ExperiencePackageSnapshotRepository(snapshot_db).load_for_run(
+        "run-1",
+        "itinerary-1",
+        package.story_package_id,
+        expected_catalog_version=package.catalog_version,
+    )
+
+    assert loaded == saved
     assert len(loaded.snapshot_hash) == 64
 
 

@@ -15,9 +15,30 @@
     return { ...target };
   }
 
+  function routeFromPath(pathname) {
+    const path = String(pathname || "/").replace(/\/+$/, "") || "/";
+    if (path === "/") return { page: "home" };
+    if (path === "/myth-journeys") return { page: "journeys" };
+    if (path.startsWith("/myth-journeys/")) {
+      return { page: "journey", routeId: decodeURIComponent(path.slice(15)) };
+    }
+    if (path.startsWith("/my-trips/")) {
+      return { page: "trip", runId: decodeURIComponent(path.slice(10)) };
+    }
+    if (path === "/profile") return { page: "profile" };
+    if (path === "/history") return { page: "history" };
+    return { page: "chat" };
+  }
+
+  function pathForPage(page) {
+    return ({ home: "/", journeys: "/myth-journeys", chat: "/chat", history: "/history", profile: "/profile" })[page] || "/";
+  }
+
   global.NavigationState = {
     chatTarget,
     detailTarget,
     resolveAfterAuth,
+    routeFromPath,
+    pathForPage,
   };
 })(typeof window === "undefined" ? globalThis : window);

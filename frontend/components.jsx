@@ -155,6 +155,11 @@ function DayMap({ mapPoints, dayKey }) {
                   fill="var(--second)" transform={`rotate(45 ${p.x} ${p.y})`} />
                 <circle cx={p.x} cy={p.y} r=".9" fill="var(--card)" />
               </g>
+            ) : p.mandatory ? (
+              <g>
+                <circle cx={p.x} cy={p.y} r="4.1" fill="#b88a2c" />
+                <text x={p.x} y={p.y + 1.5} textAnchor="middle" fontSize="4.2" fontWeight="800" fill="#fff">★</text>
+              </g>
             ) : (
               <g>
                 <circle cx={p.x} cy={p.y} r="3.4" fill="var(--accent)" />

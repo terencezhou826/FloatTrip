@@ -39,10 +39,12 @@ from app.core.thread_store import thread_store
 from app.planning.graph import run_modification_stream
 from app.planning.graph import run_stream as run_plan_stream
 from app.api.auth_routes import router as auth_router
+from app.api.catalog_routes import router as catalog_router
 from app.api.history_routes import router as history_router
 from app.api.profile_routes import router as profile_router
 from app.api.plan_routes import router as plan_router
 from app.api.sweep_routes import router as sweep_router
+from app.api.trip_routes import router as trip_router
 from app.api.runtime_routes import router as runtime_router
 from app.runtime.container import start_runtime, stop_runtime, chat_service
 from app.runtime.container import manager as runtime_manager
@@ -60,11 +62,13 @@ init_db()
 app = FastAPI(title="AI 旅游规划助手", version="0.1.0")
 
 app.include_router(auth_router)
+app.include_router(catalog_router)
 app.include_router(history_router)
 app.include_router(profile_router)
 app.include_router(plan_router)
 app.include_router(sweep_router)
 app.include_router(runtime_router)
+app.include_router(trip_router)
 
 
 @app.on_event("startup")
@@ -365,6 +369,21 @@ def history_page():
 
 @app.get("/profile")
 def profile_page():
+    return _frontend_index_response()
+
+
+@app.get("/myth-journeys")
+def journeys_page():
+    return _frontend_index_response()
+
+
+@app.get("/myth-journeys/{route_id:path}")
+def journey_detail_page(route_id: str):
+    return _frontend_index_response()
+
+
+@app.get("/my-trips/{run_id:path}")
+def product_trip_page(run_id: str):
     return _frontend_index_response()
 
 

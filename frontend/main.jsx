@@ -15,10 +15,10 @@ const THEME_ICONS = { morning: "☀", celadon: "🍃", night: "🌙", sky: "☁"
 
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
-  const initialPathPage = window.location.pathname === "/profile"
-    ? "profile"
-    : window.location.pathname === "/history" ? "history" : "chat";
-  const [page, setPage] = React.useState(initialPathPage);
+  const initialRoute = NavigationState.routeFromPath(window.location.pathname);
+  const [route, setRoute] = React.useState(initialRoute);
+  const page = route.page;
+  const setPage = (nextPage) => setRoute({ page: nextPage });
   const [planKey, setPlanKey] = React.useState(0);
   const [authUser, setAuthUser] = React.useState(() => getAuth()?.username || null);
   const [showAuthModal, setShowAuthModal] = React.useState(false);
@@ -39,8 +39,8 @@ function App() {
     }));
     // 处理 URL 参数
     const params = new URLSearchParams(window.location.search);
-    if (["profile", "history"].includes(initialPathPage) && !getAuth()) {
-      setAuthReason(initialPathPage === "profile" ? "请先登录管理旅行画像" : "请先登录查看历史行程");
+    if (["profile", "history"].includes(initialRoute.page) && !getAuth()) {
+      setAuthReason(initialRoute.page === "profile" ? "请先登录管理旅行画像" : "请先登录查看历史行程");
       setShowAuthModal(true);
     }
     if (params.get("login") === "1" && !getAuth()) {
@@ -67,6 +67,12 @@ function App() {
         }
       }).catch(() => {});
     }
+  }, []);
+
+  React.useEffect(() => {
+    const onPopState = () => setRoute(NavigationState.routeFromPath(window.location.pathname));
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
   // 页面加载时验证 token 有效性
@@ -106,6 +112,12 @@ function App() {
       // 规划进行中时导航回来只是显示页面，不重置（保活）
       if (planPhase !== "loading") setPlanKey(k => k + 1);
     }
+    window.scrollTo({ top: 0 });
+  };
+
+  const navigate = (path) => {
+    history.pushState({}, "", path);
+    setRoute(NavigationState.routeFromPath(path));
     window.scrollTo({ top: 0 });
   };
 
@@ -190,7 +202,7 @@ function App() {
   return (
     <div>
       <header className="topbar">
-        <div className="brand" onClick={() => openChat()}>
+        <div className="brand" onClick={() => navigate("/")}>
           <div className="brand-glyph">途</div>
           <div>
             <div className="brand-name">途见 · AI 旅行规划</div>
@@ -198,6 +210,10 @@ function App() {
           </div>
         </div>
         <nav className="topnav">
+          <button className={`topnav-link ${["journeys", "journey", "trip"].includes(page) ? "active" : ""}`}
+            onClick={() => navigate("/myth-journeys")}>
+            主题旅程
+          </button>
           <button className={`topnav-link ${page === "chat" ? "active" : ""}`}
             onClick={openChat}>
             旅行对话
@@ -272,6 +288,33 @@ function App() {
           onRequestModify={onRequestModify}
           onRequestLogin={() => requestLogin()}
           currentUsername={authUser}
+        />
+      )}
+      {page === "home" && <ProductHomePage onExplore={() => navigate("/myth-journeys")} onPlan={openChat} />}
+      {page === "journeys" && (
+        <MythJourneysPage
+          onHome={() => navigate("/")}
+          onOpen={(item) => navigate(`/myth-journeys/${encodeURIComponent(item.id)}`)}
+        />
+      )}
+      {page === "journey" && (
+        <ThemeRoutePreviewPage
+          routeId={route.routeId}
+          onBack={() => navigate("/myth-journeys")}
+          currentUsername={authUser}
+          onRequestLogin={() => requestLogin("登录后创建并保存你的主题旅程")}
+          onStart={async (_selectedRoute, request) => {
+            const run = await createRuntimeRun("travel_plan", null, request);
+            navigate(`/my-trips/${encodeURIComponent(run.id)}`);
+          }}
+        />
+      )}
+      {page === "trip" && (
+        <ProductTripRuntimePage
+          runId={route.runId}
+          currentUsername={authUser}
+          onRequestLogin={() => requestLogin("登录后恢复这次主题旅程")}
+          onReplaceRun={(runId) => navigate(`/my-trips/${encodeURIComponent(runId)}`)}
         />
       )}
       {page === "chat" && (

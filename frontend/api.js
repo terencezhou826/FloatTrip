@@ -238,6 +238,20 @@ function resumeRuntimeRun(id, interactionId, value) {
   });
 }
 
+/* ── Catalog Product ──────────────────────────────── */
+function getProductCollections(regionId = "") {
+  const query = regionId ? `?region_id=${encodeURIComponent(regionId)}` : "";
+  return apiJson(`/api/catalog/product-collections${query}`);
+}
+
+function getProductRoute(routeId) {
+  return apiJson(`/api/catalog/routes/${encodeURIComponent(routeId)}`);
+}
+
+function getProductTrip(runId) {
+  return apiJson(`/api/runs/${encodeURIComponent(runId)}/trip`);
+}
+
 async function streamRuntimeRun(runId, afterSeq, callbacks = {}) {
   const ctrl = new AbortController();
   callbacks.onAbort?.(() => ctrl.abort());
@@ -447,10 +461,10 @@ async function initAmapForDay(container, points) {
       if (!isMeal) path.push(pos);  // 路线只连景点
       const content = `<div style="width:28px;height:28px;display:grid;place-items:center;
         border-radius:${isMeal ? "7px" : "50%"};
-        background:${isMeal ? second : accent};
+        background:${pt.mandatory ? "#b88a2c" : isMeal ? second : accent};
         color:#fdfaf2;font-size:${isMeal ? "14px" : "12.5px"};font-weight:800;border:2px solid #fff;
         box-shadow:0 2px 8px rgba(0,0,0,.3);${isMeal ? "transform:rotate(45deg);" : ""}">
-        <span style="${isMeal ? "transform:rotate(-45deg);" : ""}">${isMeal ? "🍜" : ++spotNo}</span></div>`;
+        <span style="${isMeal ? "transform:rotate(-45deg);" : ""}">${isMeal ? "🍜" : pt.mandatory ? "★" : ++spotNo}</span></div>`;
       const marker = new AMap.Marker({ position: pos, content, offset: new AMap.Pixel(-14, -14), zIndex: 100 + i });
       marker.on("click", () => {
         infoWindow.setContent(markerInfoHtml(pt));
@@ -710,6 +724,10 @@ function adaptPlan(backendPlan, username) {
     const items = timeline.map(it => {
       const base = {
         dist: it.dist_from_prev_km != null ? it.dist_from_prev_km : null,
+        roadDistanceKm: it.road_distance_from_prev_km ?? null,
+        drivingMinutes: it.driving_duration_from_prev_min ?? null,
+        isMandatory: Boolean(it.is_mandatory),
+        curatedAnchorId: it.curated_anchor_id || null,
       };
       if (it.type === "attraction") {
         return {
@@ -744,6 +762,9 @@ function adaptPlan(backendPlan, username) {
           tel: it.tel || null,
           open: it.open_time || null,
           category: it.category || null,
+          mealDetourMinutes: it.meal_detour_minutes ?? null,
+          mealTotalDistanceKm: it.meal_total_travel_distance_km ?? null,
+          mealCoverageNote: it.meal_coverage_note || null,
         };
       }
     });
@@ -754,6 +775,7 @@ function adaptPlan(backendPlan, username) {
       .map(it => ({
         ...projMap[it.name],
         name: it.name,
+        mandatory: Boolean(it.is_mandatory),
         info: {
           type: it.type,
           rating: it.rating,
@@ -824,4 +846,6 @@ Object.assign(window, {
   searchNearby, savePlanMetadata,
   drawNavPairRoute, restoreFullRoute,
   adaptPlan,
+  getProductCollections, getProductRoute,
+  getProductTrip,
 });

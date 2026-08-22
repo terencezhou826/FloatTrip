@@ -1,6 +1,19 @@
 # TODO
 
-Updated: 2026-08-22 19:22:34 +08:00
+Updated: 2026-08-22 20:28:22 +08:00
+
+M6 completed on 2026-08-22:
+
+- [x] Pass start gates: clean `c58f33f`, full baseline apart from the documented Runtime concurrency flaky, frontend baseline, compileall, unchanged formal package hashes, and browser-secret isolation.
+- [x] Complete M6A Catalog-driven navigation, generic capability projection, truthful READY/coming-soon states, read-only Product API, and focused hard gate.
+- [x] Complete M6B formal Run creation, `waiting_user`, resume, progress, SSE reconnect, and refresh recovery.
+- [x] Complete M6C snapshot-only unified Trip UI and ownership-protected read API.
+- [x] Complete M6D real-browser, responsive, accessibility, security, error, and snapshot-stability gates.
+- [x] Pass the final complete Python (656 plus 18 subtests), frontend (32), focused Product/API/persistence (41), ownership (2), compileall, diff, hardcoding, and secret-isolation gates.
+- [x] Verify a new formal Run through `waiting_user` and resume, and verify the unchanged persisted M5 hierarchy through browser refresh.
+- [ ] Do not commit, push, or enter M7.
+- [ ] Review M6 and establish an explicit Git checkpoint; do not stage repository-local `.pytest_tmp_m6*` artifacts.
+- [ ] Define downstream Story/Experience/Resource orchestration for newly completed Runtime Runs only in a separately approved milestone.
 
 M5 completed on 2026-08-22:
 

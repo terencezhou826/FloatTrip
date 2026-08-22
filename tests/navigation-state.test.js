@@ -18,3 +18,16 @@ test("rejects incomplete detail targets and closed authentication state", () => 
     { page: "detail", planId: "plan-1" },
   );
 });
+
+test("parses product routes without route-specific branches", () => {
+  assert.deepEqual(NavigationState.routeFromPath("/"), { page: "home" });
+  assert.deepEqual(NavigationState.routeFromPath("/myth-journeys"), { page: "journeys" });
+  assert.deepEqual(
+    NavigationState.routeFromPath("/myth-journeys/route.example"),
+    { page: "journey", routeId: "route.example" },
+  );
+  assert.deepEqual(
+    NavigationState.routeFromPath("/my-trips/run.example"),
+    { page: "trip", runId: "run.example" },
+  );
+});
