@@ -47,4 +47,3 @@ def grounded_story_messages(
             name="story_generation_input",
         ),
     ]
-
