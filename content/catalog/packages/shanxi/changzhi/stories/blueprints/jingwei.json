@@ -1,0 +1,41 @@
+{
+  "blueprints": [
+    {
+      "story_id": "changzhi.story.jingwei-fajiushan",
+      "title": "精卫填海·发鸠山探秘",
+      "package_id": "shanxi.changzhi",
+      "region_id": "cn.shanxi.changzhi.changzi",
+      "theme_id": "changzhi.jingwei",
+      "route_id": "changzhi.route.jingwei-fajiushan",
+      "story_type": "mythology",
+      "target_audiences": ["family", "student", "culture"],
+      "narrative_theme": "坚韧与坚持",
+      "narrative_goal": "以可追溯的古籍记载和地方文化资料组织一条由文本、神话叙事到当代传承的参观线索。",
+      "chapter_ids": [
+        "changzhi.story.jingwei-fajiushan.chapter.prologue",
+        "changzhi.story.jingwei-fajiushan.chapter.fajiushan",
+        "changzhi.story.jingwei-fajiushan.chapter.nuwa-jingwei",
+        "changzhi.story.jingwei-fajiushan.chapter.fill-sea",
+        "changzhi.story.jingwei-fajiushan.chapter.today"
+      ],
+      "knowledge_claim_ids": [
+        "changzhi.claim.shanhaijing-fajiushan-passage",
+        "changzhi.claim.changzi-official-birthplace",
+        "changzhi.claim.local-history-birthplace",
+        "changzhi.claim.fajiushan-zhemu",
+        "changzhi.claim.jingwei-bird-name",
+        "changzhi.claim.jingwei-bird-appearance",
+        "changzhi.claim.jingwei-nuwa",
+        "changzhi.claim.nuwa-drowning",
+        "changzhi.claim.jingwei-fills-sea",
+        "changzhi.claim.jingwei-heritage-2009"
+      ],
+      "verification_status": "verified",
+      "enabled": true,
+      "version": "0.1.0",
+      "media_slot_ids": [],
+      "experience_slot_ids": [],
+      "metadata": {}
+    }
+  ]
+}

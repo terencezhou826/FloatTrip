@@ -442,3 +442,83 @@
   - A no-date E2E entered `waiting_user`; existing startup reconciliation marks orphaned waiting Runs failed after process restart. This Runtime behavior was observed but not changed.
   - Existing FastAPI lifespan, missing local `JWT_SECRET`, and unavailable Redis warnings remain unrelated.
 - Next recommended action: review and checkpoint M1E only after explicit approval. Do not enter M2 implicitly.
+
+## 2026-08-22 13:18:50 +08:00 - M2C Evidence-Grounded Cultural Answering
+
+- Files modified:
+  - Added `app/knowledge/models.py`, `prompts.py`, `service.py`, and package exports for the standalone answer layer.
+  - Added `tests/test_knowledge_answering.py` and `docs/knowledge/ANSWERING.md`.
+  - Updated the three canonical project documents under `docs/development/`.
+- Architecture:
+  - The service executes `KnowledgeAnswerRequest -> M2B KnowledgeRetriever -> KnowledgeContext -> deterministic Answerability Gate -> strict structured LLM -> deterministic validation`.
+  - Insufficient evidence bypasses the LLM. Successful answers freeze Catalog package/schema/content versions and validate Claim, Evidence, Source, locator, quote, policy, qualifier, and production eligibility against the original Context.
+  - Claim-type checks reject unnegated historical promotion, including promotion after contrast markers. Location guidance preserves relative-location Evidence without inferring a target's administrative location or coordinates.
+- Commands run:
+  - Focused M2C, M2B retrieval, Knowledge, Catalog, and M1A-M1E pytest suites.
+  - `python -m compileall -q app`.
+  - Complete `python -m pytest -q --basetemp .pytest_tmp_m2c_full_final`.
+  - `node --test tests/chat-state.test.js tests/navigation-state.test.js`.
+  - Real OpenAI-compatible structured-output runs for A-F and deterministic no-LLM runs for three hallucination-injection questions.
+- Results:
+  - M2C: 25 passed. M2B retrieval + Knowledge: 56 passed. Catalog: 101 passed.
+  - M1A-M1E/M2 focused: 214 passed. Compileall passed.
+  - Complete Python: 306 passed, 18 subtests passed, 5 existing warnings. Frontend: 26 passed.
+  - Real A-F all met the quality gate. F returned `insufficient_evidence` without an LLM call or internal Claim leakage. The year, coordinate, and archaeology injection questions also bypassed the LLM.
+  - Production-ineligible leakage: 0. Citation hallucination: 0. Required qualifier violations: 0. Context-external cultural facts: 0.
+- Current problems and risks:
+  - Deterministic validation verifies identity, provenance, policy, qualifiers, numbers, and known claim-type promotion phrases; unrestricted semantic entailment remains outside this non-RAG first version.
+  - Public Source URL archival/versioning remains undefined.
+  - Existing FastAPI lifespan and local `JWT_SECRET` warnings remain unrelated.
+  - `KNOWN_FLAKY`: `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` did not reproduce; Runtime was not modified.
+- Next recommended action: review M2C and create a Git checkpoint only after explicit approval. Do not connect Knowledge answering to Planning or Chat without a separately scoped milestone.
+
+## 2026-08-22 13:41:44 +08:00 - M3 stopped at M3A Catalog regression gate
+
+- Files modified before the gate:
+  - Extended Catalog models, Loader, Repository, validation, and exports with Story Blueprint/Chapter collections.
+  - Added one Jingwei Blueprint and five Chapter records under `content/catalog/packages/shanxi/changzhi/stories/`.
+  - Added `tests/catalog/test_stories.py` with 34 Story domain and validation cases.
+- Commands run:
+  - Starting M2C/M2B/Knowledge/Catalog gate: 126 passed.
+  - Package/route/verified Fajiushan binding integrity check: passed.
+  - Story tests: 34 passed.
+  - Complete Catalog tests: 5 failed, 130 passed.
+  - `git diff --check`: no whitespace errors; only existing LF-to-CRLF notices.
+- First failed gate:
+  - `M3A Catalog regression`.
+  - Existing compatibility fixtures remove the copied package's Knowledge directory or POI Binding file while leaving the newly added Story collections intact. The Story Validator then correctly rejects dangling Claim or POI Binding references.
+  - Failures: two Knowledge compatibility tests and three POI Binding compatibility/query tests.
+- Safety status:
+  - Story-specific tests passed; one Blueprint and five Chapters load normally.
+  - Required Claim eligibility passed, non-production leakage was 0, and the internal Yandi Claim reference count was 0.
+  - M3B, M3C, and M3D were not started. No Planning, Runtime, Chat, frontend, mobile, Knowledge data, or M2C code was changed for M3.
+- Safe next action: update the unrelated compatibility test fixtures so an emulated legacy package also omits `stories/`, or otherwise supplies a self-consistent Story dependency set. Do not weaken Story dangling-reference validation. Then rerun M3A from its Story and Catalog gates.
+
+## 2026-08-22 14:14:56 +08:00 - M3 Evidence-Grounded Story Engine Complete
+
+- Compatibility repair:
+  - Confirmed all five M3A Catalog failures came from test fixtures that removed Knowledge or POI Binding collections while retaining newer Stories that referenced them.
+  - Updated only the affected test fixtures to remove `stories/` from those historical snapshots. Production Story validation was not weakened.
+- Architecture and files:
+  - Added generic Story Blueprint/Chapter Catalog models, recursive loading, Repository access, cross-collection validation, one Jingwei Blueprint, and five curated Chapters.
+  - Added standalone `app/story/` generation and binding services with strict structured output, M2C-derived deterministic grounding checks, exact Provider POI identity placement, immutable version snapshots, and reserved media/experience slots.
+  - Added Story domain, generation, and binding tests plus `docs/story/STORY_MODEL.md`, `STORY_GENERATION.md`, and `STORY_BINDING.md`.
+- Real M3D Runtime/API E2E:
+  - Used isolated local Runtime databases, real Amap, and the configured OpenAI-compatible/Sub2API provider. Run `1054358a-11ef-40da-9bfc-ef57c09c6161` succeeded and persisted itinerary `c0b75c5c-721b-424b-9786-7f9c715ff594`.
+  - The one-day family itinerary retained mandatory `amap / B0FFF49AFB`, added two dynamic attractions, selected real lunch and dinner candidates, and completed Planner, Reviewer, Time Check, route feasibility (`FEASIBLE`), meal, Spot Tips, and Finalize.
+  - Real Story generation produced all five Chapters and package `story-package.7a0534bac6da449adb209953`; the first four Chapters matched the mandatory stop by exact Provider identity and the final reflection Chapter remained context-only.
+- Safety results:
+  - Production-ineligible leakage, internal-only leakage, Citation hallucination, qualifier violation, Context fact violation, forbidden Claim references, name-only binding, dynamic POI forcing, itinerary mutation, and Knowledge mutation: all 0.
+  - All Chapter grounding coverage values were 1.0. StoryPackage validation passed with no unplaced Chapters. Unsupported Yandi residence, birth-year, historical-dating, archaeology, unsupported coordinate, heritage-grade, and scenic-history content was absent.
+- Commands and regression results:
+  - Story/Knowledge/Catalog focused: 197 passed.
+  - M1A-M1E focused: 102 passed, 5 existing warnings.
+  - Complete Python: 377 passed, 18 subtests passed, 5 existing warnings.
+  - Frontend Node tests: 26 passed. `compileall` and `git diff --check`: passed.
+  - Removed all repository-local `.pytest_tmp_m3*` artifacts after verification; final hardcoding scan, `git diff --stat`, and `git status --short` were read-only.
+- Current problems and risks:
+  - The first E2E driver closed while the Run was waiting for date input, so startup reconciliation correctly marked it `server_restarted`; the formal `/retry` and `/resume` flow then completed successfully in one application lifecycle.
+  - Local Redis remained unavailable and cache disabled itself without blocking Provider calls. Existing FastAPI lifespan and local `JWT_SECRET` warnings remain unrelated.
+  - Story prose is intentionally concise because factual text is restricted to approved Claim wording. No Story UI, GPS trigger, Video, Experience, Commerce, or additional route content was implemented.
+  - `KNOWN_FLAKY`: Runtime concurrency did not reproduce; Runtime behavior was not modified.
+- Next recommended action: review and create an M3 Git checkpoint only after explicit approval. Do not enter M4 implicitly.

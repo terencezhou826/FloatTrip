@@ -1,11 +1,11 @@
 # Next Steps
 
-Updated: 2026-08-22 12:43:06 +08:00
+Updated: 2026-08-22 14:14:56 +08:00
 
-1. Review the M2B production gate, lexical weights, A-F results, and `insufficient_direct_match` behavior; create an M2B Git checkpoint only after explicit approval.
-2. Enter M2C only under a separate explicit instruction. Preserve frozen Catalog versions, Source/Claim/Evidence traceability, and promotion qualification when connecting `KnowledgeContext` to any consumer.
-3. Define source archival/versioning policy before relying on public URLs for long-term production citations.
-4. Keep `changzhi.claim.fajiushan-yandi-residence` in `review_required` and `internal_only` unless independent historical evidence is supplied.
-5. Track `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` as `KNOWN_FLAKY`; it did not reproduce and Runtime was not modified.
+1. Review the complete M3 diff and create an independent Git checkpoint only after explicit approval.
+2. Keep `changzhi.claim.fajiushan-yandi-residence` in `review_required` and `internal_only`; its Story reference and leakage counts remain zero.
+3. Preserve exact `provider + external_poi_id` Story placement and the deterministic Citation/qualifier/production-eligibility gates.
+4. Continue tracking `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` as `KNOWN_FLAKY`; it did not reproduce in the M3 final suite.
+5. Scope M4 separately before implementing any Planning/Chat Story integration, Story UI, Experience, Commerce, Video, additional routes, or provincial rollout.
 
-Boundary to preserve: M2B performs local, deterministic, evidence-aware retrieval only. It contains no Embedding, vector database, LLM query rewrite/reranking/answer generation, Planning prompt, Runtime, SSE, Story, Experience, Commerce, Video, frontend, or mobile integration.
+Boundary to preserve: M3 is complete as a standalone post-Planning Story Engine. M4 and all frontend/mobile, Experience, Commerce, Video, GPS-trigger, Embedding, and vector-database work remain unstarted.

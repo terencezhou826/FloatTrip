@@ -28,6 +28,10 @@ def _catalog_copy(tmp_path: Path) -> Path:
     return target
 
 
+def _remove_stories(root: Path) -> None:
+    shutil.rmtree(root / PACKAGE_ROOT / "stories")
+
+
 def _binding(
     binding_id: str,
     *,
@@ -155,6 +159,7 @@ def test_current_catalog_loads_verified_fajiushan_binding():
 
 def test_old_catalog_without_binding_file_remains_compatible(tmp_path):
     root = _catalog_copy(tmp_path)
+    _remove_stories(root)
     (root / PACKAGE_ROOT / "poi_bindings.json").unlink()
 
     catalog = FileCatalogLoader(root).load()
@@ -216,6 +221,7 @@ def test_verified_binding_requires_complete_external_identity(tmp_path):
 
 def test_repository_queries_all_statuses_but_runtime_query_is_verified_only(tmp_path):
     root = _catalog_copy(tmp_path)
+    _remove_stories(root)
     bindings = [
         _binding("binding.candidate", external_poi_id="B-candidate"),
         _binding(
@@ -246,6 +252,7 @@ def test_repository_queries_all_statuses_but_runtime_query_is_verified_only(tmp_
 
 def test_loader_repository_and_json_round_trip_verification_provenance(tmp_path):
     root = _catalog_copy(tmp_path)
+    _remove_stories(root)
     payload = _binding("binding.round-trip", status="verified")
     payload["verification_note"] = "Reviewed against the provider record."
     _write_bindings(root, [payload])

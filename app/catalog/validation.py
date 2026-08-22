@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+import re
 
 from app.catalog.models import (
     Anchor,
@@ -16,6 +17,9 @@ from app.catalog.models import (
     KnowledgeSource,
     KnowledgeVerificationStatus,
     Region,
+    StoryBlueprint,
+    StoryChapter,
+    StoryVerificationStatus,
 )
 
 
@@ -42,6 +46,12 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
     knowledge_evidence = [
         item for package in packages for item in package.knowledge_evidence
     ]
+    story_blueprints = [
+        item for package in packages for item in package.story_blueprints
+    ]
+    story_chapters = [
+        item for package in packages for item in package.story_chapters
+    ]
     issues: list[str] = []
 
     _check_duplicate_ids(
@@ -53,6 +63,8 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
         knowledge_sources,
         knowledge_claims,
         knowledge_evidence,
+        story_blueprints,
+        story_chapters,
         issues,
     )
 
@@ -64,6 +76,10 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
     source_ids = {item.source_id for item in knowledge_sources}
     claim_ids = {item.claim_id for item in knowledge_claims}
     sources_by_id = {item.source_id: item for item in knowledge_sources}
+    routes_by_id = {item.id: item for item in routes}
+    bindings_by_id = {item.binding_id: item for item in poi_bindings}
+    stories_by_id = {item.story_id: item for item in story_blueprints}
+    chapters_by_id = {item.chapter_id: item for item in story_chapters}
 
     for region in regions:
         if region.parent_id and region.parent_id not in region_ids:
@@ -176,6 +192,15 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
             f"verified knowledge claim evidence coverage is {coverage:.3f}, not 1.000"
         )
 
+    production_claim_ids = {
+        claim.claim_id
+        for claim in knowledge_claims
+        if claim.verification_status is KnowledgeVerificationStatus.VERIFIED
+        and claim.promotion_policy.status.value
+        in {"allowed", "allowed_with_qualification"}
+        and claim.claim_id in supported_verified_claim_ids
+    }
+
     binding_identities: dict[tuple[str, str], set[str]] = {}
     for binding in poi_bindings:
         identity = (binding.provider.value, binding.external_poi_id)
@@ -232,6 +257,34 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
                     "is outside route coverage"
                 )
 
+    for package in packages:
+        package_story_ids = {item.story_id for item in package.story_blueprints}
+        package_chapter_ids = {item.chapter_id for item in package.story_chapters}
+        for story in package.story_blueprints:
+            _validate_story(
+                story,
+                package.manifest.package_id,
+                package_chapter_ids,
+                chapters_by_id,
+                region_ids,
+                theme_ids,
+                routes_by_id,
+                claim_ids,
+                production_claim_ids,
+                issues,
+            )
+        for chapter in package.story_chapters:
+            _validate_story_chapter(
+                chapter,
+                package_story_ids,
+                stories_by_id,
+                anchor_ids,
+                bindings_by_id,
+                claim_ids,
+                production_claim_ids,
+                issues,
+            )
+
     if issues:
         raise CatalogValidationError(issues)
 
@@ -245,6 +298,8 @@ def _check_duplicate_ids(
     knowledge_sources: list[KnowledgeSource],
     knowledge_claims: list[KnowledgeClaim],
     knowledge_evidence: list[KnowledgeEvidence],
+    story_blueprints: list[StoryBlueprint],
+    story_chapters: list[StoryChapter],
     issues: list[str],
 ) -> None:
     typed_items = (
@@ -256,11 +311,153 @@ def _check_duplicate_ids(
         + [("knowledge_source", item.source_id) for item in knowledge_sources]
         + [("knowledge_claim", item.claim_id) for item in knowledge_claims]
         + [("knowledge_evidence", item.evidence_id) for item in knowledge_evidence]
+        + [("story", item.story_id) for item in story_blueprints]
+        + [("story_chapter", item.chapter_id) for item in story_chapters]
     )
     counts = Counter(item_id for _, item_id in typed_items)
     for duplicate in sorted(item_id for item_id, count in counts.items() if count > 1):
         kinds = sorted(kind for kind, item_id in typed_items if item_id == duplicate)
         issues.append(f"duplicate id {duplicate} ({', '.join(kinds)})")
+
+
+def _validate_story(
+    story: StoryBlueprint,
+    package_id: str,
+    package_chapter_ids: set[str],
+    chapters_by_id: dict[str, StoryChapter],
+    region_ids: set[str],
+    theme_ids: set[str],
+    routes_by_id: dict[str, CuratedRoute],
+    claim_ids: set[str],
+    production_claim_ids: set[str],
+    issues: list[str],
+) -> None:
+    if story.package_id != package_id:
+        issues.append(
+            f"story {story.story_id} package_id {story.package_id} does not match "
+            f"owning package {package_id}"
+        )
+    if story.region_id not in region_ids:
+        issues.append(f"story {story.story_id} references missing region {story.region_id}")
+    if story.theme_id not in theme_ids:
+        issues.append(f"story {story.story_id} references missing theme {story.theme_id}")
+    route = routes_by_id.get(story.route_id)
+    if route is None:
+        issues.append(f"story {story.story_id} references missing route {story.route_id}")
+    elif route.theme_id != story.theme_id:
+        issues.append(
+            f"story {story.story_id} theme {story.theme_id} does not match route theme"
+        )
+    if story.enabled and story.verification_status is not StoryVerificationStatus.VERIFIED:
+        issues.append(f"enabled story {story.story_id} must be verified")
+    for duplicate in _duplicates(story.chapter_ids):
+        issues.append(f"story {story.story_id} repeats chapter {duplicate}")
+    for chapter_id in story.chapter_ids:
+        if chapter_id not in package_chapter_ids:
+            issues.append(f"story {story.story_id} references missing chapter {chapter_id}")
+    chapters = [
+        chapters_by_id[chapter_id]
+        for chapter_id in story.chapter_ids
+        if chapter_id in chapters_by_id
+    ]
+    sequences = [chapter.sequence for chapter in chapters]
+    if len(sequences) != len(set(sequences)):
+        issues.append(f"story {story.story_id} has duplicate chapter sequence")
+    if sorted(sequences) != list(range(len(sequences))):
+        issues.append(f"story {story.story_id} chapter sequence must be contiguous from 0")
+    for claim_id in story.knowledge_claim_ids:
+        _check_story_claim(story.story_id, claim_id, claim_ids, production_claim_ids, issues)
+
+
+def _validate_story_chapter(
+    chapter: StoryChapter,
+    package_story_ids: set[str],
+    stories_by_id: dict[str, StoryBlueprint],
+    anchor_ids: set[str],
+    bindings_by_id: dict[str, ExternalPoiBinding],
+    claim_ids: set[str],
+    production_claim_ids: set[str],
+    issues: list[str],
+) -> None:
+    if chapter.story_id not in package_story_ids:
+        issues.append(
+            f"story chapter {chapter.chapter_id} references missing story "
+            f"{chapter.story_id}"
+        )
+        return
+    story = stories_by_id[chapter.story_id]
+    if chapter.chapter_id not in story.chapter_ids:
+        issues.append(f"orphan story chapter {chapter.chapter_id}")
+    if story.enabled and chapter.content_status is not StoryVerificationStatus.VERIFIED:
+        issues.append(
+            f"chapter {chapter.chapter_id} in enabled story must be verified"
+        )
+    for anchor_id in chapter.anchor_ids:
+        if anchor_id not in anchor_ids:
+            issues.append(
+                f"story chapter {chapter.chapter_id} references missing anchor {anchor_id}"
+            )
+    for binding_id in chapter.poi_binding_ids:
+        binding = bindings_by_id.get(binding_id)
+        if binding is None:
+            issues.append(
+                f"story chapter {chapter.chapter_id} references missing POI binding "
+                f"{binding_id}"
+            )
+        elif not binding.is_runtime_eligible:
+            issues.append(
+                f"story chapter {chapter.chapter_id} POI binding {binding_id} is not verified"
+            )
+        elif binding.anchor_id not in chapter.anchor_ids:
+            issues.append(
+                f"story chapter {chapter.chapter_id} POI binding {binding_id} "
+                "does not belong to a chapter anchor"
+            )
+    if set(chapter.required_claim_ids).intersection(chapter.optional_claim_ids):
+        issues.append(
+            f"story chapter {chapter.chapter_id} repeats a required Claim as optional"
+        )
+    bound_claim_ids = set(chapter.required_claim_ids) | set(chapter.optional_claim_ids)
+    if not bound_claim_ids.issubset(story.knowledge_claim_ids):
+        issues.append(
+            f"story chapter {chapter.chapter_id} references Claim outside blueprint"
+        )
+    for claim_id in bound_claim_ids:
+        _check_story_claim(
+            chapter.chapter_id,
+            claim_id,
+            claim_ids,
+            production_claim_ids,
+            issues,
+        )
+    curatorial_text = " ".join(
+        (
+            chapter.narrative_goal,
+            chapter.opening_hook,
+            chapter.transition_goal,
+            chapter.visitor_takeaway,
+        )
+    )
+    if re.search(r"\d{4}年", curatorial_text) or any(
+        marker in curatorial_text
+        for marker in ("经纬度", "坐标", "考古证明", "文保等级", "景区等级")
+    ):
+        issues.append(
+            f"story chapter {chapter.chapter_id} curatorial intent contains factual detail"
+        )
+
+
+def _check_story_claim(
+    owner_id: str,
+    claim_id: str,
+    claim_ids: set[str],
+    production_claim_ids: set[str],
+    issues: list[str],
+) -> None:
+    if claim_id not in claim_ids:
+        issues.append(f"story item {owner_id} references missing Claim {claim_id}")
+    elif claim_id not in production_claim_ids:
+        issues.append(f"story item {owner_id} Claim {claim_id} is not production eligible")
 
 
 def _check_region_cycles(regions: list[Region], issues: list[str]) -> None:

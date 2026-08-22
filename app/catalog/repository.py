@@ -21,6 +21,8 @@ from app.catalog.models import (
     PoiProvider,
     PromotionPolicyStatus,
     Region,
+    StoryBlueprint,
+    StoryChapter,
 )
 
 
@@ -86,6 +88,16 @@ class CatalogRepository(Protocol):
 
     def is_claim_production_eligible(self, claim_id: str) -> bool: ...
 
+    def get_story(self, story_id: str) -> StoryBlueprint | None: ...
+
+    def list_stories(
+        self, route_id: str | None = None
+    ) -> tuple[StoryBlueprint, ...]: ...
+
+    def get_story_chapter(self, chapter_id: str) -> StoryChapter | None: ...
+
+    def list_story_chapters(self, story_id: str) -> tuple[StoryChapter, ...]: ...
+
 
 class InMemoryCatalogRepository:
     def __init__(
@@ -100,6 +112,8 @@ class InMemoryCatalogRepository:
         knowledge_sources: Iterable[KnowledgeSource] = (),
         knowledge_claims: Iterable[KnowledgeClaim] = (),
         knowledge_evidence: Iterable[KnowledgeEvidence] = (),
+        story_blueprints: Iterable[StoryBlueprint] = (),
+        story_chapters: Iterable[StoryChapter] = (),
         packages: Iterable[ContentPackage] = (),
     ) -> None:
         self._packages = tuple(packages)
@@ -111,6 +125,8 @@ class InMemoryCatalogRepository:
         self._knowledge_sources = tuple(knowledge_sources)
         self._knowledge_claims = tuple(knowledge_claims)
         self._knowledge_evidence = tuple(knowledge_evidence)
+        self._story_blueprints = tuple(story_blueprints)
+        self._story_chapters = tuple(story_chapters)
         self._manifests = tuple(manifests)
         self._regions_by_id = {item.id: item for item in self._regions}
         self._themes_by_id = {item.id: item for item in self._themes}
@@ -127,6 +143,12 @@ class InMemoryCatalogRepository:
         }
         self._knowledge_evidence_by_id = {
             item.evidence_id: item for item in self._knowledge_evidence
+        }
+        self._story_blueprints_by_id = {
+            item.story_id: item for item in self._story_blueprints
+        }
+        self._story_chapters_by_id = {
+            item.chapter_id: item for item in self._story_chapters
         }
         self._packages_by_id = {
             item.manifest.package_id: item for item in self._packages
@@ -256,6 +278,33 @@ class InMemoryCatalogRepository:
             and (source := self.get_source(evidence.source_id)) is not None
             and source.verification_status is KnowledgeVerificationStatus.VERIFIED
             for evidence in self.list_evidence_for_claim(claim_id)
+        )
+
+    def get_story(self, story_id: str) -> StoryBlueprint | None:
+        return self._story_blueprints_by_id.get(story_id)
+
+    def list_stories(
+        self, route_id: str | None = None
+    ) -> tuple[StoryBlueprint, ...]:
+        if route_id is None:
+            return self._story_blueprints
+        return tuple(
+            story for story in self._story_blueprints if story.route_id == route_id
+        )
+
+    def get_story_chapter(self, chapter_id: str) -> StoryChapter | None:
+        return self._story_chapters_by_id.get(chapter_id)
+
+    def list_story_chapters(self, story_id: str) -> tuple[StoryChapter, ...]:
+        return tuple(
+            sorted(
+                (
+                    chapter
+                    for chapter in self._story_chapters
+                    if chapter.story_id == story_id
+                ),
+                key=lambda chapter: (chapter.sequence, chapter.chapter_id),
+            )
         )
 
     @staticmethod

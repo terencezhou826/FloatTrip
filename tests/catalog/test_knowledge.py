@@ -38,6 +38,10 @@ def _catalog_copy(tmp_path: Path) -> Path:
     return target
 
 
+def _remove_stories(root: Path) -> None:
+    shutil.rmtree(root / PACKAGE_ROOT / "stories")
+
+
 def _read_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -370,6 +374,7 @@ def test_review_required_sample_is_not_production_eligible():
 
 def test_recursive_multi_file_loading_order_is_deterministic(tmp_path):
     root = _catalog_copy(tmp_path)
+    _remove_stories(root)
     knowledge_root = root / PACKAGE_ROOT / "knowledge"
     shutil.rmtree(knowledge_root)
     _write_json(knowledge_root / "z" / "sources.json", {"sources": [_source("z.source")]})
@@ -394,6 +399,7 @@ def test_knowledge_file_requires_exactly_one_known_collection(tmp_path):
 
 def test_old_package_without_knowledge_directory_remains_compatible(tmp_path):
     root = _catalog_copy(tmp_path)
+    _remove_stories(root)
     shutil.rmtree(root / PACKAGE_ROOT / "knowledge")
 
     catalog = FileCatalogLoader(root).load()

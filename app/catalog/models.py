@@ -100,6 +100,44 @@ class KnowledgeVerificationStatus(StrEnum):
     DISPUTED = "disputed"
 
 
+class StoryType(StrEnum):
+    MYTHOLOGY = "mythology"
+    HISTORICAL = "historical"
+    HERITAGE = "heritage"
+    BIOGRAPHICAL = "biographical"
+    EDUCATIONAL = "educational"
+    NATURE = "nature"
+    FOLK_CULTURE = "folk_culture"
+    FOOD_CULTURE = "food_culture"
+    RED_CULTURE = "red_culture"
+    CUSTOM = "custom"
+
+
+class StoryAudience(StrEnum):
+    GENERAL = "general"
+    FAMILY = "family"
+    STUDENT = "student"
+    CULTURE = "culture"
+
+
+class StoryChapterType(StrEnum):
+    PROLOGUE = "prologue"
+    CONTEXT = "context"
+    ORIGIN = "origin"
+    DEVELOPMENT = "development"
+    TURNING_POINT = "turning_point"
+    CLIMAX = "climax"
+    REFLECTION = "reflection"
+    EPILOGUE = "epilogue"
+
+
+class StoryVerificationStatus(StrEnum):
+    DRAFT = "draft"
+    REVIEW_REQUIRED = "review_required"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
+
+
 class EvidenceRelation(StrEnum):
     SUPPORTS = "supports"
     CONTRADICTS = "contradicts"
@@ -308,6 +346,49 @@ class CuratedRoute(CatalogModel):
         return self
 
 
+class StoryBlueprint(CatalogModel):
+    story_id: StableId
+    title: str = Field(min_length=1, max_length=200)
+    package_id: StableId
+    region_id: StableId
+    theme_id: StableId
+    route_id: StableId
+    story_type: StoryType
+    target_audiences: list[StoryAudience] = Field(min_length=1)
+    narrative_theme: str = Field(min_length=1, max_length=500)
+    narrative_goal: str = Field(min_length=1, max_length=1000)
+    chapter_ids: list[StableId] = Field(min_length=1)
+    knowledge_claim_ids: list[StableId] = Field(default_factory=list)
+    verification_status: StoryVerificationStatus
+    enabled: StrictBool
+    version: str = Field(pattern=r"^\d+\.\d+\.\d+$")
+    media_slot_ids: list[StableId] = Field(default_factory=list)
+    experience_slot_ids: list[StableId] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class StoryChapter(CatalogModel):
+    chapter_id: StableId
+    story_id: StableId
+    sequence: int = Field(ge=0)
+    title: str = Field(min_length=1, max_length=200)
+    chapter_type: StoryChapterType
+    narrative_goal: str = Field(min_length=1, max_length=1000)
+    anchor_ids: list[StableId] = Field(default_factory=list)
+    poi_binding_ids: list[StableId] = Field(default_factory=list)
+    required_claim_ids: list[StableId] = Field(default_factory=list)
+    optional_claim_ids: list[StableId] = Field(default_factory=list)
+    opening_hook: str = Field(min_length=1, max_length=1000)
+    transition_goal: str = Field(min_length=1, max_length=1000)
+    visitor_takeaway: str = Field(min_length=1, max_length=1000)
+    recommended_duration_sec: int = Field(ge=1, le=3600)
+    audience_tags: list[StoryAudience] = Field(default_factory=list)
+    content_status: StoryVerificationStatus
+    media_slot_ids: list[StableId] = Field(default_factory=list)
+    experience_slot_ids: list[StableId] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
 class ContentPackageManifest(CatalogModel):
     package_id: StableId
     schema_version: str = Field(pattern=r"^\d+\.\d+$")
@@ -325,3 +406,5 @@ class ContentPackage(CatalogModel):
     knowledge_sources: list[KnowledgeSource] = Field(default_factory=list)
     knowledge_claims: list[KnowledgeClaim] = Field(default_factory=list)
     knowledge_evidence: list[KnowledgeEvidence] = Field(default_factory=list)
+    story_blueprints: list[StoryBlueprint] = Field(default_factory=list)
+    story_chapters: list[StoryChapter] = Field(default_factory=list)
