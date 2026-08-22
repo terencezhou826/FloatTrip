@@ -1,0 +1,57 @@
+{
+  "sources": [
+    {
+      "source_id": "changzhi.source.shanhaijing-ctext",
+      "title": "《山海经·北山经》",
+      "source_type": "ancient_text",
+      "publisher_or_author": "佚名；Chinese Text Project（数字版本）",
+      "publication_date": null,
+      "url": "https://ctext.org/shan-hai-jing/bei-shan-jing/zh#n83673",
+      "document_reference": "《山海经·北山经》第65段，CTP node n83673",
+      "region_ids": [],
+      "language": "zh-Hant",
+      "authority_level": "primary",
+      "verification_status": "verified",
+      "metadata": {
+        "digital_repository": "Chinese Text Project"
+      }
+    },
+    {
+      "source_id": "changzhi.source.changzi-lingqiu-2026",
+      "title": "精卫文化--灵湫庙精卫祭祀大典",
+      "source_type": "government",
+      "publisher_or_author": "长子县文化和旅游局",
+      "publication_date": "2026-05-20",
+      "url": "http://www.zhangzi.gov.cn/zjzz/zzrw/csgs/202506/t20250620_3058272.html",
+      "document_reference": "长子县人民政府门户网站，长子人文/精卫填海",
+      "region_ids": [
+        "cn.shanxi.changzhi.changzi"
+      ],
+      "language": "zh-Hans",
+      "authority_level": "authoritative",
+      "verification_status": "verified",
+      "metadata": {
+        "site_publisher": "长子县人民政府办公室"
+      }
+    },
+    {
+      "source_id": "changzhi.source.changzhi-fajiushan-2018",
+      "title": "“精卫填海”神话发生地——长子发鸠山",
+      "source_type": "government",
+      "publisher_or_author": "中共长治市委党史研究室（长治市地方志研究室）",
+      "publication_date": "2018-04-11",
+      "url": "http://www.czdsdfz.cn/ztzl/201804/t20180411_1170810.html",
+      "document_reference": "长治市地方志研究室网站，专题专栏",
+      "region_ids": [
+        "cn.shanxi.changzhi",
+        "cn.shanxi.changzhi.changzi"
+      ],
+      "language": "zh-Hans",
+      "authority_level": "authoritative",
+      "verification_status": "verified",
+      "metadata": {
+        "page_source_attribution": "方志山西"
+      }
+    }
+  ]
+}

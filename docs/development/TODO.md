@@ -1,6 +1,26 @@
 # TODO
 
-Updated: 2026-08-22 08:57:19 +08:00
+Updated: 2026-08-22 12:22:28 +08:00
+
+M2A Final Audit completed 2026-08-22 12:22:28 +08:00:
+
+- [x] Recheck all 13 Claim/Evidence/Source chains against the three live public sources.
+- [x] Confirm all Claim wording, types, promotion policies, qualifiers, and statuses remain within Evidence scope.
+- [x] Keep the Yandi residence Claim `review_required` and `internal_only`.
+- [x] Clarify digital-carrier, official-narrative, and qualification-preservation semantics in the Knowledge model documentation.
+- [x] Confirm 12 production-eligible Claims and 100% verified-Claim Evidence coverage.
+- [x] Pass Knowledge, focused, compileall, complete Python, and frontend regressions.
+
+M2A completed 2026-08-22 11:53:09 +08:00:
+
+- [x] Add provider-neutral KnowledgeSource, KnowledgeClaim, and KnowledgeEvidence models.
+- [x] Add controlled claim type, source type, authority, verification, evidence relation, and promotion policy enums.
+- [x] Load optional package `knowledge/**/*.json` recursively in deterministic order.
+- [x] Validate global IDs, Catalog references, Evidence references, verified supporting Evidence, and 100% coverage.
+- [x] Add Repository queries and conservative production-eligibility evaluation.
+- [x] Add 3 checked Jingwei Sources, 13 Claims, and 13 Evidence records without LLM generation.
+- [x] Document that verified mythology is not verified historical fact.
+- [x] Pass Knowledge, Catalog, M1A-M1E, compileall, full Python, and frontend regressions.
 
 - [x] Implement the isolated M0 Catalog models, repository, loader, validation, content, and tests.
 - [x] Add the controlled `RegionType` enum and optional `admin_code`.
@@ -62,3 +82,6 @@ Deferred until explicitly approved:
 - [ ] Add a deterministic multi-attraction real E2E fixture or acceptance Run if stronger live route-gate evidence is required.
 - [ ] Investigate the Runtime concurrency `KNOWN_FLAKY` in a separate task.
 - [ ] Keep RAG, Story, Experience, Commerce, Video, frontend, and mobile integration deferred until explicitly authorized.
+- [ ] Create an M2A Git checkpoint only after explicit approval.
+- [ ] Keep `changzhi.claim.fajiushan-yandi-residence` as `review_required` and `internal_only` unless stronger historical evidence is supplied.
+- [ ] Scope M2B retrieval without adding unverified Claims, weakening promotion policy, or treating mythology as historical fact.

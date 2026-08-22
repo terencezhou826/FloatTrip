@@ -40,6 +40,15 @@ class FileCatalogLoader:
             routes=[item for package in enabled for item in package.routes],
             anchors=[item for package in enabled for item in package.anchors],
             poi_bindings=[item for package in enabled for item in package.poi_bindings],
+            knowledge_sources=[
+                item for package in enabled for item in package.knowledge_sources
+            ],
+            knowledge_claims=[
+                item for package in enabled for item in package.knowledge_claims
+            ],
+            knowledge_evidence=[
+                item for package in enabled for item in package.knowledge_evidence
+            ],
         )
 
     def _load_regions(self) -> list[Region]:
@@ -71,8 +80,40 @@ class FileCatalogLoader:
                     directory / "poi_bindings.json", "poi_bindings"
                 ),
             }
+            package_payload.update(self._load_knowledge(directory / "knowledge"))
             packages.append(ContentPackage.model_validate(package_payload))
         return packages
+
+    def _load_knowledge(self, knowledge_root: Path) -> dict[str, list[Any]]:
+        collections: dict[str, list[Any]] = {
+            "knowledge_sources": [],
+            "knowledge_claims": [],
+            "knowledge_evidence": [],
+        }
+        key_map = {
+            "sources": "knowledge_sources",
+            "claims": "knowledge_claims",
+            "evidence": "knowledge_evidence",
+        }
+        paths = (
+            sorted(knowledge_root.rglob("*.json"))
+            if knowledge_root.is_dir()
+            else []
+        )
+        for path in paths:
+            payload = self._read_json(path)
+            if not isinstance(payload, dict):
+                raise CatalogLoadError(f"{path} must contain one knowledge collection")
+            recognized = [key for key in key_map if key in payload]
+            if len(recognized) != 1 or len(payload) != 1:
+                raise CatalogLoadError(
+                    f"{path} must contain exactly one of: {', '.join(key_map)}"
+                )
+            key = recognized[0]
+            if not isinstance(payload[key], list):
+                raise CatalogLoadError(f"{path} must contain a {key} list")
+            collections[key_map[key]].extend(payload[key])
+        return collections
 
     def _read_collection(self, path: Path, key: str) -> Any:
         payload = self._read_json(path)

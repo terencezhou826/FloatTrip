@@ -1,5 +1,63 @@
 # Project Log
 
+## 2026-08-22 12:22:28 +08:00 - M2A Final Audit
+
+- Files modified in this phase:
+  - Clarified `docs/knowledge/KNOWLEDGE_MODEL.md`: `primary` describes the
+    Source-to-Claim relationship, a modern digital transcription is not an
+    ancient physical manuscript, verified official narrative is not historical
+    truth, and Retrieval/Generation must preserve qualification.
+  - Updated the canonical tracking files under `docs/development/`.
+  - No Source, Claim, Evidence, Catalog data, or business code was changed.
+- Audit results:
+  - Rechecked all 3 public Source URLs and all 13 excerpt/locator pairs; every
+    page returned HTTP 200 and every excerpt remained locatable.
+  - All 13 Claim scopes, types, Evidence relations, and promotion policies were
+    retained. The 12 verified Claims remain production eligible; the Yandi
+    residence Claim remains `review_required` + `internal_only`.
+  - Verified Claim evidence coverage remains 12/12 (100%); status counts remain
+    12 verified, 1 review-required, 0 draft/rejected/disputed.
+- Commands and results:
+  - Knowledge tests: 31 passed.
+  - Catalog + M1A-M1E focused regression: 178 passed, 5 existing warnings.
+  - `python -m compileall -q app`: passed.
+  - Complete Python regression: 256 passed, 18 subtests passed, 5 existing
+    warnings.
+  - Frontend Node tests: 26 passed.
+  - `git diff --check`: run after documentation updates.
+- Current risks:
+  - Public Source URLs are not archived and need a future preservation policy.
+  - `changzhi.claim.fajiushan-yandi-residence` lacks independent historical
+    support and must remain outside production retrieval.
+  - Existing FastAPI lifespan/JWT warnings remain unrelated. Runtime
+    concurrency `KNOWN_FLAKY` did not reproduce and Runtime was not modified.
+- Next recommended action: create an M2A Git checkpoint after approval. Enter
+  M2B only under a separate explicit instruction.
+
+## 2026-08-22 11:53:09 +08:00 - M2A Evidence-Grounded Cultural Knowledge Foundation
+
+- Files modified:
+  - Extended `app/catalog/models.py`, `loader.py`, `repository.py`, `validation.py`, and Catalog exports with provider-neutral Source, Claim, Evidence, authority, verification, promotion, coverage, and production-eligibility semantics.
+  - Added `content/catalog/packages/shanxi/changzhi/knowledge/{sources,claims,evidence}.json` and bumped package content version to `0.2.0`.
+  - Added `tests/catalog/test_knowledge.py`, updated current-Catalog version expectations, and added `docs/knowledge/KNOWLEDGE_MODEL.md`.
+- Source verification:
+  - Directly checked Chinese Text Project `《山海经·北山经》` node `n83673`, a 长子县人民政府/县文旅局 page, and a 长治市地方志研究室 page.
+  - Added 3 Sources, 13 Claims, and 13 Evidence records. Twelve Claims are `verified`, one historical assertion is `review_required` + `internal_only`, and none are `disputed`.
+  - Verified Claim evidence coverage is `1.0`; 12 Claims satisfy the conservative production-eligibility rule.
+- Commands and results:
+  - `python -m pytest -q tests/catalog/test_knowledge.py --basetemp .pytest_tmp_m2a_final_knowledge`: 31 passed.
+  - Catalog + M1A-M1E focused regression: 164 passed.
+  - `python -m compileall -q app`: passed.
+  - `python -m pytest -q --basetemp .pytest_tmp_m2a_final_full`: 256 passed, 18 subtests passed, 5 existing warnings.
+  - `node --test tests/chat-state.test.js tests/navigation-state.test.js`: 26 passed.
+  - Scope, regional-hardcoding, secret, whitespace, and Git diff audits passed; no Planning, Runtime, API behavior, frontend, or mobile code was modified.
+- Problems and risks:
+  - The default pytest temp root is inaccessible on this Windows account; repository-local `--basetemp` works. No dependency or business-code change was needed.
+  - Public source URLs are traceable but not archived locally; link preservation/versioning remains future content-operations work.
+  - `changzhi.claim.fajiushan-yandi-residence` remains intentionally `review_required`; it must not enter production retrieval without stronger historical evidence.
+  - `KNOWN_FLAKY`: `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` remains tracked and did not reproduce. Runtime was not modified.
+- Next recommended action: conduct a human content review, create the M2A Git checkpoint after approval, then scope M2B retrieval against `is_claim_production_eligible()` without weakening evidence or promotion-policy gates.
+
 ## 2026-08-21 19:08:50 +08:00 - M0 Baseline
 
 - Files modified: project tracking files and root `AGENTS.md` created after baseline.

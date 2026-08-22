@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from enum import StrEnum
 from typing import Annotated, Any
 
@@ -58,6 +58,60 @@ class PoiVerificationMethod(StrEnum):
     PROVIDER_EXACT_ID = "provider_exact_id"
     OFFICIAL_SOURCE = "official_source"
     OTHER = "other"
+
+
+class KnowledgeSourceType(StrEnum):
+    ANCIENT_TEXT = "ancient_text"
+    GOVERNMENT = "government"
+    ACADEMIC = "academic"
+    LOCAL_CHRONICLE = "local_chronicle"
+    HERITAGE_RECORD = "heritage_record"
+    SCENIC_OFFICIAL = "scenic_official"
+    MUSEUM = "museum"
+    NEWS = "news"
+    TOURISM_OPERATION = "tourism_operation"
+    OTHER = "other"
+
+
+class AuthorityLevel(StrEnum):
+    PRIMARY = "primary"
+    AUTHORITATIVE = "authoritative"
+    SCHOLARLY = "scholarly"
+    SECONDARY = "secondary"
+    REFERENCE_ONLY = "reference_only"
+
+
+class KnowledgeClaimType(StrEnum):
+    HISTORICAL_FACT = "historical_fact"
+    MYTHOLOGY = "mythology"
+    LOCAL_LEGEND = "local_legend"
+    ACADEMIC_INTERPRETATION = "academic_interpretation"
+    OFFICIAL_NARRATIVE = "official_narrative"
+    TOURISM_OPERATION = "tourism_operation"
+    GEOGRAPHIC_FACT = "geographic_fact"
+    HERITAGE_FACT = "heritage_fact"
+
+
+class KnowledgeVerificationStatus(StrEnum):
+    DRAFT = "draft"
+    REVIEW_REQUIRED = "review_required"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
+    DISPUTED = "disputed"
+
+
+class EvidenceRelation(StrEnum):
+    SUPPORTS = "supports"
+    CONTRADICTS = "contradicts"
+    CONTEXTUALIZES = "contextualizes"
+    MENTIONS = "mentions"
+
+
+class PromotionPolicyStatus(StrEnum):
+    ALLOWED = "allowed"
+    ALLOWED_WITH_QUALIFICATION = "allowed_with_qualification"
+    INTERNAL_ONLY = "internal_only"
+    FORBIDDEN = "forbidden"
 
 
 class Region(CatalogModel):
@@ -121,6 +175,123 @@ class ExternalPoiBinding(CatalogModel):
         return self.verification_status is PoiVerificationStatus.VERIFIED
 
 
+class PromotionPolicy(CatalogModel):
+    status: PromotionPolicyStatus
+    approved_wording: str | None = Field(
+        default=None, min_length=1, max_length=1000
+    )
+    required_qualifier: str | None = Field(
+        default=None, min_length=1, max_length=200
+    )
+    forbidden_wordings: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_qualification(self) -> "PromotionPolicy":
+        if (
+            self.status is PromotionPolicyStatus.ALLOWED_WITH_QUALIFICATION
+            and self.approved_wording is None
+            and self.required_qualifier is None
+        ):
+            raise ValueError(
+                "allowed_with_qualification requires approved_wording or "
+                "required_qualifier"
+            )
+        return self
+
+
+class EvidenceLocator(CatalogModel):
+    page: str | None = Field(default=None, min_length=1, max_length=100)
+    chapter: str | None = Field(default=None, min_length=1, max_length=200)
+    volume: str | None = Field(default=None, min_length=1, max_length=100)
+    paragraph: str | None = Field(default=None, min_length=1, max_length=200)
+    url_fragment: str | None = Field(default=None, min_length=1, max_length=200)
+    line_start: int | None = Field(default=None, ge=1)
+    line_end: int | None = Field(default=None, ge=1)
+    other: str | None = Field(default=None, min_length=1, max_length=500)
+
+    @model_validator(mode="after")
+    def validate_locator(self) -> "EvidenceLocator":
+        values = (
+            self.page,
+            self.chapter,
+            self.volume,
+            self.paragraph,
+            self.url_fragment,
+            self.line_start,
+            self.line_end,
+            self.other,
+        )
+        if all(value is None for value in values):
+            raise ValueError("evidence locator requires at least one location field")
+        if (
+            self.line_start is not None
+            and self.line_end is not None
+            and self.line_start > self.line_end
+        ):
+            raise ValueError("line_start must not be after line_end")
+        return self
+
+
+class KnowledgeSource(CatalogModel):
+    source_id: StableId
+    title: str = Field(min_length=1, max_length=500)
+    source_type: KnowledgeSourceType
+    publisher_or_author: str = Field(min_length=1, max_length=300)
+    publication_date: date | None = None
+    url: str | None = Field(default=None, min_length=1, max_length=2048)
+    document_reference: str | None = Field(
+        default=None, min_length=1, max_length=500
+    )
+    region_ids: list[StableId] = Field(default_factory=list)
+    language: str = Field(min_length=2, max_length=32)
+    authority_level: AuthorityLevel
+    verification_status: KnowledgeVerificationStatus
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_reference(self) -> "KnowledgeSource":
+        if self.url is None and self.document_reference is None:
+            raise ValueError("knowledge source requires url or document_reference")
+        return self
+
+
+class KnowledgeClaim(CatalogModel):
+    claim_id: StableId
+    subject_ids: list[StableId] = Field(min_length=1)
+    claim_type: KnowledgeClaimType
+    statement: str = Field(min_length=1, max_length=2000)
+    normalized_statement: str = Field(min_length=1, max_length=2000)
+    region_ids: list[StableId] = Field(default_factory=list)
+    theme_ids: list[StableId] = Field(default_factory=list)
+    anchor_ids: list[StableId] = Field(default_factory=list)
+    verification_status: KnowledgeVerificationStatus
+    promotion_policy: PromotionPolicy
+    valid_from: date | None = None
+    valid_to: date | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_validity_period(self) -> "KnowledgeClaim":
+        if (
+            self.valid_from is not None
+            and self.valid_to is not None
+            and self.valid_from > self.valid_to
+        ):
+            raise ValueError("valid_from must not be after valid_to")
+        return self
+
+
+class KnowledgeEvidence(CatalogModel):
+    evidence_id: StableId
+    claim_id: StableId
+    source_id: StableId
+    locator: EvidenceLocator
+    quote_excerpt: str = Field(min_length=1, max_length=1000)
+    evidence_relation: EvidenceRelation
+    verification_status: KnowledgeVerificationStatus
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
 class CuratedRoute(CatalogModel):
     id: StableId
     name: str = Field(min_length=1, max_length=160)
@@ -151,3 +322,6 @@ class ContentPackage(CatalogModel):
     routes: list[CuratedRoute]
     anchors: list[Anchor]
     poi_bindings: list[ExternalPoiBinding] = Field(default_factory=list)
+    knowledge_sources: list[KnowledgeSource] = Field(default_factory=list)
+    knowledge_claims: list[KnowledgeClaim] = Field(default_factory=list)
+    knowledge_evidence: list[KnowledgeEvidence] = Field(default_factory=list)

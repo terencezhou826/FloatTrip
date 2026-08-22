@@ -9,7 +9,12 @@ from app.catalog.models import (
     CatalogTheme,
     ContentPackage,
     CuratedRoute,
+    EvidenceRelation,
     ExternalPoiBinding,
+    KnowledgeClaim,
+    KnowledgeEvidence,
+    KnowledgeSource,
+    KnowledgeVerificationStatus,
     Region,
 )
 
@@ -28,15 +33,37 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
     routes = [item for package in packages for item in package.routes]
     anchors = [item for package in packages for item in package.anchors]
     poi_bindings = [item for package in packages for item in package.poi_bindings]
+    knowledge_sources = [
+        item for package in packages for item in package.knowledge_sources
+    ]
+    knowledge_claims = [
+        item for package in packages for item in package.knowledge_claims
+    ]
+    knowledge_evidence = [
+        item for package in packages for item in package.knowledge_evidence
+    ]
     issues: list[str] = []
 
-    _check_duplicate_ids(regions, themes, routes, anchors, poi_bindings, issues)
+    _check_duplicate_ids(
+        regions,
+        themes,
+        routes,
+        anchors,
+        poi_bindings,
+        knowledge_sources,
+        knowledge_claims,
+        knowledge_evidence,
+        issues,
+    )
 
     region_ids = {item.id for item in regions}
     parents = {item.id: item.parent_id for item in regions}
     theme_ids = {item.id for item in themes}
     anchor_ids = {item.id for item in anchors}
     anchors_by_id = {item.id: item for item in anchors}
+    source_ids = {item.source_id for item in knowledge_sources}
+    claim_ids = {item.claim_id for item in knowledge_claims}
+    sources_by_id = {item.source_id: item for item in knowledge_sources}
 
     for region in regions:
         if region.parent_id and region.parent_id not in region_ids:
@@ -74,6 +101,80 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
                 f"binding {binding.binding_id} references missing anchor "
                 f"{binding.anchor_id}"
             )
+
+    for source in knowledge_sources:
+        for region_id in source.region_ids:
+            if region_id not in region_ids:
+                issues.append(
+                    f"knowledge source {source.source_id} references missing region "
+                    f"{region_id}"
+                )
+
+    for claim in knowledge_claims:
+        for region_id in claim.region_ids:
+            if region_id not in region_ids:
+                issues.append(
+                    f"knowledge claim {claim.claim_id} references missing region "
+                    f"{region_id}"
+                )
+        for theme_id in claim.theme_ids:
+            if theme_id not in theme_ids:
+                issues.append(
+                    f"knowledge claim {claim.claim_id} references missing theme "
+                    f"{theme_id}"
+                )
+        for anchor_id in claim.anchor_ids:
+            if anchor_id not in anchor_ids:
+                issues.append(
+                    f"knowledge claim {claim.claim_id} references missing anchor "
+                    f"{anchor_id}"
+                )
+
+    for evidence in knowledge_evidence:
+        if evidence.claim_id not in claim_ids:
+            issues.append(
+                f"knowledge evidence {evidence.evidence_id} references missing claim "
+                f"{evidence.claim_id}"
+            )
+        if evidence.source_id not in source_ids:
+            issues.append(
+                f"knowledge evidence {evidence.evidence_id} references missing source "
+                f"{evidence.source_id}"
+            )
+
+    supported_verified_claim_ids = {
+        evidence.claim_id
+        for evidence in knowledge_evidence
+        if evidence.verification_status is KnowledgeVerificationStatus.VERIFIED
+        and evidence.evidence_relation is EvidenceRelation.SUPPORTS
+        and (
+            source := sources_by_id.get(evidence.source_id)
+        ) is not None
+        and source.verification_status is KnowledgeVerificationStatus.VERIFIED
+    }
+    for claim in knowledge_claims:
+        if (
+            claim.verification_status is KnowledgeVerificationStatus.VERIFIED
+            and claim.claim_id not in supported_verified_claim_ids
+        ):
+            issues.append(
+                f"verified knowledge claim {claim.claim_id} has no verified supporting "
+                "evidence from a verified source"
+            )
+
+    coverage = calculate_evidence_coverage(
+        knowledge_claims,
+        knowledge_evidence,
+        verified_source_ids={
+            source.source_id
+            for source in knowledge_sources
+            if source.verification_status is KnowledgeVerificationStatus.VERIFIED
+        },
+    )
+    if coverage < 1.0:
+        issues.append(
+            f"verified knowledge claim evidence coverage is {coverage:.3f}, not 1.000"
+        )
 
     binding_identities: dict[tuple[str, str], set[str]] = {}
     for binding in poi_bindings:
@@ -141,6 +242,9 @@ def _check_duplicate_ids(
     routes: list[CuratedRoute],
     anchors: list[Anchor],
     poi_bindings: list[ExternalPoiBinding],
+    knowledge_sources: list[KnowledgeSource],
+    knowledge_claims: list[KnowledgeClaim],
+    knowledge_evidence: list[KnowledgeEvidence],
     issues: list[str],
 ) -> None:
     typed_items = (
@@ -149,6 +253,9 @@ def _check_duplicate_ids(
         + [("route", item.id) for item in routes]
         + [("anchor", item.id) for item in anchors]
         + [("poi_binding", item.binding_id) for item in poi_bindings]
+        + [("knowledge_source", item.source_id) for item in knowledge_sources]
+        + [("knowledge_claim", item.claim_id) for item in knowledge_claims]
+        + [("knowledge_evidence", item.evidence_id) for item in knowledge_evidence]
     )
     counts = Counter(item_id for _, item_id in typed_items)
     for duplicate in sorted(item_id for item_id, count in counts.items() if count > 1):
@@ -187,3 +294,27 @@ def is_same_or_descendant(
 def _duplicates(values: list[str]) -> list[str]:
     counts = Counter(values)
     return sorted(value for value, count in counts.items() if count > 1)
+
+
+def calculate_evidence_coverage(
+    claims: list[KnowledgeClaim],
+    evidence: list[KnowledgeEvidence],
+    *,
+    verified_source_ids: set[str],
+) -> float:
+    verified_claim_ids = {
+        claim.claim_id
+        for claim in claims
+        if claim.verification_status is KnowledgeVerificationStatus.VERIFIED
+    }
+    if not verified_claim_ids:
+        return 1.0
+    covered_claim_ids = {
+        item.claim_id
+        for item in evidence
+        if item.claim_id in verified_claim_ids
+        and item.source_id in verified_source_ids
+        and item.verification_status is KnowledgeVerificationStatus.VERIFIED
+        and item.evidence_relation is EvidenceRelation.SUPPORTS
+    }
+    return len(covered_claim_ids) / len(verified_claim_ids)

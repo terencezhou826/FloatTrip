@@ -1,0 +1,266 @@
+{
+  "claims": [
+    {
+      "claim_id": "changzhi.claim.shanhaijing-fajiushan-passage",
+      "subject_ids": ["changzhi.subject.shanhaijing", "changzhi.subject.fajiushan", "changzhi.subject.jingwei"],
+      "claim_type": "historical_fact",
+      "statement": "《山海经·北山经》中存在一段以“发鸠之山”为起点、记述精卫的文字。",
+      "normalized_statement": "山海经北山经包含发鸠之山和精卫的相关段落",
+      "region_ids": ["cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed",
+        "approved_wording": "《山海经·北山经》中有关于“发鸠之山”和精卫的记载。",
+        "required_qualifier": null,
+        "forbidden_wordings": []
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.fajiushan-zhemu",
+      "subject_ids": ["changzhi.subject.fajiushan"],
+      "claim_type": "mythology",
+      "statement": "《山海经·北山经》的叙事称，发鸠之山上多柘木。",
+      "normalized_statement": "北山经叙事称发鸠之山多柘木",
+      "region_ids": ["cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《山海经·北山经》记载，发鸠之山上多柘木。",
+        "required_qualifier": "据《山海经·北山经》记载",
+        "forbidden_wordings": []
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.jingwei-bird-appearance",
+      "subject_ids": ["changzhi.subject.jingwei"],
+      "claim_type": "mythology",
+      "statement": "《山海经·北山经》的叙事将精卫描写为形似乌、花纹头部、白喙、赤足的鸟。",
+      "normalized_statement": "北山经叙事中的精卫鸟形似乌文首白喙赤足",
+      "region_ids": ["cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《山海经·北山经》记载，精卫鸟“其状如乌，文首、白喙、赤足”。",
+        "required_qualifier": "据《山海经·北山经》记载",
+        "forbidden_wordings": []
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.jingwei-bird-name",
+      "subject_ids": ["changzhi.subject.jingwei"],
+      "claim_type": "mythology",
+      "statement": "《山海经·北山经》的叙事称发鸠之山的这种鸟名为精卫。",
+      "normalized_statement": "北山经叙事称发鸠之山的鸟名为精卫",
+      "region_ids": ["cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《山海经·北山经》记载，此鸟名为精卫。",
+        "required_qualifier": "据《山海经·北山经》记载",
+        "forbidden_wordings": []
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.jingwei-nuwa",
+      "subject_ids": ["changzhi.subject.jingwei", "changzhi.subject.nuwa"],
+      "claim_type": "mythology",
+      "statement": "《山海经·北山经》的叙事称精卫原为炎帝的少女，名为女娃。",
+      "normalized_statement": "北山经叙事称精卫原为炎帝少女女娃",
+      "region_ids": ["cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《山海经·北山经》记载，精卫原为炎帝之少女女娃。",
+        "required_qualifier": "据《山海经·北山经》记载",
+        "forbidden_wordings": []
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.nuwa-drowning",
+      "subject_ids": ["changzhi.subject.nuwa", "changzhi.subject.jingwei"],
+      "claim_type": "mythology",
+      "statement": "《山海经·北山经》的叙事称女娃游于东海，溺而不返，故化为精卫。",
+      "normalized_statement": "北山经叙事称女娃溺于东海后化为精卫",
+      "region_ids": ["cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《山海经·北山经》的神话叙事，女娃游于东海，溺而不返，故化为精卫。",
+        "required_qualifier": "据《山海经·北山经》的神话叙事",
+        "forbidden_wordings": []
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.jingwei-fills-sea",
+      "subject_ids": ["changzhi.subject.jingwei"],
+      "claim_type": "mythology",
+      "statement": "《山海经·北山经》的叙事称精卫常衔西山木石以填东海。",
+      "normalized_statement": "北山经叙事称精卫衔西山木石填东海",
+      "region_ids": ["cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《山海经·北山经》的神话叙事，精卫常衔西山木石以填东海。",
+        "required_qualifier": "据《山海经·北山经》的神话叙事",
+        "forbidden_wordings": []
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.shanhaijing-zhangshui-passage",
+      "subject_ids": ["changzhi.subject.shanhaijing", "changzhi.subject.fajiushan"],
+      "claim_type": "historical_fact",
+      "statement": "《山海经·北山经》的同一段文字还写有“漳水出焉，东流注于河”。",
+      "normalized_statement": "北山经发鸠之山段包含漳水出焉东流注于河",
+      "region_ids": ["cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed",
+        "approved_wording": "《山海经·北山经》的发鸠之山段还写有“漳水出焉，东流注于河”。",
+        "required_qualifier": null,
+        "forbidden_wordings": []
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.lingqiu-location",
+      "subject_ids": ["changzhi.subject.lingqiu", "changzhi.subject.fajiushan"],
+      "claim_type": "geographic_fact",
+      "statement": "长子县文化和旅游局资料称，灵湫庙位于山西省长子县石哲镇房头村发鸠山下。",
+      "normalized_statement": "灵湫庙位于长子县石哲镇房头村发鸠山下",
+      "region_ids": ["cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed",
+        "approved_wording": "据长子县文化和旅游局资料，灵湫庙位于长子县石哲镇房头村发鸠山下。",
+        "required_qualifier": null,
+        "forbidden_wordings": []
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.changzi-official-birthplace",
+      "subject_ids": ["changzhi.subject.fajiushan", "changzhi.subject.jingwei"],
+      "claim_type": "official_narrative",
+      "statement": "长子县文化和旅游局资料将发鸠山表述为精卫填海故事的发祥地。",
+      "normalized_statement": "长子县文旅局将发鸠山表述为精卫填海故事发祥地",
+      "region_ids": ["cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据长子县文化和旅游局资料，发鸠山被表述为精卫填海故事的发祥地。",
+        "required_qualifier": "据长子县文化和旅游局资料",
+        "forbidden_wordings": ["精卫填海是已经证实的历史事件"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.local-history-birthplace",
+      "subject_ids": ["changzhi.subject.fajiushan", "changzhi.subject.jingwei"],
+      "claim_type": "official_narrative",
+      "statement": "长治市地方志研究室页面将精卫填海称为上古神话，并将其故事发生地表述为长子县发鸠山。",
+      "normalized_statement": "长治地方志页面将精卫填海称为神话并将发生地表述为长子发鸠山",
+      "region_ids": ["cn.shanxi.changzhi", "cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "长治市地方志研究室资料将精卫填海称为上古神话，并将故事发生地表述为长子县发鸠山。",
+        "required_qualifier": "据长治市地方志研究室资料",
+        "forbidden_wordings": ["精卫填海是已经证实的历史事件"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.jingwei-heritage-2009",
+      "subject_ids": ["changzhi.subject.jingwei", "changzhi.subject.heritage"],
+      "claim_type": "heritage_fact",
+      "statement": "长子县人民政府页面记载，2009年精卫填海被纳入山西省第二批省级非物质文化遗产代表性名录。",
+      "normalized_statement": "长子县政府页面记载2009年精卫填海纳入山西省第二批省级非遗名录",
+      "region_ids": ["cn.shanxi", "cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed",
+        "approved_wording": "据长子县人民政府页面记载，2009年精卫填海被纳入山西省第二批省级非物质文化遗产代表性名录。",
+        "required_qualifier": null,
+        "forbidden_wordings": []
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.fajiushan-yandi-residence",
+      "subject_ids": ["changzhi.subject.fajiushan", "changzhi.subject.yandi"],
+      "claim_type": "historical_fact",
+      "statement": "发鸠山曾是炎帝居家的地方。",
+      "normalized_statement": "发鸠山曾是炎帝居家地",
+      "region_ids": ["cn.shanxi.changzhi.changzi"],
+      "theme_ids": ["changzhi.jingwei"],
+      "anchor_ids": ["changzhi.anchor.fajiushan"],
+      "verification_status": "review_required",
+      "promotion_policy": {
+        "status": "internal_only",
+        "approved_wording": null,
+        "required_qualifier": null,
+        "forbidden_wordings": []
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {
+        "review_note": "县文旅页面有此表述，但 M2A 未取得可独立验证其历史事实属性的来源。"
+      }
+    }
+  ]
+}

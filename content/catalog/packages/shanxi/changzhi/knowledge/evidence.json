@@ -1,0 +1,136 @@
+{
+  "evidence": [
+    {
+      "evidence_id": "changzhi.evidence.shanhaijing-fajiushan-passage",
+      "claim_id": "changzhi.claim.shanhaijing-fajiushan-passage",
+      "source_id": "changzhi.source.shanhaijing-ctext",
+      "locator": {"chapter": "北山经", "paragraph": "65", "url_fragment": "n83673"},
+      "quote_excerpt": "又北二百里，曰發鳩之山，其上多柘木。有鳥焉，其狀如烏，文首、白喙、赤足，名曰精衛。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.fajiushan-zhemu",
+      "claim_id": "changzhi.claim.fajiushan-zhemu",
+      "source_id": "changzhi.source.shanhaijing-ctext",
+      "locator": {"chapter": "北山经", "paragraph": "65", "url_fragment": "n83673"},
+      "quote_excerpt": "又北二百里，曰發鳩之山，其上多柘木。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.jingwei-bird-appearance",
+      "claim_id": "changzhi.claim.jingwei-bird-appearance",
+      "source_id": "changzhi.source.shanhaijing-ctext",
+      "locator": {"chapter": "北山经", "paragraph": "65", "url_fragment": "n83673"},
+      "quote_excerpt": "有鳥焉，其狀如烏，文首、白喙、赤足，名曰精衛，其鳴自詨。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.jingwei-bird-name",
+      "claim_id": "changzhi.claim.jingwei-bird-name",
+      "source_id": "changzhi.source.shanhaijing-ctext",
+      "locator": {"chapter": "北山经", "paragraph": "65", "url_fragment": "n83673"},
+      "quote_excerpt": "有鳥焉，其狀如烏，文首、白喙、赤足，名曰精衛。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.jingwei-nuwa",
+      "claim_id": "changzhi.claim.jingwei-nuwa",
+      "source_id": "changzhi.source.shanhaijing-ctext",
+      "locator": {"chapter": "北山经", "paragraph": "65", "url_fragment": "n83673"},
+      "quote_excerpt": "是炎帝之少女，名曰女娃。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.nuwa-drowning",
+      "claim_id": "changzhi.claim.nuwa-drowning",
+      "source_id": "changzhi.source.shanhaijing-ctext",
+      "locator": {"chapter": "北山经", "paragraph": "65", "url_fragment": "n83673"},
+      "quote_excerpt": "女娃遊于東海，溺而不返，故為精衛。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.jingwei-fills-sea",
+      "claim_id": "changzhi.claim.jingwei-fills-sea",
+      "source_id": "changzhi.source.shanhaijing-ctext",
+      "locator": {"chapter": "北山经", "paragraph": "65", "url_fragment": "n83673"},
+      "quote_excerpt": "常銜西山之木石，以堙于東海。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.shanhaijing-zhangshui-passage",
+      "claim_id": "changzhi.claim.shanhaijing-zhangshui-passage",
+      "source_id": "changzhi.source.shanhaijing-ctext",
+      "locator": {"chapter": "北山经", "paragraph": "65", "url_fragment": "n83673"},
+      "quote_excerpt": "漳水出焉，東流注于河。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.lingqiu-location",
+      "claim_id": "changzhi.claim.lingqiu-location",
+      "source_id": "changzhi.source.changzi-lingqiu-2026",
+      "locator": {"paragraph": "正文第1段"},
+      "quote_excerpt": "灵湫庙，处于山西省长子县石哲镇房头村发鸠山下，原名泉神庙、三圣公主庙。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.changzi-official-birthplace",
+      "claim_id": "changzhi.claim.changzi-official-birthplace",
+      "source_id": "changzhi.source.changzi-lingqiu-2026",
+      "locator": {"paragraph": "正文第1段"},
+      "quote_excerpt": "据《山海经》记载、灵湫庙内遗存的碑刻和民间传说可知，发鸠山不仅是精卫填海故事的发祥地，而且是始祖炎帝曾经居家的地方。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.local-history-birthplace",
+      "claim_id": "changzhi.claim.local-history-birthplace",
+      "source_id": "changzhi.source.changzhi-fajiushan-2018",
+      "locator": {"paragraph": "正文第1段至第3段"},
+      "quote_excerpt": "精卫填海是上古时期著名的神话之一，在中华大地广泛流传。精卫填海的神话故事就发生在长子县发鸠山。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.jingwei-heritage-2009",
+      "claim_id": "changzhi.claim.jingwei-heritage-2009",
+      "source_id": "changzhi.source.changzi-lingqiu-2026",
+      "locator": {"paragraph": "正文第2段"},
+      "quote_excerpt": "2009年，精卫填海被纳入山西省第二批省级非物质文化遗产代表性名录。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.fajiushan-yandi-residence",
+      "claim_id": "changzhi.claim.fajiushan-yandi-residence",
+      "source_id": "changzhi.source.changzi-lingqiu-2026",
+      "locator": {"paragraph": "正文第1段"},
+      "quote_excerpt": "发鸠山不仅是精卫填海故事的发祥地，而且是始祖炎帝曾经居家的地方。",
+      "evidence_relation": "supports",
+      "verification_status": "review_required",
+      "metadata": {
+        "review_note": "该摘录可证明官方页面有此表述，但不足以将其审核为历史事实。"
+      }
+    }
+  ]
+}
