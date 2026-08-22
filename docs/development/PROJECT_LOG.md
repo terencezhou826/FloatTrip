@@ -293,3 +293,51 @@
   - Existing FastAPI lifespan deprecation and local `JWT_SECRET` warnings remain unrelated.
   - `KNOWN_FLAKY`: `RuntimeEndToEndTests.test_two_plans_execute_concurrently_without_merging` remains tracked but did not reproduce.
 - Next recommended action: review M1D and create a Git checkpoint only after explicit approval. Decide separately whether the residual lunch detour blocks M2; do not enter M2 implicitly.
+
+## 2026-08-22 08:57:19 +08:00 - M1E Deterministic Route Feasibility and Travel-Time Matrix
+
+- Files modified:
+  - Added `app/providers/travel_time.py` and `app/providers/amap/travel_time.py` for Provider-neutral driving contracts and the Amap Driving v3 adapter.
+  - Added `app/planning/route_feasibility.py` for lazy per-Run OD caching, selected-adjacent-leg validation, route policy, and meal-detour policy.
+  - Extended Planning state, graph, nodes, prompts, and revision checkpoint projection with deterministic route feasibility and road-leg provenance.
+  - Extended Meal Search to validate previous -> meal -> next road corridors before retaining candidates.
+  - Added `tests/test_route_feasibility.py` and expanded `tests/test_meal_coverage.py`.
+- Commands run:
+  - Focused M1E/Meal/Mandatory and Catalog/M1A-M1E pytest suites.
+  - `python -m compileall -q app`.
+  - Complete `python -m pytest -q --basetemp .pytest_tmp_m1e_full`.
+  - `node --test tests/chat-state.test.js tests/navigation-state.test.js`.
+  - Live Amap Driving v3 smoke for Fajiushan, the M1D lunch, and Zhangze Lake.
+  - Formal Jingwei execution through `POST /api/runs`, plus scope, hardcoding, secret, whitespace, and Git audits.
+- Results:
+  - M1E/Meal/Mandatory focused: 46 passed.
+  - Catalog + M1A-M1E focused: 133 passed.
+  - Complete Python: 225 passed, 18 subtests passed, 5 existing warnings.
+  - Compileall: passed. Frontend: 26 passed.
+  - The Runtime concurrency `KNOWN_FLAKY` did not reproduce; Runtime concurrency was not modified.
+- Architecture and policy:
+  - Planning depends on `TravelTimeProvider`, `TravelPoint`, and `TravelLeg`, not Amap response fields. Current mode is driving.
+  - `TravelTimeMatrix` queries only selected adjacent OD pairs, persists a serializable per-Run cache, and reuses unchanged legs after Planner correction.
+  - Hard route checks require actual duration plus a 10-minute buffer to fit the scheduled gap and cap a leg at 150 km. A 50 km leg and two hours of daily driving are soft warnings.
+  - Meal policy caps extra detour at 20 minutes, total meal travel at 90 minutes, and any meal leg at 60 minutes; candidates are identified only by `provider + external_poi_id`.
+  - Provider errors and missing identities remain explicit failures. Haversine remains only as a legacy display field and never impersonates a road result.
+- Live routing evidence:
+  - Fajiushan -> Zhangze Lake: 50.126 km / 66.9 min by road, versus the prior 39.82 km straight-line display value.
+  - Fajiushan -> Guihua Steamed Dumpling Restaurant: 51.484 km / 64.0 min.
+  - Restaurant -> Zhangze Lake: 3.136 km / 4.5 min.
+  - Via-meal total: 54.620 km / 68.5 min; detour over direct: 4.494 km / 1.6 min.
+  - The M1D meal is rejected because its first leg exceeds the generic 60-minute meal-leg limit, despite its small detour.
+- Formal Runtime/API E2E:
+  - Run `ded3572b-f5d7-4479-bb16-6923565d59ee` succeeded and persisted itinerary `bc1d4f8b-cecc-4e74-86ba-8fc629a4bcd0`.
+  - Catalog snapshot remained package `shanxi.changzhi`, schema `1.0`, content `0.1.0`, route `changzhi.route.jingwei-fajiushan`.
+  - The relaxed final route selected mandatory Fajiushan (`B0FFF49AFB`) from 09:30 to 15:30 and no dynamic attraction. Mandatory, Reviewer, Time Check, route feasibility, Spot Tips, and Finalize passed.
+  - Lunch and dinner used the same real fallback candidate Nongxiangju (`B0L309LL0Z`). Fajiushan -> restaurant was 5.526 km / 6.6 min; same restaurant identity -> itself was 0 km / 0 min.
+  - Final driving total was 5.526 km / 6.6 min with complete Provider road data and `meal_route_feasible=true`.
+- Current problems and risks:
+  - Because only one attraction was selected, the E2E had no inter-attraction leg; route feasibility is valid for the selected route but does not demonstrate a corrected multi-attraction Run.
+  - Meal entries have no explicit start/end clock times. Their road legs are verified, but scheduled meal gaps remain `ROAD_VERIFIED`, not hard schedule `PASS`.
+  - The one available fallback restaurant was selected for both lunch and dinner and had a 3.2 Provider rating; the result warns about the duplicate and sparse local coverage.
+  - Exact 800 RMB total remains unverifiable because reliable attraction and transport pricing is incomplete.
+  - A no-date E2E entered `waiting_user`; existing startup reconciliation marks orphaned waiting Runs failed after process restart. This Runtime behavior was observed but not changed.
+  - Existing FastAPI lifespan, missing local `JWT_SECRET`, and unavailable Redis warnings remain unrelated.
+- Next recommended action: review and checkpoint M1E only after explicit approval. Do not enter M2 implicitly.

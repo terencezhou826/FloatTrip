@@ -4,6 +4,7 @@ import asyncio
 
 import pytest
 
+from app.catalog.models import PoiProvider
 from app.planning.helpers import restaurant_to_dict
 from app.planning.meal_coverage import (
     DEFAULT_MEAL_SEARCH_LEVELS,
@@ -16,7 +17,9 @@ from app.planning.nodes import (
     make_meal_recommend_node,
     meal_search_node,
 )
+from app.planning.route_feasibility import TravelTimeMatrix
 from app.planning.schemas import SingleDayMealPick, TravelPlanState
+from app.providers.travel_time import TransportMode, TravelLeg
 
 
 def _candidate(
@@ -185,20 +188,53 @@ def _planning_state() -> TravelPlanState:
                     "period": "morning",
                     "start_time": "09:00",
                     "end_time": "11:30",
+                    "provider": "amap",
+                    "external_poi_id": "AMAP-MORNING",
                 },
                 {
                     "name": "Afternoon Spot",
                     "period": "afternoon",
                     "start_time": "14:00",
                     "end_time": "16:00",
+                    "provider": "amap",
+                    "external_poi_id": "AMAP-AFTERNOON",
                 },
             ],
         }],
         pois=[
-            {"name": "Morning Spot", "location": {"lng": 112.1, "lat": 36.1}},
-            {"name": "Afternoon Spot", "location": {"lng": 112.2, "lat": 36.2}},
+            {
+                "name": "Morning Spot",
+                "provider": "amap",
+                "external_poi_id": "AMAP-MORNING",
+                "location": {"lng": 112.1, "lat": 36.1},
+            },
+            {
+                "name": "Afternoon Spot",
+                "provider": "amap",
+                "external_poi_id": "AMAP-AFTERNOON",
+                "location": {"lng": 112.2, "lat": 36.2},
+            },
         ],
     )
+
+
+class _FakeRoutingProvider:
+    provider = PoiProvider.AMAP
+
+    async def get_travel_time(self, origin, destination, transport_mode):
+        return TravelLeg(
+            from_poi=origin,
+            to_poi=destination,
+            distance_m=1000,
+            duration_s=300,
+            provider=self.provider,
+            transport_mode=TransportMode(transport_mode),
+            source="fake-road-routing",
+        )
+
+
+def _routing_matrix() -> TravelTimeMatrix:
+    return TravelTimeMatrix({PoiProvider.AMAP: _FakeRoutingProvider()})
 
 
 def test_restaurant_normalization_preserves_provider_identity_and_distance():
@@ -220,11 +256,14 @@ def test_ordinary_non_catalog_meal_search_keeps_default_behavior(monkeypatch):
     monkeypatch.setattr("app.planning.nodes.amap_key", lambda: "key")
     monkeypatch.setattr("app.planning.nodes.search_around_pois_async", fake_search)
 
-    result = asyncio.run(meal_search_node(_planning_state()))
+    result = asyncio.run(
+        meal_search_node(_planning_state(), matrix=_routing_matrix())
+    )
 
     assert [radius for _location, radius in calls] == [1000, 1000]
     assert result["meal_candidates"][0]["lunch"]["coverage_status"] == "COVERED"
     assert result["meal_candidates"][0]["dinner"]["coverage_status"] == "COVERED"
+    assert result["meal_candidates"][0]["lunch"]["meal_route_feasible"] is True
     assert _planning_state().catalog_context is None
 
 
@@ -240,13 +279,63 @@ def test_route_aware_lunch_uses_secondary_anchor_before_radius_expansion(monkeyp
     monkeypatch.setattr("app.planning.nodes.amap_key", lambda: "key")
     monkeypatch.setattr("app.planning.nodes.search_around_pois_async", fake_search)
 
-    result = asyncio.run(meal_search_node(_planning_state()))
+    result = asyncio.run(
+        meal_search_node(_planning_state(), matrix=_routing_matrix())
+    )
     lunch = result["meal_candidates"][0]["lunch"]
 
     assert calls[0][1] == calls[1][1] == 1000
     assert lunch["coverage_status"] == "FALLBACK_EXPANDED"
     assert lunch["candidates"][0]["search_anchor_role"] == "secondary"
     assert lunch["candidates"][0]["search_anchor_name"] == "Afternoon Spot"
+
+
+def test_meal_search_rejects_far_one_sided_candidate_and_keeps_searching(monkeypatch):
+    class PairRoutingProvider:
+        provider = PoiProvider.AMAP
+
+        async def get_travel_time(self, origin, destination, transport_mode):
+            durations = {
+                ("AMAP-MORNING", "AMAP-FAR"): 4200,
+                ("AMAP-FAR", "AMAP-AFTERNOON"): 180,
+                ("AMAP-MORNING", "AMAP-AFTERNOON"): 3600,
+                ("AMAP-MORNING", "AMAP-GOOD"): 1000,
+                ("AMAP-GOOD", "AMAP-AFTERNOON"): 1100,
+                ("AMAP-AFTERNOON", "AMAP-GOOD"): 300,
+            }
+            duration = durations[(origin.external_poi_id, destination.external_poi_id)]
+            return TravelLeg(
+                from_poi=origin,
+                to_poi=destination,
+                distance_m=duration * 10,
+                duration_s=duration,
+                provider=self.provider,
+                transport_mode=TransportMode(transport_mode),
+                source="fake-road-routing",
+            )
+
+    async def fake_search(location, _api_key, **_kwargs):
+        if location["lng"] == 112.1:
+            far = _raw_restaurant("AMAP-FAR", "Far Restaurant")
+            far["location"] = "112.199000,36.199000"
+            return [far]
+        good = _raw_restaurant("AMAP-GOOD", "Corridor Restaurant")
+        good["location"] = "112.150000,36.150000"
+        return [good]
+
+    monkeypatch.setattr("app.planning.nodes.amap_key", lambda: "key")
+    monkeypatch.setattr("app.planning.nodes.search_around_pois_async", fake_search)
+    matrix = TravelTimeMatrix({PoiProvider.AMAP: PairRoutingProvider()})
+
+    result = asyncio.run(meal_search_node(_planning_state(), matrix=matrix))
+    lunch = result["meal_candidates"][0]["lunch"]
+
+    assert lunch["coverage_status"] == "FALLBACK_EXPANDED"
+    assert [item["external_poi_id"] for item in lunch["candidates"]] == [
+        "AMAP-GOOD"
+    ]
+    assert lunch["candidates"][0]["meal_route_feasible"] is True
+    assert lunch["candidates"][0]["meal_detour_minutes"] == 0.0
 
 
 def test_meal_recommendation_preserves_fallback_metadata_and_note(monkeypatch):

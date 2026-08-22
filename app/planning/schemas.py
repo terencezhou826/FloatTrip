@@ -228,6 +228,15 @@ class TravelPlanState(BaseModel):
     max_time_check_rounds: int = 3
     time_check_done: bool = False  # 单向门：进入时间修正阶段后置 True，planner 据此决定下一跳
 
+    # 确定性道路可执行性（仅实际选择的相邻地点，不构建候选池 NxN 矩阵）
+    route_feasibility_status: Optional[str] = None
+    route_feasibility_violations: list[dict[str, Any]] = Field(default_factory=list)
+    route_feasibility_warnings: list[str] = Field(default_factory=list)
+    route_feasibility_round: int = 0
+    max_route_feasibility_rounds: int = 3
+    travel_legs: list[dict[str, Any]] = Field(default_factory=list)
+    travel_leg_cache: dict[str, dict[str, Any]] = Field(default_factory=dict)
+
     # Query Rewrite Agent 改写后的查询（由 query_rewrite 节点填充）
     rewritten_query: Optional[str] = None
 

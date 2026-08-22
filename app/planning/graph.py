@@ -27,9 +27,12 @@ from app.planning.nodes import (
     mandatory_confirm_guard_node,
     meal_search_node,
     route_after_intent,
+    route_after_feasibility,
     route_after_mandatory_check,
     route_after_review,
     route_after_time_check,
+    route_feasibility_guard_node,
+    route_feasibility_node,
 )
 
 
@@ -87,6 +90,7 @@ def build_graph(
     g.add_node("mandatory_check", mandatory_check_node)
     g.add_node("reviewer", _with_progress("reviewer", make_reviewer_node(model_name)))
     g.add_node("time_check", _with_progress("time_check", make_time_check_node(model_name)))
+    g.add_node("route_feasibility", route_feasibility_node)
     g.add_node("meal_search", _with_progress("meal_search", meal_search_node))
     g.add_node("meal_recommend", _with_progress("meal_recommend", make_meal_recommend_node(model_name)))
     g.add_node("spot_tips", _with_progress("spot_tips", make_spot_tips_node(model_name)))
@@ -124,9 +128,13 @@ def build_graph(
         "reviewer", route_after_review,
         {"planner": "planner", "time_check": "time_check"},
     )
-    # time_check：无违规/达上限 → meal_search；有违规且未达上限 → planner 修正
+    # time_check：无违规/达上限 → deterministic road feasibility。
     g.add_conditional_edges(
         "time_check", route_after_time_check,
+        {"planner": "planner", "route_feasibility": "route_feasibility"},
+    )
+    g.add_conditional_edges(
+        "route_feasibility", route_after_feasibility,
         {"planner": "planner", "meal_search": "meal_search"},
     )
     g.add_edge("meal_search",    "meal_recommend")
@@ -160,6 +168,8 @@ _INTERNAL_STATE_NODES = {
     "mandatory_prepare",
     "mandatory_check",
     "mandatory_guard",
+    "route_feasibility",
+    "route_feasibility_guard",
     "revision_concern",
     "require_input",
 }
@@ -193,14 +203,14 @@ def _stage_event(node: str, acc: dict[str, Any], upd: dict[str, Any]) -> dict[st
 # ─── 修改模式专用迷你图 ────────────────────────────────────────
 
 def _route_after_review_for_modification(state: TravelPlanState) -> str:
-    """修改流程专用：reviewer 通过/达最大轮数 → 直接进 meal_search（不走 time_check）。"""
+    """修改流程专用：reviewer 完成后进入确定性道路校验。"""
     if state.approved or state.review_round > state.max_review_rounds:
-        return "meal_search"
+        return "route_feasibility"
     return "planner"
 
 
 def build_modification_graph(model_name: str | None = None, memory_writer=None):
-    """迷你图：planner ⇄ reviewer（最多 2 轮）→ meal_search → meal_recommend → finalize。
+    """迷你图：planner/reviewer → route feasibility → meals → finalize。
     跳过 intent / attraction_search，直接从 checkpoint 恢复状态。
     修改流程暂不接入 time_check 节点。
     """
@@ -209,6 +219,7 @@ def build_modification_graph(model_name: str | None = None, memory_writer=None):
     g.add_node("planner",        make_planner_node(model_name))
     g.add_node("mandatory_check", mandatory_check_node)
     g.add_node("reviewer",       make_reviewer_node(model_name))
+    g.add_node("route_feasibility", route_feasibility_node)
     g.add_node("meal_search",    meal_search_node)
     g.add_node("meal_recommend", make_meal_recommend_node(model_name))
     g.add_node("spot_tips",      make_spot_tips_node(model_name))
@@ -223,6 +234,10 @@ def build_modification_graph(model_name: str | None = None, memory_writer=None):
     )
     g.add_conditional_edges(
         "reviewer", _route_after_review_for_modification,
+        {"planner": "planner", "route_feasibility": "route_feasibility"},
+    )
+    g.add_conditional_edges(
+        "route_feasibility", route_after_feasibility,
         {"planner": "planner", "meal_search": "meal_search"},
     )
     g.add_edge("meal_search",    "meal_recommend")
@@ -267,6 +282,7 @@ def build_runtime_revision_graph(
     graph.add_node("mandatory_check", mandatory_check_node)
     graph.add_node("revision_concern", _revision_concern_node)
     graph.add_node("reviewer", _with_progress("reviewer", make_reviewer_node(model_name)))
+    graph.add_node("route_feasibility", route_feasibility_node)
     graph.add_node("meal_search", _with_progress("meal_search", meal_search_node))
     graph.add_node(
         "meal_recommend",
@@ -288,6 +304,10 @@ def build_runtime_revision_graph(
     graph.add_conditional_edges(
         "reviewer",
         _route_after_review_for_modification,
+        {"planner": "planner", "route_feasibility": "route_feasibility"},
+    )
+    graph.add_conditional_edges(
+        "route_feasibility", route_after_feasibility,
         {"planner": "planner", "meal_search": "meal_search"},
     )
     graph.add_edge("meal_search", "meal_recommend")
@@ -301,12 +321,14 @@ def build_confirm_graph(model_name: str | None = None, memory_writer=None):
     """确认后续跑图：meal_search → meal_recommend → spot_tips → finalize。"""
     g = StateGraph(TravelPlanState)
     g.add_node("mandatory_guard", mandatory_confirm_guard_node)
+    g.add_node("route_feasibility_guard", route_feasibility_guard_node)
     g.add_node("meal_search",    meal_search_node)
     g.add_node("meal_recommend", make_meal_recommend_node(model_name))
     g.add_node("spot_tips",      make_spot_tips_node(model_name))
     g.add_node("finalize",       make_finalize_node(memory_writer))
     g.add_edge(START,            "mandatory_guard")
-    g.add_edge("mandatory_guard", "meal_search")
+    g.add_edge("mandatory_guard", "route_feasibility_guard")
+    g.add_edge("route_feasibility_guard", "meal_search")
     g.add_edge("meal_search",    "meal_recommend")
     g.add_edge("meal_recommend", "spot_tips")
     g.add_edge("spot_tips",      "finalize")
@@ -517,11 +539,12 @@ async def run_stream(
     )
     init = TravelPlanState(query=query, profile_hint=profile_hint or None, **overrides)
     # 主循环 planner⇄reviewer 最多 (max_review_rounds+1) 对节点；
-    # 时间修正 planner⇄time_check 最多 max_time_check_rounds 对节点；
+    # 时间/道路修正均可能回到 planner；道路节点复用已查询 OD cache。
     # 其余非循环节点（intent/query_rewrite/attraction_search/meal_search/meal_recommend/spot_tips/finalize）+ 缓冲
     config = {"recursion_limit":
         3 * (init.max_review_rounds + 1)
         + 3 * init.max_time_check_rounds
+        + 4 * init.max_route_feasibility_rounds
         + 2 * init.max_mandatory_check_rounds
         + 10}
 

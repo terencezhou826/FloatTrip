@@ -25,7 +25,21 @@ from app.planning.meal_coverage import (
     MealSearchAnchor,
     discover_meal_coverage,
 )
+from app.planning.route_feasibility import (
+    MealDetourPolicy,
+    RouteFeasibilityError,
+    RouteFeasibilityStatus,
+    TravelTimeMatrix,
+    assess_meal_detour,
+    evaluate_route_feasibility,
+    resolve_route_point,
+    scheduled_gap_seconds,
+    travel_leg_cache_key,
+    travel_point_from_item,
+)
 from app.providers.amap.identity import AmapExactPoiProvider
+from app.providers.amap.travel_time import AmapTravelTimeProvider
+from app.providers.travel_time import TravelLeg
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +77,6 @@ from app.planning.helpers import (
     amap_key,
     clean_pref,
     cluster_pois_by_location,
-    dinner_anchor_spot,
     fetch_city_spots,
     fetch_city_spots_async,
     fetch_weather_for_dates,
@@ -76,7 +89,6 @@ from app.planning.helpers import (
     last_spot_of_period,
     parse_iso_date,
     restaurant_to_dict,
-    spot_location_map,
     unknown_spots,
 )
 from app.planning.prompts import (
@@ -590,14 +602,14 @@ def route_after_planner(state: TravelPlanState) -> str:
 def route_after_time_check(state: TravelPlanState) -> str:
     """time_check 输出的下一跳：
 
-    - 无违规 → meal_search（时间合法）
-    - 达 max_time_check_rounds 上限 → meal_search（带剩余问题前进，由 finalize 透传给前端）
+    - 无违规 → route_feasibility（开放时间合法后核查真实道路时间）
+    - 达 max_time_check_rounds 上限 → route_feasibility（保留既有兜底语义）
     - 否则 → planner 修正
     """
     if not state.time_violations:
-        return "meal_search"
+        return "route_feasibility"
     if state.time_check_round >= state.max_time_check_rounds:
-        return "meal_search"
+        return "route_feasibility"
     return "planner"
 
 
@@ -698,11 +710,117 @@ def make_time_check_node(model_name: str | None):
     return time_check
 
 
+# ─── deterministic route feasibility ─────────────────────────
+
+def _travel_time_matrix(state: TravelPlanState) -> TravelTimeMatrix:
+    return TravelTimeMatrix(
+        {PoiProvider.AMAP: AmapTravelTimeProvider(amap_key())},
+        cache=state.travel_leg_cache,
+    )
+
+
+async def route_feasibility_node(
+    state: TravelPlanState,
+    *,
+    matrix: TravelTimeMatrix | None = None,
+) -> dict[str, Any]:
+    active_matrix = matrix or _travel_time_matrix(state)
+    result = await evaluate_route_feasibility(
+        state.route,
+        state.pois,
+        active_matrix,
+    )
+    update: dict[str, Any] = {
+        "route_feasibility_status": result.status.value,
+        "route_feasibility_violations": [
+            item.model_dump(mode="json") for item in result.violations
+        ],
+        "route_feasibility_warnings": list(result.warnings),
+        "travel_legs": [item.model_dump(mode="json") for item in result.legs],
+        "travel_leg_cache": active_matrix.export_cache(),
+    }
+    if result.status is RouteFeasibilityStatus.UNRESOLVED:
+        details = "; ".join(item.detail for item in result.violations)
+        raise RouteFeasibilityError(
+            f"deterministic route feasibility is unresolved: {details}"
+        )
+    if result.status is RouteFeasibilityStatus.FEASIBLE:
+        note = (
+            f"[route_feasibility] PASS: {len(result.legs)} legs, "
+            f"{result.total_distance_m / 1000:.1f} km, "
+            f"{result.total_duration_s // 60} driving minutes"
+        )
+        update.update({
+            "route_modify_opinion": None,
+            "history": state.history + [note],
+            "reviewer_issues": list(dict.fromkeys(
+                [*state.reviewer_issues, *result.warnings]
+            )),
+        })
+        return update
+
+    round_number = state.route_feasibility_round + 1
+    if round_number > state.max_route_feasibility_rounds:
+        raise RouteFeasibilityError(
+            "route feasibility remains invalid after "
+            f"{state.max_route_feasibility_rounds} correction rounds"
+        )
+    details = "\n".join(
+        f"- Day {item.day} {item.from_poi or '?'} -> {item.to_poi or '?'}: "
+        f"{item.detail}"
+        for item in result.violations
+    )
+    opinion = (
+        f"【道路可执行性硬约束修正（第{round_number}轮）】\n{details}\n"
+        "请调整景点时间，或替换造成冲突的非 mandatory POI；"
+        "不得删除 mandatory POI，也不得用名称相近地点替代。"
+    )
+    note = f"[route_feasibility 第{round_number}轮] REPLAN_REQUIRED\n{details}"
+    update.update({
+        "route_feasibility_round": round_number,
+        "route_modify_opinion": opinion,
+        "need_modify_route": True,
+        "history": state.history + [note],
+        "planner_reviewer_dialogue": state.planner_reviewer_dialogue + [note],
+    })
+    return update
+
+
+def route_after_feasibility(state: TravelPlanState) -> str:
+    if state.route_feasibility_status == RouteFeasibilityStatus.FEASIBLE.value:
+        return "meal_search"
+    if state.route_feasibility_status == RouteFeasibilityStatus.REPLAN_REQUIRED.value:
+        return "planner"
+    raise RouteFeasibilityError(
+        f"cannot continue with route feasibility status {state.route_feasibility_status}"
+    )
+
+
+async def route_feasibility_guard_node(
+    state: TravelPlanState,
+) -> dict[str, Any]:
+    update = await route_feasibility_node(state)
+    if update["route_feasibility_status"] != RouteFeasibilityStatus.FEASIBLE.value:
+        raise RouteFeasibilityError(
+            "confirmed route requires replanning before meal discovery"
+        )
+    return update
+
+
 # ─── 餐饮搜索 ────────────────────────────────────────────────
 
-async def meal_search_node(state: TravelPlanState) -> dict[str, Any]:
-    api_key  = amap_key()
-    loc_map  = spot_location_map(state.pois)
+async def meal_search_node(
+    state: TravelPlanState,
+    *,
+    matrix: TravelTimeMatrix | None = None,
+) -> dict[str, Any]:
+    api_key = amap_key()
+    active_matrix = matrix or _travel_time_matrix(state)
+    poi_points = {
+        point.identity: point
+        for poi in state.pois
+        if (point := travel_point_from_item(poi)) is not None
+    }
     meal_candidates: list[dict[str, Any]] = []
     warnings: list[str] = []
 
@@ -710,28 +828,53 @@ async def meal_search_node(state: TravelPlanState) -> dict[str, Any]:
         day_no = day.get("day")
         entry: dict[str, Any] = {"day": day_no, "lunch": {}, "dinner": {}}
 
-        lunch_anchor = last_spot_of_period(day, "morning")
-        afternoon_spots = [
-            spot for spot in day.get("spots", [])
-            if spot.get("period") == "afternoon"
-        ]
-        lunch_secondary = afternoon_spots[0] if afternoon_spots else None
-        dinner_anchor = dinner_anchor_spot(day)
+        day_spots = list(day.get("spots") or [])
+        morning_spots = [s for s in day_spots if s.get("period") == "morning"]
+        afternoon_spots = [s for s in day_spots if s.get("period") == "afternoon"]
+        evening_spots = [s for s in day_spots if s.get("period") == "evening"]
+        lunch_previous = morning_spots[-1] if morning_spots else None
+        lunch_following = afternoon_spots[0] if afternoon_spots else None
+        dinner_previous = (
+            afternoon_spots[-1]
+            if afternoon_spots
+            else morning_spots[-1]
+            if morning_spots
+            else None
+        )
+        dinner_following = evening_spots[0] if evening_spots else None
 
-        for meal, primary, secondary in (
-            ("lunch", lunch_anchor, lunch_secondary),
-            ("dinner", dinner_anchor, None),
+        for meal, previous_spot, following_spot in (
+            ("lunch", lunch_previous, lunch_following),
+            ("dinner", dinner_previous, dinner_following),
         ):
+            previous_point = (
+                resolve_route_point(previous_spot, poi_points)
+                if previous_spot is not None else None
+            )
+            following_point = (
+                resolve_route_point(following_spot, poi_points)
+                if following_spot is not None else None
+            )
+            available_gap_s = (
+                scheduled_gap_seconds(previous_spot, following_spot)
+                if previous_spot is not None and following_spot is not None
+                else None
+            )
             anchors: list[MealSearchAnchor] = []
-            seen_anchor_names: set[str] = set()
-            for role, anchor in (("primary", primary), ("secondary", secondary)):
-                name = str((anchor or {}).get("name") or "").strip()
-                center = loc_map.get(name)
-                if not name or not center or name in seen_anchor_names:
+            seen_anchor_identities: set[tuple[PoiProvider, str]] = set()
+            for role, point in (
+                ("primary", previous_point),
+                ("secondary", following_point),
+            ):
+                if point is None or point.identity in seen_anchor_identities:
                     continue
-                seen_anchor_names.add(name)
+                seen_anchor_identities.add(point.identity)
                 anchors.append(
-                    MealSearchAnchor(name=name, location=center, role=role)
+                    MealSearchAnchor(
+                        name=point.name,
+                        location={"lng": point.longitude, "lat": point.latitude},
+                        role=role,
+                    )
                 )
 
             async def search(location: dict[str, float], radius_m: int):
@@ -742,11 +885,57 @@ async def meal_search_node(state: TravelPlanState) -> dict[str, Any]:
                     radius=radius_m,
                     offset=20,
                 )
-                return [
+                normalized = [
                     candidate
                     for candidate in (restaurant_to_dict(poi) for poi in raw)
                     if candidate is not None
-                ][:20]
+                ]
+                normalized.sort(key=lambda item: (
+                    item.get("provider_distance_m") is None,
+                    item.get("provider_distance_m") or 0,
+                    -(item.get("rating") or 0),
+                ))
+                feasible: list[dict[str, Any]] = []
+                if previous_point is None:
+                    return feasible
+                for candidate in normalized[:10]:
+                    meal_point = travel_point_from_item(candidate)
+                    if meal_point is None:
+                        continue
+                    assessment = await assess_meal_detour(
+                        previous_point,
+                        meal_point,
+                        following_point,
+                        active_matrix,
+                        available_gap_s=available_gap_s,
+                        policy=MealDetourPolicy(),
+                    )
+                    if not assessment.route_feasible:
+                        continue
+                    feasible.append({
+                        **candidate,
+                        "meal_route_feasible": True,
+                        "meal_detour_minutes": round(
+                            assessment.extra_duration_s / 60, 1
+                        ),
+                        "meal_total_travel_minutes": round(
+                            assessment.total_duration_s / 60, 1
+                        ),
+                        "meal_total_travel_distance_km": round(
+                            assessment.total_distance_m / 1000, 2
+                        ),
+                        "meal_available_gap_minutes": (
+                            round(assessment.available_gap_s / 60, 1)
+                            if assessment.available_gap_s is not None else None
+                        ),
+                        "meal_travel_legs": [
+                            leg.model_dump(mode="json")
+                            for leg in assessment.travel_legs
+                        ],
+                    })
+                    if len(feasible) >= 5:
+                        break
+                return feasible
 
             coverage = await discover_meal_coverage(anchors, search)
             if coverage.status is MealCoverageStatus.UNCOVERED:
@@ -759,11 +948,16 @@ async def meal_search_node(state: TravelPlanState) -> dict[str, Any]:
                 "coverage_status": coverage.status.value,
                 "search_attempts": list(coverage.attempts),
                 "max_search_radius_m": coverage.max_search_radius_m,
+                "meal_route_feasible": bool(coverage.candidates),
             }
         meal_candidates.append(entry)
 
     note = "周边餐饮搜索完成" + (f"（提醒：{'; '.join(warnings)}）" if warnings else "")
-    return {"meal_candidates": meal_candidates, "history": state.history + [note]}
+    return {
+        "meal_candidates": meal_candidates,
+        "travel_leg_cache": active_matrix.export_cache(),
+        "history": state.history + [note],
+    }
 
 
 # ─── 餐厅推荐 ────────────────────────────────────────────────
@@ -783,7 +977,9 @@ def make_meal_recommend_node(model_name: str | None):
             return "\n".join(
                 f"  · {c['name']}（评分 {c['rating'] or '无'}，人均 {c['cost'] or '无'}，"
                 f"标签 {c['keytag'] or '无'}，搜索锚点 {c.get('search_anchor_name') or '无'}，"
-                f"半径 {c.get('search_radius_m') or '无'}m，层级 {c.get('search_level')}）"
+                f"半径 {c.get('search_radius_m') or '无'}m，层级 {c.get('search_level')}，"
+                f"道路总交通 {c.get('meal_total_travel_minutes', '无')} 分钟，"
+                f"额外绕行 {c.get('meal_detour_minutes', '无')} 分钟）"
                 for c in cands
             )
 
@@ -1094,7 +1290,7 @@ def _finalize_impl(state: TravelPlanState) -> dict[str, Any]:
                         "meal_coverage_note": coverage.get("note"),
                     })
 
-        # 相邻地点 haversine 距离
+        # 兼容旧客户端的直线距离字段；确定性道路数据在下方独立投影。
         for i in range(1, len(timeline)):
             prev_loc = timeline[i - 1].get("location")
             cur_loc  = timeline[i].get("location")
@@ -1103,6 +1299,84 @@ def _finalize_impl(state: TravelPlanState) -> dict[str, Any]:
 
         days_out.append({"day": day_no, "date": the_date, "theme": day.get("theme"), "timeline": timeline})
 
+    verified_legs: list[dict[str, Any]] = []
+    total_driving_distance_m = 0
+    total_driving_duration_s = 0
+    final_road_data_complete = True
+    for day in days_out:
+        timeline = [item for item in day["timeline"] if item.get("name")]
+        for previous, following in zip(timeline, timeline[1:]):
+            origin = travel_point_from_item(previous)
+            destination = travel_point_from_item(following)
+            if origin is None or destination is None:
+                final_road_data_complete = False
+                continue
+            if origin.identity == destination.identity:
+                leg = TravelLeg(
+                    from_poi=origin,
+                    to_poi=destination,
+                    distance_m=0,
+                    duration_s=0,
+                    provider=origin.provider,
+                    transport_mode="driving",
+                    source="same_poi_identity",
+                )
+            else:
+                cached = state.travel_leg_cache.get(
+                    travel_leg_cache_key(origin, destination)
+                )
+                if cached is None:
+                    final_road_data_complete = False
+                    continue
+                leg = TravelLeg.model_validate(cached).model_copy(update={
+                    "from_poi": origin,
+                    "to_poi": destination,
+                })
+
+            scheduled_gap_s = scheduled_gap_seconds(previous, following)
+            meal_item = (
+                previous if previous.get("type") in {"lunch", "dinner"}
+                else following if following.get("type") in {"lunch", "dinner"}
+                else None
+            )
+            if scheduled_gap_s is None and meal_item is not None:
+                available_minutes = meal_item.get("meal_available_gap_minutes")
+                if available_minutes is not None:
+                    scheduled_gap_s = round(float(available_minutes) * 60)
+            if meal_item is not None:
+                feasibility = (
+                    "PASS"
+                    if meal_item.get("meal_route_feasible") and scheduled_gap_s is not None
+                    else "ROAD_VERIFIED"
+                )
+            else:
+                feasibility = (
+                    "PASS"
+                    if scheduled_gap_s is not None
+                    and scheduled_gap_s >= leg.duration_s + 10 * 60
+                    else "FAIL"
+                )
+            following["road_distance_from_prev_km"] = round(
+                leg.distance_m / 1000, 2
+            )
+            following["driving_duration_from_prev_min"] = round(
+                leg.duration_s / 60, 1
+            )
+            following["travel_feasibility_from_prev"] = feasibility
+            verified_legs.append({
+                "day": day["day"],
+                **leg.model_dump(mode="json"),
+                "scheduled_gap_s": scheduled_gap_s,
+                "feasibility": feasibility,
+            })
+            total_driving_distance_m += leg.distance_m
+            total_driving_duration_s += leg.duration_s
+
+    selected_meal_slots = [
+        meal.get(slot)
+        for meal in state.meals
+        for slot in ("lunch", "dinner")
+    ]
     final_plan = {
         "query": state.query,
         "destination": state.destination,
@@ -1131,6 +1405,18 @@ def _finalize_impl(state: TravelPlanState) -> dict[str, Any]:
         # 它要么被 planner 修完（time_violations 清空），要么属于极端兜底情况（达轮数上限未清完），
         # 不是给用户的常规提醒。
         "route_issues": list(state.reviewer_issues or []),
+        "travel_summary": {
+            "route_feasibility_status": state.route_feasibility_status,
+            "meal_route_feasible": bool(selected_meal_slots) and all(
+                item is not None and item.get("meal_route_feasible") is True
+                for item in selected_meal_slots
+            ),
+            "road_data_complete": final_road_data_complete,
+            "legs": verified_legs,
+            "total_driving_distance_m": total_driving_distance_m,
+            "total_driving_duration_s": total_driving_duration_s,
+            "soft_warnings": list(state.route_feasibility_warnings),
+        },
         "days": days_out,
     }
     placed_names = {s["name"] for day_r in state.route for s in day_r.get("spots", [])}

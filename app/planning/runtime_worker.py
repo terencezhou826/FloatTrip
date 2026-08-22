@@ -63,6 +63,7 @@ async def revision_snapshot_to_state(run: dict[str, Any]) -> TravelPlanState:
         route=checkpoint.get("route", []),
         pois=checkpoint.get("pois", []),
         mandatory_pois=checkpoint.get("mandatory_pois", []),
+        travel_leg_cache=checkpoint.get("travel_leg_cache", {}),
         max_mandatory_check_rounds=checkpoint.get(
             "max_mandatory_check_rounds", 3
         ),

@@ -1,6 +1,6 @@
 # TODO
 
-Updated: 2026-08-22 08:08:11 +08:00
+Updated: 2026-08-22 08:57:19 +08:00
 
 - [x] Implement the isolated M0 Catalog models, repository, loader, validation, content, and tests.
 - [x] Add the controlled `RegionType` enum and optional `admin_code`.
@@ -44,10 +44,21 @@ Updated: 2026-08-22 08:08:11 +08:00
 - [x] Distinguish `COVERED`, `FALLBACK_EXPANDED`, and `UNCOVERED` without allowing LLM-created restaurants.
 - [x] Verify real Fajiushan meal discovery and rerun the formal Jingwei Runtime/API E2E.
 - [x] Preserve mandatory Anchor enforcement, Reviewer, Time Check, Spot Tips, and Finalize behavior through M1D.
+- [x] Create the accepted M1D Git checkpoint (`3b4d716`).
+- [x] Add Provider-neutral selected-leg travel-time contracts and an Amap Driving v3 adapter.
+- [x] Cache actual OD legs per Run without building a candidate NxN matrix.
+- [x] Add deterministic route status, hard schedule-gap validation, and separate soft driving warnings.
+- [x] Feed route failures back to Planner without allowing mandatory POIs to be removed.
+- [x] Validate meal candidates through previous -> meal -> next road legs and generic detour limits.
+- [x] Preserve road-leg cache and provenance through checkpoints and revisions.
+- [x] Verify the prior 39.82 km straight-line span as 50.126 km / 66.9 min by real road routing.
+- [x] Rerun Jingwei through the formal Runtime/API path with mandatory, meal, and route feasibility gates.
+- [x] Run focused, complete Python, compileall, and frontend regressions for M1E.
 
 Deferred until explicitly approved:
 
-- [ ] Review and create a Git checkpoint for M1D only after explicit approval; do not commit automatically.
-- [ ] Decide whether the observed 39.82 km Fajiushan-to-lunch detour requires a separately scoped corridor-aware feasibility policy before M2.
+- [ ] Review and create a Git checkpoint for M1E only after explicit approval; do not commit automatically.
+- [ ] Decide whether meal entries require explicit clock times before claiming hard schedule verification for meal legs.
+- [ ] Add a deterministic multi-attraction real E2E fixture or acceptance Run if stronger live route-gate evidence is required.
 - [ ] Investigate the Runtime concurrency `KNOWN_FLAKY` in a separate task.
 - [ ] Keep RAG, Story, Experience, Commerce, Video, frontend, and mobile integration deferred until explicitly authorized.
