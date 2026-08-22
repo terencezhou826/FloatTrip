@@ -33,3 +33,13 @@ def test_coming_soon_is_blocked_by_backend_capability_projection():
     assert 'route?.availability === "ready"' in state
     assert "if (creatingRef.current || !ready) return" in page
     assert "完整体验尚未开放" in page
+
+
+def test_non_provider_spatial_points_use_neutral_map_label():
+    api = (ROOT / "frontend" / "api.js").read_text(encoding="utf-8")
+    page = (ROOT / "frontend" / "product-pages.jsx").read_text(encoding="utf-8")
+
+    assert 'it.spatial_identity_type !== "provider_poi"' in api
+    assert '"文化地点定位"' in api
+    assert "spatialLocationLabel" in page
+    assert "高德景区" not in api

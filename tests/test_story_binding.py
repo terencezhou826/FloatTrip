@@ -7,7 +7,11 @@ from pathlib import Path
 import pytest
 
 from app.catalog.loader import FileCatalogLoader
-from app.catalog.models import PromotionPolicyStatus, StoryAudience
+from app.catalog.models import (
+    NavigationAccessPoint,
+    PromotionPolicyStatus,
+    StoryAudience,
+)
 from app.knowledge.models import KnowledgeCitation
 from app.story import (
     GeneratedStory,
@@ -290,6 +294,68 @@ def test_story_package_is_serializable(repository):
     assert package.validation_status is StoryPackageValidationStatus.PASSED
     assert package.media_slots == ()
     assert package.experience_slots == ()
+
+
+def test_navigation_access_placement_keeps_cultural_anchor_identity(repository):
+    access = NavigationAccessPoint.model_validate(
+        {
+            "access_point_id": "spatial.access.story-test",
+            "anchor_id": ANCHOR_ID,
+            "name": "Navigation entrance",
+            "location": {"longitude": 112.1, "latitude": 36.1},
+            "access_type": "general_access",
+            "verification_status": "verified",
+            "provenance": {
+                "provenance_id": "spatial.provenance.story-test",
+                "verification_method": "field_survey",
+                "verified_at": "2026-08-22T10:00:00+08:00",
+                "source_reference": "field-record:story-test",
+                "verification_note": "Verified navigation-only test fixture.",
+            },
+            "accuracy": "precise",
+            "confidence": "high",
+            "note": "Navigation target only.",
+        }
+    )
+
+    class AccessRepository:
+        def __getattr__(self, name):
+            return getattr(repository, name)
+
+        def get_poi_binding(self, _binding_id):
+            return None
+
+        def list_verified_bindings_for_anchor(self, _anchor_id):
+            return ()
+
+        def list_verified_spatial_identities_for_anchor(self, _anchor_id):
+            return ()
+
+        def list_verified_navigation_access_points_for_anchor(self, anchor_id):
+            return (access,) if anchor_id == ANCHOR_ID else ()
+
+    itinerary = _itinerary()
+    itinerary["days"][0]["timeline"][0].update(
+        provider=None,
+        external_poi_id=None,
+        name="Navigation entrance",
+        spatial_identity_type="navigation_access_point",
+        spatial_identity_id=access.access_point_id,
+    )
+    package = StoryItineraryBinder(AccessRepository()).bind(
+        _generated_story(repository),
+        StoryBindingRequest(
+            itinerary_id="itinerary-access",
+            route_id=ROUTE_ID,
+            itinerary=itinerary,
+        ),
+    )
+    placed = package.chapter_bindings[0]
+
+    assert placed.anchor_ids == (ANCHOR_ID,)
+    assert placed.resolved_poi_ids == ()
+    assert placed.resolved_spatial_identity_ids == (access.access_point_id,)
+    assert placed.placement_reason == "verified_navigation_access_match"
 
 
 def test_story_binding_core_has_no_regional_or_planning_special_cases():
