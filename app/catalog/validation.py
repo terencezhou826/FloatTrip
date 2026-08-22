@@ -7,6 +7,7 @@ import re
 
 from app.catalog.models import (
     Anchor,
+    AnchorCoordinateIdentity,
     CatalogTheme,
     ContentPackage,
     CuratedRoute,
@@ -25,6 +26,7 @@ from app.catalog.models import (
     KnowledgeSource,
     KnowledgeVerificationStatus,
     LocalResource,
+    NavigationAccessPoint,
     Region,
     ResourceSource,
     ResourceVerificationStatus,
@@ -48,6 +50,12 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
     routes = [item for package in packages for item in package.routes]
     anchors = [item for package in packages for item in package.anchors]
     poi_bindings = [item for package in packages for item in package.poi_bindings]
+    spatial_identities = [
+        item for package in packages for item in package.spatial_identities
+    ]
+    navigation_access_points = [
+        item for package in packages for item in package.navigation_access_points
+    ]
     knowledge_sources = [
         item for package in packages for item in package.knowledge_sources
     ]
@@ -83,6 +91,8 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
         routes,
         anchors,
         poi_bindings,
+        spatial_identities,
+        navigation_access_points,
         knowledge_sources,
         knowledge_claims,
         knowledge_evidence,
@@ -161,6 +171,20 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
             issues.append(
                 f"binding {binding.binding_id} references missing anchor "
                 f"{binding.anchor_id}"
+            )
+
+    for identity in spatial_identities:
+        if identity.anchor_id not in anchor_ids:
+            issues.append(
+                f"spatial identity {identity.spatial_identity_id} references missing "
+                f"anchor {identity.anchor_id}"
+            )
+
+    for access_point in navigation_access_points:
+        if access_point.anchor_id not in anchor_ids:
+            issues.append(
+                f"navigation access point {access_point.access_point_id} references "
+                f"missing anchor {access_point.anchor_id}"
             )
 
     for source in knowledge_sources:
@@ -402,6 +426,8 @@ def _check_duplicate_ids(
     routes: list[CuratedRoute],
     anchors: list[Anchor],
     poi_bindings: list[ExternalPoiBinding],
+    spatial_identities: list[AnchorCoordinateIdentity],
+    navigation_access_points: list[NavigationAccessPoint],
     knowledge_sources: list[KnowledgeSource],
     knowledge_claims: list[KnowledgeClaim],
     knowledge_evidence: list[KnowledgeEvidence],
@@ -419,6 +445,14 @@ def _check_duplicate_ids(
         + [("route", item.id) for item in routes]
         + [("anchor", item.id) for item in anchors]
         + [("poi_binding", item.binding_id) for item in poi_bindings]
+        + [
+            ("spatial_identity", item.spatial_identity_id)
+            for item in spatial_identities
+        ]
+        + [
+            ("navigation_access_point", item.access_point_id)
+            for item in navigation_access_points
+        ]
         + [("knowledge_source", item.source_id) for item in knowledge_sources]
         + [("knowledge_claim", item.claim_id) for item in knowledge_claims]
         + [("knowledge_evidence", item.evidence_id) for item in knowledge_evidence]

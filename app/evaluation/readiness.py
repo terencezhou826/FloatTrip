@@ -134,11 +134,7 @@ class RouteReadinessEvaluator:
             and story_available
             and self._domain_passes(report, EvaluationDomain.EXPERIENCE)
         )
-        route_golden = (
-            self.corpus.golden
-            if self.corpus.golden.get("route_id") == route.id
-            else None
-        )
+        route_golden = self.corpus.get_golden(route.id)
         snapshot_persistence = bool(
             route_golden and self._snapshot_identity_complete(route_golden)
         )

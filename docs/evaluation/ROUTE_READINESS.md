@@ -35,3 +35,7 @@ Before another route can become READY, provide and validate:
 
 Only after the offline benchmark and readiness evaluator pass may Product availability
 be promoted to READY.
+
+The benchmark manifest accepts multiple `golden_fixtures`. Readiness resolves the
+fixture by exact route ID from data; adding another route does not add runner or
+readiness branches. The legacy singular manifest field remains load-compatible.

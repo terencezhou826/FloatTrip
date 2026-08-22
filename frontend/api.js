@@ -728,6 +728,14 @@ function adaptPlan(backendPlan, username) {
         drivingMinutes: it.driving_duration_from_prev_min ?? null,
         isMandatory: Boolean(it.is_mandatory),
         curatedAnchorId: it.curated_anchor_id || null,
+        spatialIdentityType: it.spatial_identity_type || null,
+        spatialIdentityId: it.spatial_identity_id || null,
+        spatialLocationLabel: (
+          it.spatial_identity_type && it.spatial_identity_type !== "provider_poi"
+            ? "文化地点定位"
+            : null
+        ),
+        navigationName: it.navigation_name || null,
       };
       if (it.type === "attraction") {
         return {
@@ -776,6 +784,13 @@ function adaptPlan(backendPlan, username) {
         ...projMap[it.name],
         name: it.name,
         mandatory: Boolean(it.is_mandatory),
+        spatialIdentityType: it.spatial_identity_type || null,
+        spatialIdentityId: it.spatial_identity_id || null,
+        spatialLocationLabel: (
+          it.spatial_identity_type && it.spatial_identity_type !== "provider_poi"
+            ? "文化地点定位"
+            : null
+        ),
         info: {
           type: it.type,
           rating: it.rating,

@@ -8,6 +8,7 @@ from typing import Protocol, runtime_checkable
 
 from app.catalog.models import (
     Anchor,
+    AnchorCoordinateIdentity,
     CatalogTheme,
     ContentPackage,
     ContentPackageManifest,
@@ -23,6 +24,7 @@ from app.catalog.models import (
     KnowledgeVerificationStatus,
     LocalResource,
     LocalResourceType,
+    NavigationAccessPoint,
     PoiProvider,
     PromotionPolicyStatus,
     Region,
@@ -67,6 +69,30 @@ class CatalogRepository(Protocol):
     def list_verified_bindings_for_anchor(
         self, anchor_id: str
     ) -> tuple[ExternalPoiBinding, ...]: ...
+
+    def get_spatial_identity(
+        self, spatial_identity_id: str
+    ) -> AnchorCoordinateIdentity | None: ...
+
+    def list_spatial_identities_for_anchor(
+        self, anchor_id: str
+    ) -> tuple[AnchorCoordinateIdentity, ...]: ...
+
+    def list_verified_spatial_identities_for_anchor(
+        self, anchor_id: str
+    ) -> tuple[AnchorCoordinateIdentity, ...]: ...
+
+    def get_navigation_access_point(
+        self, access_point_id: str
+    ) -> NavigationAccessPoint | None: ...
+
+    def list_navigation_access_points_for_anchor(
+        self, anchor_id: str
+    ) -> tuple[NavigationAccessPoint, ...]: ...
+
+    def list_verified_navigation_access_points_for_anchor(
+        self, anchor_id: str
+    ) -> tuple[NavigationAccessPoint, ...]: ...
 
     def list_manifests(self) -> tuple[ContentPackageManifest, ...]: ...
 
@@ -151,6 +177,8 @@ class InMemoryCatalogRepository:
         anchors: Iterable[Anchor],
         manifests: Iterable[ContentPackageManifest],
         poi_bindings: Iterable[ExternalPoiBinding] = (),
+        spatial_identities: Iterable[AnchorCoordinateIdentity] = (),
+        navigation_access_points: Iterable[NavigationAccessPoint] = (),
         knowledge_sources: Iterable[KnowledgeSource] = (),
         knowledge_claims: Iterable[KnowledgeClaim] = (),
         knowledge_evidence: Iterable[KnowledgeEvidence] = (),
@@ -168,6 +196,8 @@ class InMemoryCatalogRepository:
         self._routes = tuple(routes)
         self._anchors = tuple(anchors)
         self._poi_bindings = tuple(poi_bindings)
+        self._spatial_identities = tuple(spatial_identities)
+        self._navigation_access_points = tuple(navigation_access_points)
         self._knowledge_sources = tuple(knowledge_sources)
         self._knowledge_claims = tuple(knowledge_claims)
         self._knowledge_evidence = tuple(knowledge_evidence)
@@ -184,6 +214,12 @@ class InMemoryCatalogRepository:
         self._anchors_by_id = {item.id: item for item in self._anchors}
         self._poi_bindings_by_id = {
             item.binding_id: item for item in self._poi_bindings
+        }
+        self._spatial_identities_by_id = {
+            item.spatial_identity_id: item for item in self._spatial_identities
+        }
+        self._navigation_access_points_by_id = {
+            item.access_point_id: item for item in self._navigation_access_points
         }
         self._knowledge_sources_by_id = {
             item.source_id: item for item in self._knowledge_sources
@@ -271,6 +307,50 @@ class InMemoryCatalogRepository:
         return tuple(
             item
             for item in self._poi_bindings
+            if item.anchor_id == anchor_id and item.is_runtime_eligible
+        )
+
+    def get_spatial_identity(
+        self, spatial_identity_id: str
+    ) -> AnchorCoordinateIdentity | None:
+        return self._spatial_identities_by_id.get(spatial_identity_id)
+
+    def list_spatial_identities_for_anchor(
+        self, anchor_id: str
+    ) -> tuple[AnchorCoordinateIdentity, ...]:
+        return tuple(
+            item for item in self._spatial_identities if item.anchor_id == anchor_id
+        )
+
+    def list_verified_spatial_identities_for_anchor(
+        self, anchor_id: str
+    ) -> tuple[AnchorCoordinateIdentity, ...]:
+        return tuple(
+            item
+            for item in self._spatial_identities
+            if item.anchor_id == anchor_id and item.is_runtime_eligible
+        )
+
+    def get_navigation_access_point(
+        self, access_point_id: str
+    ) -> NavigationAccessPoint | None:
+        return self._navigation_access_points_by_id.get(access_point_id)
+
+    def list_navigation_access_points_for_anchor(
+        self, anchor_id: str
+    ) -> tuple[NavigationAccessPoint, ...]:
+        return tuple(
+            item
+            for item in self._navigation_access_points
+            if item.anchor_id == anchor_id
+        )
+
+    def list_verified_navigation_access_points_for_anchor(
+        self, anchor_id: str
+    ) -> tuple[NavigationAccessPoint, ...]:
+        return tuple(
+            item
+            for item in self._navigation_access_points
             if item.anchor_id == anchor_id and item.is_runtime_eligible
         )
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 import hashlib
 
-from app.catalog.models import PoiProvider
+from app.catalog.models import PoiProvider, SpatialIdentityType
 from app.catalog.repository import CatalogRepository
 from app.story.models import (
     ChapterBinding,
@@ -44,6 +44,9 @@ class StoryItineraryBinder:
             raise StoryBindingError("generated Story chapters do not match Blueprint")
 
         stops_by_identity = _itinerary_stops_by_identity(request.itinerary)
+        stops_by_spatial_identity = _itinerary_stops_by_spatial_identity(
+            request.itinerary
+        )
         chapters = self._repository.list_story_chapters(blueprint.story_id)
         provisional: list[ChapterBinding] = []
         placed_by_stop: dict[str, list[str]] = defaultdict(list)
@@ -64,12 +67,18 @@ class StoryItineraryBinder:
                 continue
 
             identities = self._verified_identities(chapter)
+            spatial_identities = self._verified_spatial_identities(chapter)
             matched = [
                 (identity, stops_by_identity[identity][0])
                 for identity in identities
                 if stops_by_identity.get(identity)
             ]
-            if not matched:
+            matched_spatial = [
+                (identity, stops_by_spatial_identity[identity][0])
+                for identity in spatial_identities
+                if stops_by_spatial_identity.get(identity)
+            ]
+            if not matched and not matched_spatial:
                 provisional.append(
                     ChapterBinding(
                         chapter_id=chapter.chapter_id,
@@ -81,6 +90,9 @@ class StoryItineraryBinder:
                             )
                             for provider, external_poi_id in identities
                         ),
+                        resolved_spatial_identity_ids=tuple(
+                            identity_id for _, identity_id in spatial_identities
+                        ),
                         itinerary_stop_ids=(),
                         placement_type=PlacementType.UNPLACED,
                         trigger_hint=StoryTriggerHint.UNAVAILABLE,
@@ -90,22 +102,37 @@ class StoryItineraryBinder:
                 )
                 continue
 
-            identity, stop_id = matched[0]
+            if matched:
+                identity, stop_id = matched[0]
+                resolved_poi_ids = (
+                    StoryPoiIdentity(
+                        provider=identity[0], external_poi_id=identity[1]
+                    ),
+                )
+                resolved_spatial_ids: tuple[str, ...] = ()
+                placement_reason = "verified_provider_identity_match"
+            else:
+                spatial_identity, stop_id = matched_spatial[0]
+                resolved_poi_ids = ()
+                resolved_spatial_ids = (spatial_identity[1],)
+                placement_reason = (
+                    "verified_navigation_access_match"
+                    if spatial_identity[0]
+                    is SpatialIdentityType.NAVIGATION_ACCESS_POINT
+                    else "verified_cultural_coordinate_match"
+                )
             placed_by_stop[stop_id].append(chapter.chapter_id)
             provisional.append(
                 ChapterBinding(
                     chapter_id=chapter.chapter_id,
                     anchor_ids=tuple(chapter.anchor_ids),
-                    resolved_poi_ids=(
-                        StoryPoiIdentity(
-                            provider=identity[0], external_poi_id=identity[1]
-                        ),
-                    ),
+                    resolved_poi_ids=resolved_poi_ids,
+                    resolved_spatial_identity_ids=resolved_spatial_ids,
                     itinerary_stop_ids=(stop_id,),
                     placement_type=PlacementType.PLACED,
                     trigger_hint=StoryTriggerHint.ARRIVAL,
                     recommended_playback_duration=chapter.recommended_duration_sec,
-                    placement_reason="verified_provider_identity_match",
+                    placement_reason=placement_reason,
                 )
             )
 
@@ -183,6 +210,31 @@ class StoryItineraryBinder:
                 identities.append((binding.provider, binding.external_poi_id))
         return tuple(dict.fromkeys(identities))
 
+    def _verified_spatial_identities(
+        self, chapter
+    ) -> tuple[tuple[SpatialIdentityType, str], ...]:
+        identities: list[tuple[SpatialIdentityType, str]] = []
+        for anchor_id in chapter.anchor_ids:
+            identities.extend(
+                (
+                    SpatialIdentityType.VERIFIED_COORDINATE,
+                    item.spatial_identity_id,
+                )
+                for item in self._repository.list_verified_spatial_identities_for_anchor(
+                    anchor_id
+                )
+            )
+            identities.extend(
+                (
+                    SpatialIdentityType.NAVIGATION_ACCESS_POINT,
+                    item.access_point_id,
+                )
+                for item in self._repository.list_verified_navigation_access_points_for_anchor(
+                    anchor_id
+                )
+            )
+        return tuple(dict.fromkeys(identities))
+
 
 def _itinerary_stops_by_identity(
     itinerary: dict,
@@ -203,6 +255,32 @@ def _itinerary_stops_by_identity(
                 continue
             stop_id = str(item.get("stop_id") or f"day.{day_number}.timeline.{index}")
             stops[(provider, external_poi_id)].append(stop_id)
+    return stops
+
+
+def _itinerary_stops_by_spatial_identity(
+    itinerary: dict,
+) -> dict[tuple[SpatialIdentityType, str], list[str]]:
+    stops: dict[tuple[SpatialIdentityType, str], list[str]] = defaultdict(list)
+    for day in itinerary.get("days") or []:
+        day_number = day.get("day")
+        for index, item in enumerate(day.get("timeline") or []):
+            if item.get("type") != "attraction":
+                continue
+            identity_id = str(item.get("spatial_identity_id") or "").strip()
+            identity_type_raw = item.get("spatial_identity_type")
+            if not identity_id or not identity_type_raw:
+                continue
+            try:
+                identity_type = SpatialIdentityType(
+                    str(getattr(identity_type_raw, "value", identity_type_raw))
+                )
+            except ValueError:
+                continue
+            if identity_type is SpatialIdentityType.PROVIDER_POI:
+                continue
+            stop_id = str(item.get("stop_id") or f"day.{day_number}.timeline.{index}")
+            stops[(identity_type, identity_id)].append(stop_id)
     return stops
 
 

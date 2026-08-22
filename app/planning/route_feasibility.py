@@ -9,7 +9,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.catalog.models import PoiProvider
+from app.catalog.models import PoiProvider, SpatialIdentityType
 from app.providers.travel_time import (
     TransportMode,
     TravelLeg,
@@ -98,7 +98,7 @@ class MealDetourAssessment(BaseModel):
 
 def _point_cache_token(point: TravelPoint) -> str:
     return (
-        f"{point.provider.value}:{point.external_poi_id}:"
+        f"{':'.join(str(part) for part in point.identity)}:"
         f"{point.longitude:.6f},{point.latitude:.6f}"
     )
 
@@ -132,29 +132,42 @@ class TravelTimeMatrix:
         destination: TravelPoint,
         transport_mode: TransportMode = TransportMode.DRIVING,
     ) -> TravelLeg:
+        origin_provider = origin.effective_routing_provider
+        destination_provider = destination.effective_routing_provider
+        if (
+            origin_provider is not None
+            and destination_provider is not None
+            and origin_provider is not destination_provider
+        ):
+            raise TravelRoutingError(
+                "cross-provider route coordinates are not supported"
+            )
+        routing_provider = origin_provider or destination_provider
+        if routing_provider is None:
+            if len(self._providers) != 1:
+                raise TravelRoutingError(
+                    "routing provider is ambiguous for coordinate-only points"
+                )
+            routing_provider = next(iter(self._providers))
         if origin.identity == destination.identity:
             return TravelLeg(
                 from_poi=origin,
                 to_poi=destination,
                 distance_m=0,
                 duration_s=0,
-                provider=origin.provider,
+                provider=routing_provider,
                 transport_mode=transport_mode,
                 source="same_poi_identity",
-            )
-        if origin.provider is not destination.provider:
-            raise TravelRoutingError(
-                "cross-provider route coordinates are not supported"
             )
         key = travel_leg_cache_key(origin, destination, transport_mode)
         cached = self._cache.get(key)
         if cached is not None:
             leg = TravelLeg.model_validate(cached)
             return leg.model_copy(update={"from_poi": origin, "to_poi": destination})
-        provider = self._providers.get(origin.provider)
+        provider = self._providers.get(routing_provider)
         if provider is None:
             raise TravelRoutingError(
-                f"no travel-time provider for {origin.provider.value}"
+                f"no travel-time provider for {routing_provider.value}"
             )
         leg = await provider.get_travel_time(origin, destination, transport_mode)
         if (
@@ -174,17 +187,39 @@ def travel_point_from_item(item: Mapping[str, Any]) -> TravelPoint | None:
     external_poi_id = str(item.get("external_poi_id") or "").strip()
     name = str(item.get("name") or "").strip()
     location = item.get("location")
-    if not provider_raw or not external_poi_id or not name or not isinstance(location, Mapping):
+    identity_type_raw = item.get("spatial_identity_type")
+    spatial_identity_id = str(item.get("spatial_identity_id") or "").strip()
+    curated_anchor_id = str(item.get("curated_anchor_id") or "").strip()
+    if not name or not isinstance(location, Mapping):
         return None
     try:
-        provider = PoiProvider(str(getattr(provider_raw, "value", provider_raw)))
+        identity_type = (
+            SpatialIdentityType(
+                str(getattr(identity_type_raw, "value", identity_type_raw))
+            )
+            if identity_type_raw
+            else SpatialIdentityType.PROVIDER_POI
+        )
+        provider = (
+            PoiProvider(str(getattr(provider_raw, "value", provider_raw)))
+            if provider_raw
+            else None
+        )
         longitude = float(location["lng"])
         latitude = float(location["lat"])
     except (KeyError, TypeError, ValueError):
         return None
+    if identity_type is SpatialIdentityType.PROVIDER_POI:
+        if provider is None or not external_poi_id:
+            return None
+    elif not spatial_identity_id or not curated_anchor_id:
+        return None
     return TravelPoint(
         provider=provider,
-        external_poi_id=external_poi_id,
+        external_poi_id=external_poi_id or None,
+        spatial_identity_type=identity_type,
+        spatial_identity_id=spatial_identity_id or None,
+        curated_anchor_id=curated_anchor_id or None,
         name=name,
         longitude=longitude,
         latitude=latitude,
@@ -193,8 +228,8 @@ def travel_point_from_item(item: Mapping[str, Any]) -> TravelPoint | None:
 
 def _poi_points(
     pois: Sequence[Mapping[str, Any]],
-) -> dict[tuple[PoiProvider, str], TravelPoint]:
-    result: dict[tuple[PoiProvider, str], TravelPoint] = {}
+) -> dict[tuple[object, str], TravelPoint]:
+    result: dict[tuple[object, str], TravelPoint] = {}
     for poi in pois:
         point = travel_point_from_item(poi)
         if point is not None:
@@ -204,17 +239,32 @@ def _poi_points(
 
 def resolve_route_point(
     spot: Mapping[str, Any],
-    poi_points: Mapping[tuple[PoiProvider, str], TravelPoint],
+    poi_points: Mapping[tuple[object, str], TravelPoint],
 ) -> TravelPoint | None:
     provider_raw = spot.get("provider")
     external_poi_id = str(spot.get("external_poi_id") or "").strip()
-    if not provider_raw or not external_poi_id:
-        return None
+    identity_type_raw = spot.get("spatial_identity_type")
+    spatial_identity_id = str(spot.get("spatial_identity_id") or "").strip()
     try:
-        provider = PoiProvider(str(getattr(provider_raw, "value", provider_raw)))
+        identity_type = (
+            SpatialIdentityType(
+                str(getattr(identity_type_raw, "value", identity_type_raw))
+            )
+            if identity_type_raw
+            else SpatialIdentityType.PROVIDER_POI
+        )
+        if identity_type is SpatialIdentityType.PROVIDER_POI:
+            if not provider_raw or not external_poi_id:
+                return None
+            provider = PoiProvider(str(getattr(provider_raw, "value", provider_raw)))
+            identity = provider, external_poi_id
+        else:
+            if not spatial_identity_id:
+                return None
+            identity = identity_type, spatial_identity_id
     except ValueError:
         return None
-    point = poi_points.get((provider, external_poi_id))
+    point = poi_points.get(identity)
     if point is None:
         return None
     name = str(spot.get("name") or point.name).strip()
@@ -274,7 +324,7 @@ async def evaluate_route_feasibility(
                     from_poi=str(previous.get("name") or "") or None,
                     to_poi=str(following.get("name") or "") or None,
                     detail=(
-                        "selected adjacent POIs require provider identity and coordinates"
+                        "selected adjacent places require stable spatial identity and coordinates"
                     ),
                 ))
                 continue

@@ -227,6 +227,15 @@ def _spot_line(s: dict[str, Any]) -> str:
             identity += f" curated_anchor_id={s['curated_anchor_id']}"
         if s.get("is_mandatory"):
             identity += " is_mandatory=true"
+    elif s.get("spatial_identity_type") and s.get("spatial_identity_id"):
+        identity = (
+            f"，identity spatial_identity_type={s['spatial_identity_type']} "
+            f"spatial_identity_id={s['spatial_identity_id']}"
+        )
+        if s.get("curated_anchor_id"):
+            identity += f" curated_anchor_id={s['curated_anchor_id']}"
+        if s.get("is_mandatory"):
+            identity += " is_mandatory=true"
     return (
         f"- {s['name']}（区域 {area}，评分 {rating}，开放 {open_t}，"
         f"{coord}{identity}）"

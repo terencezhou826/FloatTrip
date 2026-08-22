@@ -1,5 +1,40 @@
 # Project Log
 
+## 2026-08-22 22:55:38 +08:00 - M8B-0 generic spatial identity hard gate passed
+
+- Added route-neutral Catalog collections for verified Cultural Anchor coordinates and navigation access points. Verified runtime records require controlled status/method, ISO timestamp, source reference, provenance ID, verification note, accuracy, and confidence; manual map review also requires a non-sensitive audit reference. Existing `ExternalPoiBinding` remains unchanged and strict.
+- Added `MandatorySpatialResolver` with deterministic priority: unique verified Provider POI, then unique verified Cultural Anchor coordinate, then unique verified navigation access point. It has no name search, nearby-POI substitution, LLM, or route/region branch. Provider candidates retain the original `binding_id`, `provider`, and `external_poi_id` identity.
+- Added stable non-POI candidate/checkpoint fields, coordinate-capable Travel Time identity, Story placement by stable spatial identity while retaining Cultural `anchor_ids`, and the neutral frontend label `文化地点定位`. Navigation names/locations remain distinct from Cultural Anchor names/locations.
+- Files modified for M8B-0: `app/catalog/{models,loader,repository,validation,__init__}.py`, `app/planning/{mandatory_spatial,schemas,nodes,helpers,prompts,route_feasibility,graph,runtime_worker}.py`, `app/providers/travel_time.py`, `app/story/{models,binding}.py`, `app/main.py`, `frontend/{api,product-pages}.js*`, and focused tests. No Catalog content, Knowledge, Nuwa Story/Experience, or Tiantaishan coordinate was added.
+- Commands/results: Catalog spatial tests 17 PASS; focused compatibility 96 PASS and final 92 PASS; broad Catalog/Planning/Story/Runtime/Product regression 442 PASS; complete Python 730 PASS plus 18 subtests; frontend 32 PASS; Jingwei offline benchmark 153/153 PASS; compileall, hardcoding scan, and `git diff --check` PASS.
+- Existing Runtime concurrency `KNOWN_FLAKY` remains unchanged. One broad run emitted a single transient failure marker without a retained summary; immediate `--maxfail=1` rerun passed 442/442 and the complete suite passed 730/730.
+- Tiantaishan remains `SPATIAL_VERIFICATION_PENDING`. Next safe action is human review of an exact coordinate or navigation access point backed by an official GIS, field GPS, audited manual map point, or equivalent authoritative source. Do not resume Nuwa content or M8C until that record is verified.
+
+## 2026-08-22 22:16:31 +08:00 - M8 stopped at Nuwa POI identity hard gate
+
+- M8A remains passed: generic multi-route golden support, rollout audit/scaffold, six rollout documents, 46 focused tests, and the unchanged Jingwei 153/153 offline baseline.
+- Audited Nuwa Catalog IDs without changing content: route `changzhi.route.nuwa-tiantaishan`, mandatory Anchor `changzhi.anchor.tiantaishan`, and Region path Shanxi Province -> Changzhi City -> Shangdang District.
+- Ran real Amap Place Search v3 using the configured local provider and Catalog-derived scope. District exact/scenic/qualified queries, no-type variants, and prefecture no-type variants found no Shangdang `天台山` entity. The only target-like result was `天台庵` (`B01630MK7K`) in Pingshun County (`140425`), plus its parking lot; both were excluded.
+- Verified an official cultural-place relationship in the Shanxi Provincial Government article `登临太行之巅 品味上党文化` (2024-11-22, source: Shanxi Daily), which names `上党区上郝村天台山`. The article provides no Provider POI ID, coordinate, access point, or unique map identity.
+- HARD GATE result: `STOPPED_AT_M8B`, `HUMAN_REVIEW_REQUIRED`. No verified POI binding, Nuwa Knowledge, Story, Experience, benchmark, Planning E2E, or persistence snapshot was created. M8C/M8D/M8E were not executed.
+- Files modified in this stop phase: canonical development tracking only; M8A framework files remain as previously reported. Commands included bounded real Amap searches, official-site browser verification, repository scans, and Git audit. API credentials were neither printed nor persisted.
+- Safe next action: a human/content operator must identify the exact visitable Shanghao Village Tiantaishan map entity and provide an authoritative location/access reference that can be reconciled to one Provider POI ID. Do not use name-only verification or continue M8B content production until then.
+
+## 2026-08-22 - M8A route replication contract passed
+
+- Added backward-compatible multi-route golden fixture loading and route-keyed readiness lookup; existing one-fixture M7 snapshot projection remains unchanged.
+- Added generic route rollout layer/status models, `audit_route_readiness`, and a fact-free scaffold that creates only empty content collections and a blank route golden structure.
+- Added six rollout documents covering replication, content workflow, POI verification, Knowledge review, golden baselines, and provincial scaling.
+- Commands/results: 46 Evaluation/Rollout tests PASS, Jingwei baseline 153/153 PASS, compileall/diff/hardcoding scans PASS. Audit output is Jingwei READY and the other three routes POI_PENDING from data.
+- Next: process Nuwa only. Do not write POI binding or cultural content before identity/source review gates pass.
+
+## 2026-08-22 - M8 start gate passed
+
+- Started M8 from clean checkpoint `9dca326c6d999f50a0ecac524c0cbd41f300f99c`; only temporary root planning files were created.
+- Commands/results: M7/Jingwei offline benchmark 153/153 PASS, complete Python 692 plus 18 subtests PASS, frontend 32 PASS, compileall and `git diff --check` PASS.
+- Existing warnings remain limited to FastAPI lifespan deprecations and the local JWT secret warning. No new production regression was observed.
+- Next: M8A generic rollout audit/scaffold and data-driven multi-route golden support; do not create new route cultural content before its sequential route phase.
+
 ## 2026-08-22 21:27:29 +08:00 - M7 benchmark and readiness hard gates passed
 
 - Added a deterministic offline benchmark corpus with 91 cases and 153 hard metric results across seven domains, including all required Knowledge, Story, Experience, Resource, Product, and cross-layer attacks.

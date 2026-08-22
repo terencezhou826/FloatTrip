@@ -40,6 +40,14 @@ class FileCatalogLoader:
             routes=[item for package in enabled for item in package.routes],
             anchors=[item for package in enabled for item in package.anchors],
             poi_bindings=[item for package in enabled for item in package.poi_bindings],
+            spatial_identities=[
+                item for package in enabled for item in package.spatial_identities
+            ],
+            navigation_access_points=[
+                item
+                for package in enabled
+                for item in package.navigation_access_points
+            ],
             knowledge_sources=[
                 item for package in enabled for item in package.knowledge_sources
             ],
@@ -96,6 +104,13 @@ class FileCatalogLoader:
                 "anchors": self._read_collection(directory / "anchors.json", "anchors"),
                 "poi_bindings": self._read_optional_collection(
                     directory / "poi_bindings.json", "poi_bindings"
+                ),
+                "spatial_identities": self._read_optional_collection(
+                    directory / "spatial_identities.json", "spatial_identities"
+                ),
+                "navigation_access_points": self._read_optional_collection(
+                    directory / "navigation_access_points.json",
+                    "navigation_access_points",
                 ),
             }
             package_payload.update(self._load_knowledge(directory / "knowledge"))

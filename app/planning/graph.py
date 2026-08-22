@@ -355,6 +355,9 @@ async def run_modification_stream(
         route=checkpoint.get("route", []),
         pois=checkpoint.get("pois", []),
         mandatory_pois=checkpoint.get("mandatory_pois", []),
+        mandatory_spatial_candidates=checkpoint.get(
+            "mandatory_spatial_candidates", []
+        ),
         max_mandatory_check_rounds=checkpoint.get(
             "max_mandatory_check_rounds", 3
         ),
@@ -404,6 +407,9 @@ async def run_modification_stream(
                     "route": acc.get("route", []),
                     "pois": acc.get("pois", []),
                     "mandatory_pois": acc.get("mandatory_pois", []),
+                    "mandatory_spatial_candidates": acc.get(
+                        "mandatory_spatial_candidates", []
+                    ),
                     "max_mandatory_check_rounds": init.max_mandatory_check_rounds,
                     "planner_reviewer_dialogue": acc.get(
                         "planner_reviewer_dialogue", []
@@ -470,6 +476,9 @@ async def run_confirm_stream(
         route=pending_state.get("route", []),
         pois=pending_state.get("pois", []),
         mandatory_pois=pending_state.get("mandatory_pois", []),
+        mandatory_spatial_candidates=pending_state.get(
+            "mandatory_spatial_candidates", []
+        ),
         max_mandatory_check_rounds=pending_state.get(
             "max_mandatory_check_rounds", 3
         ),

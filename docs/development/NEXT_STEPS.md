@@ -1,6 +1,10 @@
 # Next Steps
 
-Updated: 2026-08-22 21:27:29 +08:00
+Updated: 2026-08-22 22:55:38 +08:00
+
+M8B-0 is complete after M8A passed and M8B stopped at the Tiantaishan identity gate. The platform can now represent a Cultural Anchor through a strict Provider POI, verified Cultural coordinate, or verified navigation access point without conflating cultural and navigation identity. Tiantaishan itself has no spatial record and remains `SPATIAL_VERIFICATION_PENDING`.
+
+The next action is human spatial verification only: provide an auditable exact coordinate or access point from official GIS, field GPS, reviewed manual map placement, or equivalent authoritative material. Record provenance, method, time, source, accuracy, confidence, note, and a non-sensitive audit reference where required. Do not use name-only matching, nearby POIs, or automatically derive a coordinate from prose. After that gate passes, resume Nuwa M8B under separate authorization; do not enter M8C yet.
 
 M7 is complete against checkpoint `9170633`. Review the evaluation architecture, 91-case corpus, two versioned baselines, readiness outcomes, and complete regression evidence; establish an explicit M7 Git checkpoint if approved. Do not enter M8 without separate authorization. Preserve deterministic offline hard gates, fixture-only route expectations, protected baseline updates, and optional Resource capability semantics.
 

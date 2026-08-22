@@ -43,8 +43,20 @@ class SpotPlan(BaseModel):
         default=None, description="策展 Anchor ID；非策展景点为空"
     )
     is_mandatory: bool = Field(
-        default=False, description="是否为策展线路 mandatory POI"
+        default=False, description="是否为策展线路 mandatory spatial Anchor"
     )
+    spatial_identity_type: str | None = Field(
+        default=None, description="策展地点的受控空间身份类型"
+    )
+    spatial_identity_id: str | None = Field(
+        default=None, description="策展地点稳定空间身份 ID"
+    )
+    provenance_id: str | None = Field(
+        default=None, description="空间身份审核 provenance ID"
+    )
+    cultural_anchor_location: dict[str, float] | None = None
+    navigation_location: dict[str, float] | None = None
+    navigation_name: str | None = None
 
 
 class DayRoute(BaseModel):
@@ -192,7 +204,11 @@ class TravelPlanState(BaseModel):
     # 高德景点搜索
     pois: list[dict[str, Any]] = Field(default_factory=list)
     mandatory_pois: list[dict[str, Any]] = Field(default_factory=list)
+    mandatory_spatial_candidates: list[dict[str, Any]] = Field(default_factory=list)
     missing_mandatory_pois: list[dict[str, Any]] = Field(default_factory=list)
+    missing_mandatory_spatial_candidates: list[dict[str, Any]] = Field(
+        default_factory=list
+    )
     mandatory_check_round: int = 0
     max_mandatory_check_rounds: int = 3
 

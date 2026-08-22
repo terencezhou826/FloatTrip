@@ -115,13 +115,7 @@ class BenchmarkRunner:
                 "network_required_cases": sum(case.requires_network for case in self.corpus.cases),
                 "llm_required_cases": sum(case.requires_llm for case in self.corpus.cases),
             },
-            snapshot_versions={
-                "catalog": {
-                    "schema_version": self.corpus.golden.get("catalog_schema_version"),
-                    "content_version": self.corpus.golden.get("catalog_content_version"),
-                },
-                "golden": self.corpus.golden.get("snapshot_identity", {}),
-            },
+            snapshot_versions=_snapshot_versions(self.corpus),
             overall_status=status,
         )
         from app.evaluation.readiness import RouteReadinessEvaluator
@@ -164,6 +158,31 @@ def _summary(suites: list[SuiteResult]) -> dict[str, int]:
         "skipped": sum(result.status is EvalStatus.SKIPPED for result in results),
         "hard": sum(result.hard_gate for result in results),
         "soft": sum(not result.hard_gate for result in results),
+    }
+
+
+def _snapshot_versions(corpus: BenchmarkCorpus) -> dict:
+    if len(corpus.goldens) == 1:
+        golden = corpus.golden
+        return {
+            "catalog": {
+                "schema_version": golden.get("catalog_schema_version"),
+                "content_version": golden.get("catalog_content_version"),
+            },
+            "golden": golden.get("snapshot_identity", {}),
+        }
+    return {
+        "catalog": {
+            golden["route_id"]: {
+                "schema_version": golden.get("catalog_schema_version"),
+                "content_version": golden.get("catalog_content_version"),
+            }
+            for golden in corpus.goldens
+        },
+        "golden": {
+            golden["route_id"]: golden.get("snapshot_identity", {})
+            for golden in corpus.goldens
+        },
     }
 
 

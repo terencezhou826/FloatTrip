@@ -9,5 +9,5 @@
     "product/cases.json",
     "cross_layer/cases.json"
   ],
-  "golden_fixture": "cross_layer/jingwei-golden.json"
+  "golden_fixtures": ["cross_layer/jingwei-golden.json"]
 }

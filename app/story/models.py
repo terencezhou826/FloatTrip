@@ -198,6 +198,7 @@ class ChapterBinding(CatalogModel):
     chapter_id: StableId
     anchor_ids: tuple[StableId, ...]
     resolved_poi_ids: tuple[StoryPoiIdentity, ...]
+    resolved_spatial_identity_ids: tuple[StableId, ...] = ()
     itinerary_stop_ids: tuple[str, ...]
     placement_type: PlacementType
     trigger_hint: StoryTriggerHint

@@ -61,6 +61,48 @@ class PoiVerificationMethod(StrEnum):
     OTHER = "other"
 
 
+class SpatialIdentityType(StrEnum):
+    PROVIDER_POI = "provider_poi"
+    VERIFIED_COORDINATE = "verified_coordinate"
+    NAVIGATION_ACCESS_POINT = "navigation_access_point"
+
+
+class SpatialVerificationStatus(StrEnum):
+    CANDIDATE = "candidate"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
+
+
+class SpatialVerificationMethod(StrEnum):
+    MANUAL_MAP_REVIEW = "manual_map_review"
+    OFFICIAL_SOURCE = "official_source"
+    FIELD_SURVEY = "field_survey"
+    AUTHORITATIVE_GIS = "authoritative_gis"
+    OTHER = "other"
+
+
+class SpatialAccuracy(StrEnum):
+    PRECISE = "precise"
+    APPROXIMATE = "approximate"
+    AREA_CENTROID = "area_centroid"
+
+
+class SpatialConfidence(StrEnum):
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
+
+class NavigationAccessType(StrEnum):
+    VILLAGE_ENTRANCE = "village_entrance"
+    TRAILHEAD = "trailhead"
+    PARKING = "parking"
+    VISITOR_CENTER = "visitor_center"
+    ROADSIDE_ACCESS = "roadside_access"
+    GENERAL_ACCESS = "general_access"
+    OTHER = "other"
+
+
 class LocalResourceType(StrEnum):
     RESTAURANT = "restaurant"
     LODGING = "lodging"
@@ -484,6 +526,104 @@ class ExternalPoiBinding(CatalogModel):
     @property
     def is_runtime_eligible(self) -> bool:
         return self.verification_status is PoiVerificationStatus.VERIFIED
+
+
+class SpatialVerificationProvenance(CatalogModel):
+    provenance_id: StableId
+    verification_method: SpatialVerificationMethod
+    verified_at: datetime
+    source_reference: str = Field(min_length=1, max_length=2048)
+    audit_reference: str | None = Field(default=None, min_length=1, max_length=256)
+    verification_note: str = Field(min_length=1, max_length=1000)
+
+    @model_validator(mode="after")
+    def validate_manual_review_audit_reference(self) -> "SpatialVerificationProvenance":
+        if (
+            self.verification_method is SpatialVerificationMethod.MANUAL_MAP_REVIEW
+            and self.audit_reference is None
+        ):
+            raise ValueError("manual_map_review requires audit_reference")
+        return self
+
+
+class SpatialCoordinates(CatalogModel):
+    longitude: float = Field(ge=-180, le=180)
+    latitude: float = Field(ge=-90, le=90)
+
+
+class AnchorCoordinateIdentity(CatalogModel):
+    spatial_identity_id: StableId
+    anchor_id: StableId
+    spatial_identity_type: SpatialIdentityType = SpatialIdentityType.VERIFIED_COORDINATE
+    location: SpatialCoordinates
+    verification_status: SpatialVerificationStatus
+    provenance: SpatialVerificationProvenance | None = None
+    accuracy: SpatialAccuracy | None = None
+    confidence: SpatialConfidence | None = None
+
+    @model_validator(mode="after")
+    def validate_coordinate_identity(self) -> "AnchorCoordinateIdentity":
+        if self.spatial_identity_type is not SpatialIdentityType.VERIFIED_COORDINATE:
+            raise ValueError("coordinate identity type must be verified_coordinate")
+        if self.verification_status is SpatialVerificationStatus.VERIFIED:
+            missing = [
+                name
+                for name, value in (
+                    ("provenance", self.provenance),
+                    ("accuracy", self.accuracy),
+                    ("confidence", self.confidence),
+                )
+                if value is None
+            ]
+            if missing:
+                raise ValueError(
+                    "verified coordinate identities require " + ", ".join(missing)
+                )
+        return self
+
+    @property
+    def is_runtime_eligible(self) -> bool:
+        return self.verification_status is SpatialVerificationStatus.VERIFIED
+
+
+class NavigationAccessPoint(CatalogModel):
+    access_point_id: StableId
+    anchor_id: StableId
+    spatial_identity_type: SpatialIdentityType = (
+        SpatialIdentityType.NAVIGATION_ACCESS_POINT
+    )
+    name: str = Field(min_length=1, max_length=256)
+    location: SpatialCoordinates
+    access_type: NavigationAccessType
+    verification_status: SpatialVerificationStatus
+    provenance: SpatialVerificationProvenance | None = None
+    accuracy: SpatialAccuracy | None = None
+    confidence: SpatialConfidence | None = None
+    note: str = Field(min_length=1, max_length=1000)
+
+    @model_validator(mode="after")
+    def validate_access_point(self) -> "NavigationAccessPoint":
+        if self.spatial_identity_type is not SpatialIdentityType.NAVIGATION_ACCESS_POINT:
+            raise ValueError("access point identity type must be navigation_access_point")
+        if self.verification_status is SpatialVerificationStatus.VERIFIED:
+            missing = [
+                name
+                for name, value in (
+                    ("provenance", self.provenance),
+                    ("accuracy", self.accuracy),
+                    ("confidence", self.confidence),
+                )
+                if value is None
+            ]
+            if missing:
+                raise ValueError(
+                    "verified navigation access points require " + ", ".join(missing)
+                )
+        return self
+
+    @property
+    def is_runtime_eligible(self) -> bool:
+        return self.verification_status is SpatialVerificationStatus.VERIFIED
 
 
 class ResourceProviderBinding(CatalogModel):
@@ -966,6 +1106,8 @@ class ContentPackage(CatalogModel):
     routes: list[CuratedRoute]
     anchors: list[Anchor]
     poi_bindings: list[ExternalPoiBinding] = Field(default_factory=list)
+    spatial_identities: list[AnchorCoordinateIdentity] = Field(default_factory=list)
+    navigation_access_points: list[NavigationAccessPoint] = Field(default_factory=list)
     knowledge_sources: list[KnowledgeSource] = Field(default_factory=list)
     knowledge_claims: list[KnowledgeClaim] = Field(default_factory=list)
     knowledge_evidence: list[KnowledgeEvidence] = Field(default_factory=list)

@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from app.evaluation.models import BenchmarkVersion, EvalCase, EvalSuite, EvaluationModel
 from app.evaluation.registry import EvaluationRegistry, FORMAL_METRICS
@@ -68,7 +68,22 @@ class CorpusSuiteFile(EvaluationModel):
 class CorpusManifest(EvaluationModel):
     benchmark_version: BenchmarkVersion
     suite_files: tuple[str, ...] = Field(min_length=1)
-    golden_fixture: str
+    golden_fixture: str | None = None
+    golden_fixtures: tuple[str, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_golden_fixtures(self) -> "CorpusManifest":
+        paths = self.golden_paths
+        if not paths:
+            raise ValueError("benchmark manifest requires at least one golden fixture")
+        if len(paths) != len(set(paths)):
+            raise ValueError("golden fixture paths must be unique")
+        return self
+
+    @property
+    def golden_paths(self) -> tuple[str, ...]:
+        legacy = (self.golden_fixture,) if self.golden_fixture else ()
+        return legacy + self.golden_fixtures
 
 
 class BenchmarkCorpus:
@@ -78,12 +93,20 @@ class BenchmarkCorpus:
         root: Path,
         manifest: CorpusManifest,
         suite_files: tuple[CorpusSuiteFile, ...],
-        golden: dict[str, Any],
+        goldens: tuple[dict[str, Any], ...],
     ) -> None:
         self.root = root
         self.manifest = manifest
         self.suite_files = suite_files
-        self.golden = golden
+        self.goldens = goldens
+        self.golden = goldens[0]
+        self._goldens_by_route = {
+            golden["route_id"]: golden
+            for golden in goldens
+            if isinstance(golden.get("route_id"), str)
+        }
+        if len(self._goldens_by_route) != len(goldens):
+            raise ValueError("golden fixture route IDs must be present and unique")
         suites: list[EvalSuite] = []
         cases: list[EvalCase] = []
         fixtures: dict[str, BenchmarkFixture] = {}
@@ -155,13 +178,15 @@ class BenchmarkCorpus:
             )
             for relative in manifest.suite_files
         )
-        golden_path = _safe_child(root_path, manifest.golden_fixture)
-        golden = json.loads(golden_path.read_text(encoding="utf-8"))
+        goldens = tuple(
+            json.loads(_safe_child(root_path, relative).read_text(encoding="utf-8"))
+            for relative in manifest.golden_paths
+        )
         corpus = cls(
             root=root_path,
             manifest=manifest,
             suite_files=suite_files,
-            golden=golden,
+            goldens=goldens,
         )
         corpus.audit()
         return corpus
@@ -172,8 +197,6 @@ class BenchmarkCorpus:
         )
         if any(pattern.search(serialized) for pattern in _SECRET_PATTERNS):
             raise ValueError("benchmark fixture secret leakage detected")
-        if self.golden.get("route_id") is None:
-            raise ValueError("golden fixture requires route_id")
         required_golden = {
             "mandatory_anchor_identity",
             "expected_chapter_ids",
@@ -182,9 +205,15 @@ class BenchmarkCorpus:
             "forbidden_claim_ids",
             "capability_expectation",
         }
-        missing = required_golden.difference(self.golden)
-        if missing:
-            raise ValueError(f"golden fixture missing fields: {sorted(missing)}")
+        for golden in self.goldens:
+            if golden.get("route_id") is None:
+                raise ValueError("golden fixture requires route_id")
+            missing = required_golden.difference(golden)
+            if missing:
+                raise ValueError(f"golden fixture missing fields: {sorted(missing)}")
+
+    def get_golden(self, route_id: str) -> dict[str, Any] | None:
+        return self._goldens_by_route.get(route_id)
 
 
 def _safe_child(root: Path, relative: str) -> Path:

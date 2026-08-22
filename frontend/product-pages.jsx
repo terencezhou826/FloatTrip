@@ -234,7 +234,7 @@ function ProductItinerarySection({ itinerary, username }) {
             <li key={`${item.type}-${index}`} className={item.type === "attraction" ? "stop-attraction" : "stop-meal"}>
               <div className="timeline-time">{item.start || (item.type === "lunch" ? "午餐" : item.type === "dinner" ? "晚餐" : "")}</div>
               <div className="timeline-content">
-                <div className="timeline-title"><h3>{item.name || "该时段暂无可靠餐饮"}</h3>{item.isMandatory && <span className="mandatory-badge">主题核心地点</span>}</div>
+                <div className="timeline-title"><h3>{item.name || "该时段暂无可靠餐饮"}</h3>{item.isMandatory && <span className="mandatory-badge">主题核心地点</span>}{item.spatialLocationLabel && <span className="mandatory-badge">{item.spatialLocationLabel}</span>}</div>
                 {item.end && <p className="timeline-meta">{item.start}–{item.end}</p>}
                 {item.roadDistanceKm != null && <p className="road-metric">驾车道路距离 {Number(item.roadDistanceKm).toFixed(1)} km{item.drivingMinutes != null ? ` · 约 ${Number(item.drivingMinutes).toFixed(1)} 分钟` : ""}</p>}
                 {item.address || item.addr ? <p className="timeline-meta">{item.address || item.addr}</p> : null}

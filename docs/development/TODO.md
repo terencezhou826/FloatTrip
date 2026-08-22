@@ -1,6 +1,19 @@
 # TODO
 
-Updated: 2026-08-22 21:27:29 +08:00
+Updated: 2026-08-22 22:55:38 +08:00
+
+M8 stopped after M8B-0:
+
+- [x] Pass start gate at checkpoint `9dca326`: Jingwei benchmark, full Python, frontend, compileall, and diff check.
+- [x] Complete M8A generic route replication contract without cultural facts.
+- [x] Run Nuwa multi-angle real Amap discovery and authoritative place-relationship research.
+- [x] Stop at the Nuwa POI identity hard gate after finding no unique Shangdang Tiantaishan Provider entity.
+- [x] Complete M8B-0 generic Provider POI / verified coordinate / navigation access-point architecture without adding Tiantaishan data.
+- [x] Preserve Jingwei Provider identity and pass 153/153 benchmark, 730 Python tests plus 18 subtests, and 32 frontend tests.
+- [ ] Obtain human-reviewed authoritative Tiantaishan location/access evidence and create exactly one runtime-unambiguous verified coordinate or navigation access point, unless a unique Provider POI is later confirmed.
+- [ ] Keep Tiantaishan `SPATIAL_VERIFICATION_PENDING`; do not create Nuwa Knowledge, Story, Experience, or resume M8B until spatial verification passes.
+- [ ] Keep Shennong, Houyi, and four-route final readiness unstarted until Nuwa passes all M8B gates.
+- [ ] Do not commit, push, or enter M9.
 
 M7 in progress on 2026-08-22:
 

@@ -14,10 +14,13 @@ from app.catalog.models import PoiProvider
 from app.core.planning_constraints import constraint_directive
 from app.planning.mandatory_pois import (
     MandatoryConstraintUnsatisfied,
-    MandatoryPoiResolver,
-    mandatory_constraint_block,
-    merge_poi_candidates,
-    missing_mandatory_pois as find_missing_mandatory_pois,
+)
+from app.planning.mandatory_spatial import (
+    MandatorySpatialResolver,
+    mandatory_spatial_constraint_block,
+    merge_spatial_candidates,
+    missing_mandatory_spatial_candidates,
+    spatial_identity,
 )
 from app.planning.catalog_context import CatalogContext
 from app.planning.meal_coverage import (
@@ -238,11 +241,18 @@ async def attraction_search_node(state: TravelPlanState) -> dict[str, Any]:
         state.catalog_context, api_key
     )
     if mandatory:
-        kept = merge_poi_candidates(kept, mandatory)
-        note += f"；注入 {len(mandatory)} 个 verified mandatory POI"
+        kept = merge_spatial_candidates(kept, mandatory)
+        note += f"；注入 {len(mandatory)} 个 verified mandatory spatial Anchor"
+    legacy_pois = [
+        item
+        for item in mandatory
+        if not item.get("spatial_identity_type")
+        or item.get("spatial_identity_type") == "provider_poi"
+    ]
     return {
         "pois": kept,
-        "mandatory_pois": mandatory,
+        "mandatory_pois": legacy_pois,
+        "mandatory_spatial_candidates": mandatory,
         "history": state.history + [note],
     }
 
@@ -254,7 +264,7 @@ async def _resolve_mandatory_pois_for_planning(
     if context is None or not context.mandatory_anchor_ids:
         return []
     repository = FileCatalogLoader(_CATALOG_ROOT).load()
-    resolved = await MandatoryPoiResolver(
+    resolved = await MandatorySpatialResolver(
         repository,
         {PoiProvider.AMAP: AmapExactPoiProvider(api_key)},
     ).resolve(context)
@@ -268,16 +278,25 @@ async def ensure_mandatory_pois_node(
     if (
         state.catalog_context is None
         or not state.catalog_context.mandatory_anchor_ids
-        or state.mandatory_pois
+        or _mandatory_candidates(state)
     ):
         return {}
     mandatory = await _resolve_mandatory_pois_for_planning(
         state.catalog_context, amap_key()
     )
     return {
-        "mandatory_pois": mandatory,
-        "pois": merge_poi_candidates(state.pois, mandatory),
+        "mandatory_pois": [
+            item
+            for item in mandatory
+            if item.get("spatial_identity_type") == "provider_poi"
+        ],
+        "mandatory_spatial_candidates": mandatory,
+        "pois": merge_spatial_candidates(state.pois, mandatory),
     }
+
+
+def _mandatory_candidates(state: TravelPlanState) -> list[dict[str, Any]]:
+    return state.mandatory_spatial_candidates or state.mandatory_pois
 
 
 # ─── Planner ─────────────────────────────────────────────────
@@ -310,7 +329,9 @@ def make_planner_node(model_name: str | None):
 
         cluster_map = cluster_pois_by_location(state.pois, state.days)
         cand_text = format_spots_for_llm(state.pois, cluster_map)
-        mandatory_block = mandatory_constraint_block(state.mandatory_pois)
+        mandatory_block = mandatory_spatial_constraint_block(
+            _mandatory_candidates(state)
+        )
         feedback = ""
         if state.route_modify_opinion:
             is_user_opinion = "【用户修改意见】" in state.route_modify_opinion
@@ -427,16 +448,18 @@ def make_reviewer_node(model_name: str | None):
 
     async def reviewer(state: TravelPlanState) -> dict[str, Any]:
         bad_unknown = unknown_spots(state.route, state.pois)
-        missing_mandatory = find_missing_mandatory_pois(
-            state.route, state.mandatory_pois
+        missing_mandatory = missing_mandatory_spatial_candidates(
+            state.route, _mandatory_candidates(state)
         )
 
         facts = (
             f"非候选池景点：{('；'.join(bad_unknown)) or '无'}\n"
-            f"缺失 mandatory POI："
+            f"缺失 mandatory spatial Anchor："
             f"{('；'.join(item['name'] for item in missing_mandatory)) or '无'}"
         )
-        mandatory_block = mandatory_constraint_block(state.mandatory_pois)
+        mandatory_block = mandatory_spatial_constraint_block(
+            _mandatory_candidates(state)
+        )
 
         weather_text = format_weather_for_llm(state.weather_forecast)
         weather_block = (
@@ -492,8 +515,7 @@ def make_reviewer_node(model_name: str | None):
         mandatory_opinion = ""
         if missing_mandatory:
             mandatory_opinion = (
-                "路线缺少 mandatory POI，请保留其 provider + external_poi_id "
-                "身份并重新安排："
+                "路线缺少 mandatory POI / spatial Anchor，请保留其稳定空间身份并重新安排："
                 + "、".join(item["name"] for item in missing_mandatory)
             )
         route_opinion = "\n".join(
@@ -526,10 +548,13 @@ def make_reviewer_node(model_name: str | None):
 
 
 def mandatory_check_node(state: TravelPlanState) -> dict[str, Any]:
-    missing = find_missing_mandatory_pois(state.route, state.mandatory_pois)
+    missing = missing_mandatory_spatial_candidates(
+        state.route, _mandatory_candidates(state)
+    )
     if not missing:
         return {
             "missing_mandatory_pois": [],
+            "missing_mandatory_spatial_candidates": [],
             "mandatory_check_round": 0,
         }
 
@@ -537,17 +562,19 @@ def mandatory_check_node(state: TravelPlanState) -> dict[str, Any]:
     names = "、".join(item["name"] for item in missing)
     if round_number > state.max_mandatory_check_rounds:
         raise MandatoryConstraintUnsatisfied(
-            "mandatory POI constraint unsatisfied after "
+            "mandatory spatial Anchor constraint unsatisfied after "
             f"{state.max_mandatory_check_rounds} correction rounds: {names}"
         )
     correction = (
-        "【Mandatory POI 硬约束修正】上一版路线缺少以下 mandatory POI："
-        f"{names}。请从候选池重新安排，并原样保留 provider、external_poi_id、"
-        "curated_anchor_id、is_mandatory 身份字段；不得用同名地点替代。"
+        "【Mandatory Spatial Anchor 硬约束修正】上一版路线缺少以下地点："
+        f"{names}。请从候选池重新安排，并原样保留 spatial_identity_type、"
+        "spatial_identity_id、curated_anchor_id、is_mandatory；Provider POI 还必须"
+        "保留 provider、external_poi_id。不得用同名或附近地点替代。"
     )
     note = f"[mandatory_check 第{round_number}轮] 缺失：{names}"
     return {
         "missing_mandatory_pois": missing,
+        "missing_mandatory_spatial_candidates": missing,
         "mandatory_check_round": round_number,
         "approved": False,
         "need_modify_route": True,
@@ -566,13 +593,18 @@ def route_after_mandatory_check(state: TravelPlanState) -> str:
 
 
 def mandatory_confirm_guard_node(state: TravelPlanState) -> dict[str, Any]:
-    missing = find_missing_mandatory_pois(state.route, state.mandatory_pois)
+    missing = missing_mandatory_spatial_candidates(
+        state.route, _mandatory_candidates(state)
+    )
     if missing:
         names = "、".join(item["name"] for item in missing)
         raise MandatoryConstraintUnsatisfied(
-            f"cannot finalize route with missing mandatory POIs: {names}"
+            f"cannot finalize route with missing mandatory spatial Anchors: {names}"
         )
-    return {"missing_mandatory_pois": []}
+    return {
+        "missing_mandatory_pois": [],
+        "missing_mandatory_spatial_candidates": [],
+    }
 
 
 def route_after_review(state: TravelPlanState) -> str:
@@ -772,8 +804,8 @@ async def route_feasibility_node(
     )
     opinion = (
         f"【道路可执行性硬约束修正（第{round_number}轮）】\n{details}\n"
-        "请调整景点时间，或替换造成冲突的非 mandatory POI；"
-        "不得删除 mandatory POI，也不得用名称相近地点替代。"
+        "请调整景点时间，或替换造成冲突的非 mandatory POI / spatial point；"
+        "不得删除 mandatory POI / spatial Anchor，也不得用名称相近地点替代。"
     )
     note = f"[route_feasibility 第{round_number}轮] REPLAN_REQUIRED\n{details}"
     update.update({
@@ -861,7 +893,7 @@ async def meal_search_node(
                 else None
             )
             anchors: list[MealSearchAnchor] = []
-            seen_anchor_identities: set[tuple[PoiProvider, str]] = set()
+            seen_anchor_identities: set[tuple[object, str]] = set()
             for role, point in (
                 ("primary", previous_point),
                 ("secondary", following_point),
@@ -1206,9 +1238,9 @@ def _finalize_impl(state: TravelPlanState) -> dict[str, Any]:
     """组装 final_plan：逐天时刻表 + 午晚餐 + 图片url + haversine 距离。"""
     spot_info = {s["name"]: s for s in state.pois}
     spot_info_by_identity = {
-        (str(s["provider"]), str(s["external_poi_id"])): s
+        identity: s
         for s in state.pois
-        if s.get("provider") and s.get("external_poi_id")
+        if (identity := spatial_identity(s)) is not None
     }
     meals_by_day = {m["day"]: m for m in state.meals}
 
@@ -1229,13 +1261,10 @@ def _finalize_impl(state: TravelPlanState) -> dict[str, Any]:
         dinner_inserted = False
 
         for spot in day.get("spots", []):
-            identity = (
-                str(spot.get("provider")),
-                str(spot.get("external_poi_id")),
-            )
+            identity = spatial_identity(spot)
             info = (
                 spot_info_by_identity.get(identity)
-                if spot.get("provider") and spot.get("external_poi_id")
+                if identity is not None
                 else None
             ) or spot_info.get(spot["name"], {})
             timeline.append({
@@ -1261,6 +1290,28 @@ def _finalize_impl(state: TravelPlanState) -> dict[str, Any]:
                 ),
                 "is_mandatory": bool(
                     spot.get("is_mandatory") or info.get("is_mandatory")
+                ),
+                "spatial_identity_type": (
+                    spot.get("spatial_identity_type")
+                    or info.get("spatial_identity_type")
+                ),
+                "spatial_identity_id": (
+                    spot.get("spatial_identity_id")
+                    or info.get("spatial_identity_id")
+                ),
+                "provenance_id": (
+                    spot.get("provenance_id") or info.get("provenance_id")
+                ),
+                "cultural_anchor_location": (
+                    spot.get("cultural_anchor_location")
+                    or info.get("cultural_anchor_location")
+                ),
+                "navigation_location": (
+                    spot.get("navigation_location")
+                    or info.get("navigation_location")
+                ),
+                "navigation_name": (
+                    spot.get("navigation_name") or info.get("navigation_name")
                 ),
             })
             if spot.get("name") == morning_anchor_name and not lunch_inserted:

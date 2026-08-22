@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -76,6 +77,57 @@ def test_jingwei_golden_locks_identity_structure_safety_not_dynamic_text():
     assert set(golden["not_locked"]) == {
         "narration_text", "meal_names", "dynamic_poi_names"
     }
+
+
+def test_manifest_supports_multiple_route_golden_fixtures(tmp_path):
+    source = ROOT / "benchmarks"
+    shutil.copytree(source, tmp_path, dirs_exist_ok=True)
+    second_path = tmp_path / "cross_layer" / "second-golden.json"
+    second = json.loads(
+        (tmp_path / "cross_layer" / "jingwei-golden.json").read_text(encoding="utf-8")
+    )
+    second["fixture_id"] = "second-golden.1.0.0"
+    second["route_id"] = "example.route.second"
+    second_path.write_text(json.dumps(second, ensure_ascii=False), encoding="utf-8")
+    manifest_path = tmp_path / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["golden_fixtures"].append("cross_layer/second-golden.json")
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    corpus = BenchmarkCorpus.load(tmp_path)
+
+    assert len(corpus.goldens) == 2
+    assert corpus.get_golden("example.route.second") is not None
+    assert corpus.get_golden("missing.route") is None
+
+
+def test_legacy_singular_golden_manifest_remains_compatible(tmp_path):
+    source = ROOT / "benchmarks"
+    shutil.copytree(source, tmp_path, dirs_exist_ok=True)
+    manifest_path = tmp_path / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    singular = manifest.pop("golden_fixtures")[0]
+    manifest["golden_fixture"] = singular
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    corpus = BenchmarkCorpus.load(tmp_path)
+    assert len(corpus.goldens) == 1
+    assert corpus.golden is corpus.get_golden(corpus.golden["route_id"])
+
+
+def test_duplicate_golden_route_identity_is_rejected(tmp_path):
+    source = ROOT / "benchmarks"
+    shutil.copytree(source, tmp_path, dirs_exist_ok=True)
+    duplicate_path = tmp_path / "cross_layer" / "duplicate-golden.json"
+    duplicate_path.write_text(
+        (tmp_path / "cross_layer" / "jingwei-golden.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    manifest_path = tmp_path / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["golden_fixtures"].append("cross_layer/duplicate-golden.json")
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="route IDs must be present and unique"):
+        BenchmarkCorpus.load(tmp_path)
 
 
 def test_fixture_files_contain_no_secret_shaped_values_or_sensitive_users():
