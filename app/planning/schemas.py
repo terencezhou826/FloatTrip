@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.planning.catalog_context import CatalogContext
 
@@ -30,6 +30,9 @@ class SpotPlan(BaseModel):
     """单个景点的安排（含游玩时段）。"""
 
     name: str = Field(description="景点名，必须严格来自候选景点池")
+    candidate_ref: str | None = Field(
+        default=None, description="Planner 选择候选时使用的确定性运行时引用"
+    )
     period: str = Field(description="时段：morning / afternoon / evening")
     start_time: str = Field(description="开始游玩时间，格式 HH:MM")
     end_time: str = Field(description="结束游玩时间，格式 HH:MM")
@@ -101,6 +104,46 @@ class TravelRoute(BaseModel):
         default="",
         description="如果用户修改意见会导致路线质量严重下降（如同天景点地理跨度剧增、"
                     "明显时间冲突等），在此写出1-2句顾虑；无担忧则空字符串",
+    )
+
+
+class PlannerSpotSelection(BaseModel):
+    """Planner LLM 仅负责选择候选并安排时间。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    candidate_ref: str = Field(description="候选池中逐字复制的确定性 candidate_ref")
+    name: str = Field(description="候选名称，仅供可读性校验；身份以 candidate_ref 为准")
+    period: str = Field(description="时段：morning / afternoon / evening")
+    start_time: str = Field(description="开始游玩时间，格式 HH:MM")
+    end_time: str = Field(description="结束游玩时间，格式 HH:MM")
+
+
+class PlannerDayRoute(BaseModel):
+    """Planner LLM 的单日选择结果。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    day: int = Field(description="第几天，从 1 开始")
+    spots: list[PlannerSpotSelection] = Field(description="当天候选选择，按时间先后排列")
+    theme: str = Field(description="当天主题，一句话，根据已选候选内容归纳")
+
+
+class PlannerTravelRoute(BaseModel):
+    """严格、无任意对象的 Planner LLM 边界 Schema。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    reasoning: str = Field(
+        description=(
+            "按【景点相邻】【用户偏好】【无重复】【天气适配】四个维度逐一推理，"
+            "每个维度写出本轮决策或改动结论。"
+        )
+    )
+    days: list[PlannerDayRoute] = Field(description="逐天候选选择与时刻表")
+    notes: str = Field(description="本版总结，一句话说明本轮主要改动")
+    modification_concern: str = Field(
+        description="用户修改意见会严重降低路线质量时说明顾虑，否则为空字符串"
     )
 
 

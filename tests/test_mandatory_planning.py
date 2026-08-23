@@ -29,12 +29,12 @@ from app.planning.nodes import (
 )
 from app.planning.runtime_worker import snapshot_to_state
 from app.planning.schemas import (
-    DayRoute,
+    PlannerDayRoute,
+    PlannerSpotSelection,
+    PlannerTravelRoute,
     RouteReview,
-    SpotPlan,
     TimeCheckResult,
     TravelPlanState,
-    TravelRoute,
 )
 from app.providers.poi_identity import ExternalPoiRecord
 
@@ -146,20 +146,27 @@ def test_mandatory_candidate_is_injected_and_identity_deduplicated(monkeypatch):
     assert result["pois"][0]["is_mandatory"] is True
 
 
-def test_planner_prompt_carries_constraint_and_output_identity(monkeypatch):
+def test_planner_prompt_uses_candidate_ref_and_hydrates_identity(monkeypatch):
     captured = {}
     monkeypatch.setattr("app.planning.nodes.build_structured_llm", lambda *_a, **_k: object())
 
     async def fake_invoke(_llm, messages, **_kwargs):
         captured["messages"] = messages
-        return TravelRoute(
+        return PlannerTravelRoute(
             reasoning="kept mandatory identity",
-            days=[DayRoute(
+            days=[PlannerDayRoute(
                 day=1,
                 theme="route",
-                spots=[SpotPlan(**_route()[0]["spots"][0])],
+                spots=[PlannerSpotSelection(
+                    candidate_ref=f"poi:amap:{EXTERNAL_POI_ID}",
+                    name="发鸠山景区",
+                    period="morning",
+                    start_time="09:00",
+                    end_time="11:00",
+                )],
             )],
             notes="done",
+            modification_concern="",
         )
 
     monkeypatch.setattr("app.planning.nodes.ainvoke_structured", fake_invoke)
@@ -168,7 +175,8 @@ def test_planner_prompt_carries_constraint_and_output_identity(monkeypatch):
 
     assert result["route"][0]["spots"][0]["external_poi_id"] == EXTERNAL_POI_ID
     prompt = str(captured["messages"])
-    assert "mandatory POI" in prompt
+    assert "mandatory spatial Anchor" in prompt
+    assert f"poi:amap:{EXTERNAL_POI_ID}" in prompt
     assert EXTERNAL_POI_ID in prompt
 
 

@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
+import re
 import time
 import urllib.parse
 import urllib.request
@@ -21,6 +23,42 @@ USER_AGENT = (
 )
 HTTP_PROXY_ENV_KEYS = ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy")
 _SECRET_QUERY_KEYS = ("key", "api_key", "access_token", "token")
+_SECRET_QUERY_RE = re.compile(
+    r"(?i)([?&](?:key|api_key|access_token|token)=)([^&\s,'\")]+)"
+)
+_AUTHORIZATION_RE = re.compile(
+    r"(?i)((?:authorization|x-api-key|api-key)['\"]?\s*[:=]\s*"
+    r"['\"]?(?:bearer\s+)?)([^\s,;'\"]+)"
+)
+
+
+def redact_sensitive_text(value: str) -> str:
+    """Redact common query credentials and Authorization values in log text."""
+    value = _SECRET_QUERY_RE.sub(r"\1<redacted>", value)
+    return _AUTHORIZATION_RE.sub(r"\1<redacted>", value)
+
+
+class SensitiveHttpLogFilter(logging.Filter):
+    """Sanitize third-party HTTP log records before handlers see them."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.msg = redact_sensitive_text(record.getMessage())
+        record.args = ()
+        return True
+
+
+def install_http_log_redaction() -> None:
+    """Install one process-wide filter on HTTP client loggers."""
+    for logger_name in ("httpx", "httpcore", "openai"):
+        http_logger = logging.getLogger(logger_name)
+        if not any(
+            isinstance(item, SensitiveHttpLogFilter)
+            for item in http_logger.filters
+        ):
+            http_logger.addFilter(SensitiveHttpLogFilter())
+
+
+install_http_log_redaction()
 
 
 def choose_http_proxy() -> str | None:
@@ -40,7 +78,9 @@ def redact_url(url: str) -> str:
         if secret_key in query:
             query[secret_key] = ["<redacted>"]
     redacted_query = urllib.parse.urlencode(query, doseq=True)
-    return urllib.parse.urlunparse(parsed._replace(query=redacted_query))
+    return redact_sensitive_text(
+        urllib.parse.urlunparse(parsed._replace(query=redacted_query))
+    )
 
 
 def http_get_json(url: str, timeout: int = 15) -> dict[str, Any]:

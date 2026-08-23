@@ -22,6 +22,15 @@ from app.planning.mandatory_spatial import (
     missing_mandatory_spatial_candidates,
     spatial_identity,
 )
+from app.planning.planner_candidates import (
+    PlannerCandidateReferenceError,
+    build_planner_candidate_index,
+    compact_hydrated_route,
+    format_planner_candidates,
+    hydrate_planner_route,
+    planner_candidate_ref,
+    planner_mandatory_constraint_block,
+)
 from app.planning.catalog_context import CatalogContext
 from app.planning.meal_coverage import (
     MealCoverageStatus,
@@ -73,8 +82,8 @@ from app.planning.schemas import (
     SingleDayMealPick,
     SpotTipsResult,
     TimeCheckResult,
+    PlannerTravelRoute,
     TravelPlanState,
-    TravelRoute,
 )
 from app.planning.helpers import (
     amap_key,
@@ -318,7 +327,9 @@ def _travel_dates_block(state: TravelPlanState) -> str:
 
 
 def make_planner_node(model_name: str | None):
-    llm = build_structured_llm(TravelRoute, model=model_name, temperature=0.3)
+    llm = build_structured_llm(
+        PlannerTravelRoute, model=model_name, temperature=0.3
+    )
 
     async def planner(state: TravelPlanState) -> dict[str, Any]:
         # ① 上一轮景点集合（用于 spot diff，检测"notes 说改但 JSON 未变"）
@@ -328,9 +339,12 @@ def make_planner_node(model_name: str | None):
                     and bool(state.route_modify_opinion))
 
         cluster_map = cluster_pois_by_location(state.pois, state.days)
-        cand_text = format_spots_for_llm(state.pois, cluster_map)
-        mandatory_block = mandatory_spatial_constraint_block(
-            _mandatory_candidates(state)
+        candidate_index = build_planner_candidate_index(state.pois)
+        cand_text = format_planner_candidates(
+            state.pois, candidate_index, cluster_map
+        )
+        mandatory_block = planner_mandatory_constraint_block(
+            _mandatory_candidates(state), candidate_index
         )
         feedback = ""
         if state.route_modify_opinion:
@@ -351,7 +365,8 @@ def make_planner_node(model_name: str | None):
                     f"或重新分配各天的景点组合。如果 days 再次与上一版完全相同，将被系统标记为规划失败。\n"
                 )
             feedback = (
-                f"\n\n上一版路线：\n{json.dumps(state.route, ensure_ascii=False)}\n\n"
+                f"\n\n上一版路线（Planner 紧凑投影）：\n"
+                f"{compact_hydrated_route(state.route)}\n\n"
                 f"{stale_block}"
                 f"{opinion_label}：\n{state.route_modify_opinion}"
             )
@@ -394,8 +409,35 @@ def make_planner_node(model_name: str | None):
             f"{final_note}\n\n"
             f"请给出 {state.days} 天带时刻表的逐天景点安排。"
         )
-        result: TravelRoute = await ainvoke_structured(llm, [("system", PLANNER_SYSTEM), ("human", prompt)])
-        route = [d.model_dump() for d in result.days]
+        messages = [("system", PLANNER_SYSTEM), ("human", prompt)]
+        result = None
+        for validation_attempt in range(2):
+            selection: PlannerTravelRoute = await ainvoke_structured(llm, messages)
+            try:
+                result = hydrate_planner_route(selection, candidate_index)
+                break
+            except PlannerCandidateReferenceError as exc:
+                if validation_attempt == 1:
+                    raise
+                allowed_refs = "、".join(candidate_index)
+                logger.warning(
+                    "Planner candidate_ref validation failed; requesting one bounded "
+                    "correction: %s",
+                    exc,
+                )
+                messages = [
+                    *messages,
+                    (
+                        "human",
+                        "上一输出未通过 candidate_ref 校验。请重新输出完整路线，且只使用"
+                        f"以下 candidate_ref：{allowed_refs}。不得按名称猜测或创建新引用。",
+                    ),
+                ]
+        if result is None:
+            raise PlannerCandidateReferenceError(
+                "Planner candidate_ref validation produced no hydrated route"
+            )
+        route = [d.model_dump(mode="json") for d in result.days]
         rnd = state.review_round + 1
 
         logger.info("[planner 第%d轮] reasoning：\n%s", rnd, result.reasoning or "(空)")
@@ -560,6 +602,7 @@ def mandatory_check_node(state: TravelPlanState) -> dict[str, Any]:
 
     round_number = state.mandatory_check_round + 1
     names = "、".join(item["name"] for item in missing)
+    missing_refs = "、".join(planner_candidate_ref(item) for item in missing)
     if round_number > state.max_mandatory_check_rounds:
         raise MandatoryConstraintUnsatisfied(
             "mandatory spatial Anchor constraint unsatisfied after "
@@ -567,9 +610,8 @@ def mandatory_check_node(state: TravelPlanState) -> dict[str, Any]:
         )
     correction = (
         "【Mandatory Spatial Anchor 硬约束修正】上一版路线缺少以下地点："
-        f"{names}。请从候选池重新安排，并原样保留 spatial_identity_type、"
-        "spatial_identity_id、curated_anchor_id、is_mandatory；Provider POI 还必须"
-        "保留 provider、external_poi_id。不得用同名或附近地点替代。"
+        f"{names}。必须从候选池选择对应 candidate_ref：{missing_refs}。"
+        "身份 metadata 由后端确定性恢复，不得用同名或附近地点替代。"
     )
     note = f"[mandatory_check 第{round_number}轮] 缺失：{names}"
     return {
