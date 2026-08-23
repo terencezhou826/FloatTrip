@@ -17,7 +17,13 @@ from app.resources.persistence import (
     LocalResourcePackageSnapshotRepository,
     LocalResourceSnapshotError,
 )
-from app.runtime.container import manager
+from app.product.fulfillment_models import FulfillmentStageStatus
+from app.product.fulfillment_repository import (
+    FulfillmentJobNotFound,
+    FulfillmentTransitionError,
+    ProductFulfillmentRepository,
+)
+from app.runtime.container import manager, product_fulfillment_executor
 from app.runtime.repositories import OwnedResourceNotFound
 from app.story.persistence import StoryPackageSnapshotRepository, StorySnapshotError
 
@@ -39,6 +45,40 @@ def _optional_snapshot_status(package, snapshot_hash: str):
         "status": "available",
         "snapshot_hash": snapshot_hash,
         "package": package.model_dump(mode="json"),
+    }
+
+
+def _job_stage_status(job, stage: str) -> dict:
+    if job is None:
+        return {"status": "not_generated"}
+    status = getattr(job, f"{stage}_status")
+    if status is FulfillmentStageStatus.RUNNING:
+        return {"status": "generating"}
+    if status is FulfillmentStageStatus.FAILED:
+        result = {"status": "failed"}
+        if job.last_error_stage and job.last_error_stage.value == stage:
+            result.update(
+                {
+                    "error_code": job.last_error_code,
+                    "message": job.last_error_message,
+                }
+            )
+        return result
+    return {"status": status.value}
+
+
+def _fulfillment_view(job) -> dict | None:
+    if job is None:
+        return None
+    return {
+        "job_id": job.job_id,
+        "status": job.status.value,
+        "story_status": job.story_status.value,
+        "experience_status": job.experience_status.value,
+        "resources_status": job.resources_status.value,
+        "attempt_count": job.attempt_count,
+        "updated_at": job.updated_at.isoformat(),
+        "finished_at": job.finished_at.isoformat() if job.finished_at else None,
     }
 
 
@@ -79,11 +119,14 @@ def get_product_trip(
             schema_version=context["schema_version"],
             content_version=context["content_version"],
         )
-    story_data = {"status": "not_generated"}
-    experience_data = {"status": "not_generated"}
-    resources_data = {"status": "not_generated"}
+    job = ProductFulfillmentRepository().get_for_run(run_id, itinerary_id)
+    story_data = _job_stage_status(job, "story")
+    experience_data = _job_stage_status(job, "experience")
+    resources_data = _job_stage_status(job, "resources")
     if len(story_row) > 1:
         raise HTTPException(status_code=409, detail="Run 存在多个 StoryPackage 快照")
+    story = None
+    experience = None
     try:
         if story_row:
             story = StoryPackageSnapshotRepository().load(
@@ -93,6 +136,10 @@ def get_product_trip(
                 expected_catalog_version=expected_version,
             )
             story_data = _optional_snapshot_status(story.package, story.snapshot_hash)
+    except StorySnapshotError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    if story is not None:
+        try:
             experience = ExperiencePackageSnapshotRepository().load_for_run(
                 run_id,
                 itinerary_id,
@@ -102,6 +149,11 @@ def get_product_trip(
             experience_data = _optional_snapshot_status(
                 experience.package, experience.snapshot_hash
             )
+        except ExperienceSnapshotError as exc:
+            if "not found for formal run" not in str(exc):
+                raise HTTPException(status_code=409, detail=str(exc)) from exc
+    if story is not None and experience is not None:
+        try:
             resources = LocalResourcePackageSnapshotRepository().load_for_run(
                 run_id, itinerary_id
             )
@@ -118,14 +170,22 @@ def get_product_trip(
             resources_data = _optional_snapshot_status(
                 package, resources.snapshot_hash
             )
-    except ExperienceSnapshotError as exc:
-        if "not found for formal run" not in str(exc):
-            raise HTTPException(status_code=409, detail=str(exc)) from exc
-    except LocalResourceSnapshotError as exc:
-        if "not found for formal run" not in str(exc):
-            raise HTTPException(status_code=409, detail=str(exc)) from exc
-    except StorySnapshotError as exc:
-        raise HTTPException(status_code=409, detail=str(exc)) from exc
+            resources_data["empty"] = not bool(package.recommendations)
+        except LocalResourceSnapshotError as exc:
+            if "not found for formal run" not in str(exc):
+                raise HTTPException(status_code=409, detail=str(exc)) from exc
+    if job is not None:
+        for stage, payload in (
+            ("story", story_data),
+            ("experience", experience_data),
+            ("resources", resources_data),
+        ):
+            persisted = getattr(job, f"{stage}_status")
+            if persisted is FulfillmentStageStatus.SUCCEEDED and payload["status"] != "available":
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"{stage} fulfillment snapshot identity mismatch",
+                )
     return {
         "run": {
             "id": run["id"],
@@ -136,4 +196,21 @@ def get_product_trip(
         "story": story_data,
         "experience": experience_data,
         "resources": resources_data,
+        "fulfillment": _fulfillment_view(job),
     }
+
+
+@router.post("/runs/{run_id}/trip/fulfillment/retry")
+async def retry_product_fulfillment(
+    run_id: str,
+    authorization: str | None = Header(default=None),
+):
+    owner = _owner(authorization)
+    try:
+        manager.runs.get(owner, run_id)
+        job = await product_fulfillment_executor.retry(owner, run_id)
+    except (OwnedResourceNotFound, FulfillmentJobNotFound) as exc:
+        raise HTTPException(status_code=404, detail="旅程生成任务不存在") from exc
+    except FulfillmentTransitionError as exc:
+        raise HTTPException(status_code=409, detail="当前没有可重试的失败阶段") from exc
+    return {"fulfillment": _fulfillment_view(job)}

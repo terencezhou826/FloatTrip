@@ -102,8 +102,21 @@
     return ["queued", "running", "waiting_user"].includes(status);
   }
 
+  function isFulfillmentTerminal(trip) {
+    const terminal = new Set([
+      "available", "failed", "blocked", "skipped", "not_applicable",
+    ]);
+    return [trip?.story, trip?.experience, trip?.resources]
+      .every(stage => terminal.has(stage?.status));
+  }
+
+  function shouldPollFulfillment(trip, pageVisible = true) {
+    return Boolean(pageVisible && trip && !isFulfillmentTerminal(trip));
+  }
+
   global.ProductState = {
     STATUS, availabilityView, canStart, spatialView, flattenCollections,
     buildTripRequest, restoreRun, applyRunEvent, shouldReconnect,
+    isFulfillmentTerminal, shouldPollFulfillment,
   };
 })(typeof window === "undefined" ? globalThis : window);

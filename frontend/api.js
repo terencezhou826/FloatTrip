@@ -252,6 +252,12 @@ function getProductTrip(runId) {
   return apiJson(`/api/runs/${encodeURIComponent(runId)}/trip`);
 }
 
+function retryProductFulfillment(runId) {
+  return apiJson(`/api/runs/${encodeURIComponent(runId)}/trip/fulfillment/retry`, {
+    method: "POST",
+  });
+}
+
 async function streamRuntimeRun(runId, afterSeq, callbacks = {}) {
   const ctrl = new AbortController();
   callbacks.onAbort?.(() => ctrl.abort());
@@ -867,5 +873,5 @@ Object.assign(window, {
   drawNavPairRoute, restoreFullRoute,
   adaptPlan,
   getProductCollections, getProductRoute,
-  getProductTrip,
+  getProductTrip, retryProductFulfillment,
 });

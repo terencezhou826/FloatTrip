@@ -65,3 +65,36 @@ def test_locality_route_exposes_visible_precision_and_safety_disclosure():
     assert "农田" in route["location_disclosures"][0]
     assert "location_disclosures" in page
     assert "近域导航" in state
+
+
+def test_fulfillment_ui_polls_snapshot_only_until_terminal():
+    api = (ROOT / "frontend" / "api.js").read_text(encoding="utf-8")
+    page = (ROOT / "frontend" / "product-pages.jsx").read_text(encoding="utf-8")
+    state = (ROOT / "frontend" / "product-state.js").read_text(encoding="utf-8")
+
+    assert "setInterval" in page and "2500" in page
+    assert "document.hidden" in page
+    assert "visibilitychange" in page
+    assert "shouldPollFulfillment" in page
+    assert "isFulfillmentTerminal" in state
+    assert "/trip/fulfillment/retry" in api
+    assert "StoryGenerationService" not in page
+    assert "ExperienceGenerationService" not in page
+    assert "AMAP_API_KEY" not in page
+    assert "sqlite" not in page.casefold()
+
+
+def test_fulfillment_ui_has_distinct_truthful_stage_states():
+    page = (ROOT / "frontend" / "product-pages.jsx").read_text(encoding="utf-8")
+
+    for copy in (
+        "等待生成故事",
+        "正在生成你的主题故事",
+        "互动将在主题故事完成后生成",
+        "正在准备现场互动",
+        "正在核验沿途资源",
+        "当前没有已验证的附近资源",
+        "本线路暂未提供附近资源推荐",
+        "附近资源暂时无法核验",
+    ):
+        assert copy in page

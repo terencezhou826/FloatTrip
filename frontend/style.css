@@ -207,6 +207,9 @@
 .form-inline-error { margin: 0; padding: 9px 11px; background: #fff0ed; color: #913822; font-size: 13px; }
 
 .product-trip-page { min-height: calc(100vh - 72px); padding: 48px max(4vw, 20px) 80px; background: #f5f2ea; }
+.fulfillment-progress { margin: 18px 0 22px; padding: 14px 16px; border: 1px solid var(--line); background: color-mix(in srgb, var(--card) 88%, transparent); }
+.fulfillment-progress strong { display: block; margin-bottom: 9px; color: var(--ink); }
+.fulfillment-progress div { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--ink-3); font-size: .82rem; }
 .product-run-progress,
 .product-run-action { width: min(980px, 100%); margin: 0 auto; }
 .product-run-progress { text-align: center; }

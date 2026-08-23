@@ -190,6 +190,37 @@ def init_db(path: str | Path | None = None) -> None:
                 UNIQUE(run_id, itinerary_id)
             );
 
+            CREATE TABLE IF NOT EXISTS product_fulfillment_jobs (
+                job_id                    TEXT PRIMARY KEY,
+                owner_id                  TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                run_id                    TEXT NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+                itinerary_id              TEXT NOT NULL REFERENCES itineraries(id) ON DELETE CASCADE,
+                route_id                  TEXT NOT NULL,
+                package_id                TEXT NOT NULL,
+                schema_version            TEXT NOT NULL,
+                content_version           TEXT NOT NULL,
+                status                    TEXT NOT NULL CHECK(status IN ('pending','running','partial','succeeded','failed')),
+                story_status              TEXT NOT NULL CHECK(story_status IN ('pending','running','succeeded','failed','blocked','skipped','not_applicable')),
+                experience_status         TEXT NOT NULL CHECK(experience_status IN ('pending','running','succeeded','failed','blocked','skipped','not_applicable')),
+                resources_status          TEXT NOT NULL CHECK(resources_status IN ('pending','running','succeeded','failed','blocked','skipped','not_applicable')),
+                story_package_id           TEXT,
+                story_snapshot_hash        TEXT,
+                experience_package_id      TEXT,
+                experience_snapshot_hash   TEXT,
+                resource_package_id        TEXT,
+                resource_snapshot_hash     TEXT,
+                created_at                 TEXT NOT NULL,
+                updated_at                 TEXT NOT NULL,
+                started_at                 TEXT,
+                finished_at                TEXT,
+                attempt_count              INTEGER NOT NULL DEFAULT 0,
+                last_error_stage           TEXT,
+                last_error_class           TEXT,
+                last_error_code            TEXT,
+                last_error_message         TEXT,
+                UNIQUE(run_id, itinerary_id)
+            );
+
             CREATE TABLE IF NOT EXISTS user_memory_states (
                 user_id     TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
                 revision    INTEGER NOT NULL DEFAULT 0,
@@ -280,6 +311,10 @@ def init_db(path: str | Path | None = None) -> None:
                 ON experience_package_snapshots(run_id, itinerary_id, experience_id);
             CREATE INDEX IF NOT EXISTS idx_resource_snapshots_run
                 ON local_resource_package_snapshots(run_id, itinerary_id);
+            CREATE INDEX IF NOT EXISTS idx_fulfillment_jobs_recovery
+                ON product_fulfillment_jobs(status, updated_at, job_id);
+            CREATE INDEX IF NOT EXISTS idx_fulfillment_jobs_owner
+                ON product_fulfillment_jobs(owner_id, run_id);
             CREATE INDEX IF NOT EXISTS idx_memory_facts_owner_status
                 ON memory_facts(user_id,status,updated_at DESC);
             CREATE INDEX IF NOT EXISTS idx_memory_facts_scope

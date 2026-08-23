@@ -13,6 +13,7 @@ from app.resources import (
     LocalResourcePackage,
     LocalResourcePackageSnapshotRepository,
     LocalResourceSnapshotError,
+    RecommendationResult,
     build_local_resource_package,
     local_resource_package_hash,
 )
@@ -114,6 +115,21 @@ def test_resource_package_save_load_round_trip(repository, snapshot_db):
     assert LocalResourcePackage.model_validate_json(
         loaded.package.model_dump_json()
     ) == package
+
+
+def test_empty_resource_package_is_a_valid_persisted_terminal_result(
+    repository, snapshot_db
+):
+    package = _package(
+        repository,
+        snapshot_db,
+        resources=(),
+        result=RecommendationResult(recommendations=(), warnings=()),
+    )
+    saved = LocalResourcePackageSnapshotRepository(snapshot_db).save(package)
+
+    assert saved.package.resources == ()
+    assert saved.package.recommendations == ()
 
 
 def test_resource_package_hash_is_canonical(repository, snapshot_db):

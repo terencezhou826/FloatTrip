@@ -1,6 +1,22 @@
 # TODO
 
-Updated: 2026-08-23 11:01:21 +08:00
+Updated: 2026-08-23 13:32:09 +08:00
+
+M8.2 Post-Planning Product Fulfillment completed:
+
+- [x] Add a durable fulfillment job with unique Run/itinerary identity and independent Story, Experience, and Resource stage states.
+- [x] Trigger only after a succeeded Catalog theme Run has persisted its itinerary; keep ordinary non-Catalog Runs and Planning success semantics unchanged.
+- [x] Resolve Story and Experience through Catalog relationships and use the Run's frozen package/schema/content versions without latest-version fallback.
+- [x] Reuse immutable Story, Experience, and Resource snapshots before any generation; preserve exact upstream package IDs and hashes.
+- [x] Add atomic stage claims, process-local concurrency control, bounded transient retry, explicit owner-protected retry, and restart recovery.
+- [x] Restrict startup reconciliation to new Runs or historical complete identity-consistent snapshot chains; ignore historical incomplete Runs without Provider/LLM calls.
+- [x] Keep `GET /trip` read-only and expose truthful pending, generating, available, failed, blocked, empty, skipped, and not-applicable frontend states.
+- [x] Complete the new formal Jingwei Runtime/API flow through `waiting_user`, Planning, automatic Story, Experience, Resources, and four-Tab browser display.
+- [x] Prove five API reads and five browser refreshes do not regenerate snapshots; retain exactly one job and one snapshot per downstream layer.
+- [x] Pass 823 Python tests plus 18 subtests, 33 frontend tests, compileall, 173/173 benchmark, browser smoke, hardcoding, and secret audits.
+- [ ] Review the M8.2 source diff and runtime-artifact boundary.
+- [ ] Create an independent M8.2 Git checkpoint after approval; do not stage `data/langgraph-checkpoints.db*` or repository-local pytest temp data.
+- [ ] Scope M9 AI Video / Short Drama Engine separately and obtain explicit approval before implementation.
 
 M8 Spatial Fallback and four-route rollout completed:
 
@@ -14,8 +30,8 @@ M8 Spatial Fallback and four-route rollout completed:
 - [x] Preserve exact `amap/B0FFF49AFB`, `amap/B016300684`, and `amap/B0FFG79UY3` identities and Nuwa `VERIFIED_LOCALITY` placement.
 - [x] Pass offline benchmark 173/173, four-route READY, complete Python 772 plus 18 subtests, frontend 32, compileall, hardcoding, secret, persistence, refresh, and browser gates.
 - [x] Keep the Houyi uncovered lunch truthful and visible without changing Planner or inventing a restaurant.
-- [ ] Review the M8 staged diff and content.
-- [ ] Create an independent M8 Git checkpoint after review.
+- [x] Review the M8 diff and content.
+- [x] Create independent M8 and M8.1 Git checkpoints.
 - [ ] Scope M9 AI Video / Short Drama Engine separately and obtain explicit approval.
 
 M7 in progress on 2026-08-22:

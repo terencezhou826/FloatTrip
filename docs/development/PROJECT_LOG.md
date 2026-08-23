@@ -1,12 +1,25 @@
 # Project Log
 
-## Current status - M8 COMPLETE
+## Current status - M8.2 COMPLETE
 
-- Reconciled at 2026-08-23 11:01:21 +08:00. Catalog content version is `0.6.0`.
-- Jingwei, Nuwa, Shennong, and Houyi are READY. Nuwa's final route is `changzhi.route.nuwa-tiantaishan` in Shangdang District, with the Cultural Anchor at Shanghao Village Tiantai Mountain.
-- Nuwa is `VERIFIED_LOCALITY` / `LOCALITY_PLACED` and requires location disclosure. Shanghao Village Committee `amap/B0H1P64PGR` is only a navigation reference; it is not Tiantai Mountain. The exact Cultural Anchor location is unknown/unavailable.
-- Final gates: offline benchmark 173/173 PASS; full Python 772 passed plus 18 subtests; frontend 32 passed; browser smoke PASS; Hard FAIL 0; cross-route leakage 0; production business hardcoding 0.
-- Next action is review and an independent M8 Git checkpoint. M9 AI Video / Short Drama Engine requires separate approval.
+- Reconciled at 2026-08-23 13:32:09 +08:00. Starting HEAD was `e3e606e`; required M8 `33772f4`, M8.1 `5bc60bb`, and PORT `e3e606e` checkpoints were present.
+- A durable, independent post-Planning fulfillment pipeline now creates Story, Experience, and optional Local Resource snapshots after an eligible theme Travel Run has succeeded and its itinerary has been persisted. Planning success remains independent from downstream product-layer failures.
+- Formal Jingwei E2E Run `03b8e2a9-908d-4f24-a606-824ab8a4be88` produced itinerary `eb414a29-04a9-408e-849f-59f3d56305f4` and fulfillment job `d3c210eb-1377-5456-b29b-05dfe3274fe3`. All three stages succeeded with one immutable snapshot each; repeated API reads and browser refreshes preserved IDs and hashes without regeneration.
+- The executor freezes Catalog `shanxi.changzhi` schema `1.0` content `0.6.0`, uses Catalog relationships instead of route branches, supports owner-protected retry, and recovers interrupted jobs. Startup discovery admits new Runs and only identity-consistent historical complete chains, preventing generation for old incomplete Runs.
+- Final gates: offline benchmark 173/173 PASS with Hard FAIL 0; full Python 823 passed plus 18 subtests; frontend 33 passed; compileall PASS; browser smoke PASS; route/city hardcoding 0; secret leakage 0.
+- Runtime artifacts under `data/langgraph-checkpoints.db*` changed during the formal E2E and remain unstaged. Next action is review and an independent M8.2 Git checkpoint. M9 requires separate approval.
+
+## 2026-08-23 13:32:09 +08:00 - M8.2 post-Planning product fulfillment complete
+
+- Files added: `app/product/fulfillment_models.py`, `app/product/fulfillment_repository.py`, `app/product/fulfillment.py`, and `tests/test_product_fulfillment.py`.
+- Files modified: `app/core/database.py`, `app/product/__init__.py`, `app/runtime/container.py`, `app/api/trip_routes.py`, `frontend/api.js`, `frontend/product-state.js`, `frontend/product-pages.jsx`, `frontend/style.css`, `tests/product-state.test.js`, `tests/test_trip_product_api.py`, `tests/test_product_frontend_contract.py`, and `tests/test_resource_persistence.py`.
+- Persistence and orchestration: added unique `(run_id, itinerary_id)` durable jobs; per-stage pending/running/succeeded/failed/blocked/skipped/not-applicable states; process-local execution guard plus SQLite atomic claim; immutable snapshot reuse; frozen Catalog loading; bounded transient retry; explicit owner-protected failed-stage retry; startup reset and reconciliation.
+- Recovery audit: the initial broad startup scan exposed old incomplete formal Runs. The generic activation boundary now accepts Runs completed after executor activation or historical Runs with a complete, version- and identity-consistent Story -> Experience -> Resource chain. Seven task-created incomplete historical jobs were removed from runtime test data; no Runs, itineraries, checkpoints, or valid snapshots were deleted. Five succeeded jobs remain and zero are recoverable.
+- Formal E2E: the new Jingwei Run passed real `waiting_user`, resumed with `2026-08-25`, persisted Planning at `2026-08-23T05:18:04.202819+00:00`, then automatically persisted Story at `05:19:19.179181+00:00`, Experience at `05:20:59.231484+00:00`, and Resources at `05:21:29.990415+00:00`. The job finished succeeded with `attempt_count=3`, one claim per stage.
+- Snapshot identities: Story `story-package.ab5f97c0184fc25569a3ca6f` / `e7b97cf67fbd11a1e97c799d58d083257015004f7b17bebaf2ca310569aa95c9`; Experience `experience-package.fa200e7e502ee534eeaeece7` / `027f10d9ec2fe2463b719890a8a2bc383d4746ef817a31301a75c1a5db1640e0`; Resources `resource-package.3883e62accd44dbfbdeec6ef` / `9bd930a9fdd554da4667e34bbd9e608a67f6a0148faaf72aeaf9333f44df8acf`.
+- Product verification: `/my-trips/03b8e2a9-908d-4f24-a606-824ab8a4be88` showed the persisted itinerary, five grounded Story chapters, five safe Experience activities, and five Provider-backed recommendations. Five API reads and five browser reloads retained one job and one snapshot per layer; browser console errors were zero apart from the existing Babel development warning.
+- Commands/results: `python -m pytest tests --basetemp=.codex-tmp/m82-final-full -q` passed 823 tests plus 18 subtests with five existing warnings; `node --test tests/*.test.js` passed 33; `python -m compileall -q app tests` passed; `python -m app.evaluation --output .benchmark_reports` passed 173/173 with zero warnings and zero hard failures. Focused fulfillment was 27 passed and expanded integration was 402 passed. Final `git diff --check`, route/city conditional scan, Authorization scan, and actual `.env.local` secret-value scan passed.
+- Risks/boundaries: the historical Runtime concurrency issue remains `KNOWN_FLAKY` but did not recur in the final full run. Redis graceful degradation is unchanged. Port 8765 remained untouched; the temporary 8766 server was stopped. Tracked `data/langgraph-checkpoints.db*` changes are runtime artifacts and must not be staged. Recursive cleanup of `.codex-tmp/` was rejected by the local command policy, so the untracked test-only directory remains excluded from staging. No Planning, Catalog, safety-validator, Runtime/SSE, or M9 semantics were changed.
 
 ## 2026-08-23 00:59:50 +08:00 - OBSOLETE INTERMEDIATE ASSUMPTION: M8 stopped at Nuwa-Tiantai'an cultural relation gate
 

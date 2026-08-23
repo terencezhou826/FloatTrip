@@ -274,8 +274,8 @@ function CitationDetails({ citations }) {
   );
 }
 
-function ProductStorySection({ snapshot }) {
-  if (snapshot.status !== "available") return <PackageEmpty title="故事尚未生成" />;
+function ProductStorySection({ snapshot, onRetry }) {
+  if (snapshot.status !== "available") return <PackageStageState layer="story" snapshot={snapshot} onRetry={onRetry} />;
   const story = snapshot.package;
   const bindingByChapter = Object.fromEntries((story.chapter_bindings || []).map(item => [item.chapter_id, item]));
   return (
@@ -294,8 +294,8 @@ function ProductStorySection({ snapshot }) {
   );
 }
 
-function ProductExperienceSection({ snapshot }) {
-  if (snapshot.status !== "available") return <PackageEmpty title="互动体验尚未生成" />;
+function ProductExperienceSection({ snapshot, onRetry }) {
+  if (snapshot.status !== "available") return <PackageStageState layer="experience" snapshot={snapshot} onRetry={onRetry} />;
   const experience = snapshot.package;
   const bindingByActivity = Object.fromEntries((experience.activity_bindings || []).map(item => [item.activity_id, item]));
   return (
@@ -321,9 +321,10 @@ function formatResourcePrice(price) {
   return `${price.amount} ${price.currency || ""}${price.unit === "person" ? "/人" : ""}`;
 }
 
-function ProductResourcesSection({ snapshot }) {
-  if (snapshot.status !== "available") return <PackageEmpty title="附近资源尚未生成" />;
+function ProductResourcesSection({ snapshot, onRetry }) {
+  if (snapshot.status !== "available") return <PackageStageState layer="resources" snapshot={snapshot} onRetry={onRetry} />;
   const resources = snapshot.package;
+  if (snapshot.empty) return <PackageEmpty title="当前没有已验证的附近资源" copy="Provider 查询已完成，没有符合当前真实性与绕行规则的推荐。" />;
   const candidates = Object.fromEntries((resources.resources || []).map(item => [item.resource_id, item]));
   return (
     <section className="trip-layer resources-layer" aria-labelledby="resources-title" data-package-id={resources.resource_package_id} data-snapshot-hash={snapshot.snapshot_hash}>
@@ -344,18 +345,67 @@ function ProductResourcesSection({ snapshot }) {
   );
 }
 
-function PackageEmpty({ title }) {
-  return <div className="package-empty"><h2>{title}</h2><p>页面不会使用临时内容或在浏览器中重新生成。</p></div>;
+function PackageEmpty({ title, copy = "页面不会使用临时内容或在浏览器中重新生成。" }) {
+  return <div className="package-empty"><h2>{title}</h2><p>{copy}</p></div>;
+}
+
+function PackageStageState({ layer, snapshot, onRetry }) {
+  const messages = {
+    story: {
+      pending: ["等待生成故事", "行程已经可用，主题故事正在排队。"],
+      generating: ["正在生成你的主题故事…", "故事会经过资料、引文和限定语校验。"],
+      failed: ["故事生成未完成", snapshot.message || "已保留正式行程，可以显式重试。"],
+      blocked: ["故事生成暂时受阻", "请先处理上游生成问题。"],
+    },
+    experience: {
+      pending: ["互动将在主题故事完成后生成", "系统会在故事快照完成后继续。"],
+      generating: ["正在准备现场互动…", "互动内容正在通过安全与位置真实性校验。"],
+      failed: ["互动生成未完成", snapshot.message || "故事仍然可用，可以显式重试互动。"],
+      blocked: ["互动将在主题故事完成后生成", "上游故事未完成，系统不会伪造互动内容。"],
+    },
+    resources: {
+      pending: ["等待核验沿途资源", "系统将在故事与互动完成后继续。"],
+      generating: ["正在核验沿途资源…", "只会展示具有 Provider 身份的可选资源。"],
+      failed: ["附近资源暂时无法核验", snapshot.message || "行程、故事和互动仍然可用。"],
+      blocked: ["附近资源核验尚未开始", "上游产品层未完成。"],
+      skipped: ["本线路暂未提供附近资源推荐", "其它旅程内容不受影响。"],
+      not_applicable: ["本线路暂未提供附近资源推荐", "其它旅程内容不受影响。"],
+    },
+  };
+  const [title, copy] = messages[layer]?.[snapshot.status] || ["内容尚未生成", "页面不会使用临时内容。"];
+  return <div className="package-empty" data-stage={layer} data-status={snapshot.status}><h2>{title}</h2><p>{copy}</p>{snapshot.status === "failed" && <button className="product-primary" onClick={onRetry}>重试未完成阶段</button>}</div>;
+}
+
+function FulfillmentProgress({ data }) {
+  const label = status => status === "available" ? "✓" : ["failed", "blocked"].includes(status) ? "!" : ["skipped", "not_applicable"].includes(status) ? "–" : "…";
+  return <div className="fulfillment-progress" aria-live="polite"><strong>{ProductState.isFulfillmentTerminal(data) ? "主题旅程内容已处理完成" : "行程已准备好，正在生成故事与互动"}</strong><div><span>Planning ✓</span><span>Story {label(data.story.status)}</span><span>Experience {label(data.experience.status)}</span><span>Resources {label(data.resources.status)}</span></div></div>;
 }
 
 function ProductTripExperience({ runId, username }) {
   const [state, setState] = React.useState({ kind: "loading" });
   const [tab, setTab] = React.useState("itinerary");
-  const load = React.useCallback(() => {
-    setState({ kind: "loading" });
+  const load = React.useCallback((silent = false) => {
+    if (!silent) setState({ kind: "loading" });
     getProductTrip(runId).then(data => setState({ kind: "ready", data })).catch(error => setState({ kind: "error", error }));
   }, [runId]);
-  React.useEffect(load, [load]);
+  React.useEffect(() => { load(false); }, [load]);
+  React.useEffect(() => {
+    if (state.kind !== "ready" || !ProductState.shouldPollFulfillment(state.data, !document.hidden)) return;
+    const timer = setInterval(() => {
+      if (!document.hidden) load(true);
+    }, 2500);
+    const onVisibility = () => {
+      if (!document.hidden && ProductState.shouldPollFulfillment(state.data, true)) load(true);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [state.kind, state.data, load]);
+  const retryFulfillment = React.useCallback(() => {
+    retryProductFulfillment(runId).then(() => load(true)).catch(error => setState({ kind: "error", error }));
+  }, [runId, load]);
   if (state.kind === "loading") return <CatalogLoadState kind="loading" />;
   if (state.kind === "error") return <div className="product-state" role="alert"><h2>正式旅程内容暂时无法读取</h2><p>{state.error?.message}</p><button onClick={load}>重新读取</button></div>;
   const data = state.data;
@@ -364,11 +414,12 @@ function ProductTripExperience({ runId, username }) {
   return (
     <section className="unified-trip" data-run-id={data.run.id} data-itinerary-id={data.itinerary.id}>
       <header className="unified-trip-head"><p className="product-kicker">完整神话旅程</p><h1>{context.route_name || data.itinerary.plan.destination}</h1><div className="trip-identity"><span>Run {data.run.id}</span><span>Itinerary {data.itinerary.id}</span><span>Catalog {context.content_version || "未记录"}</span></div></header>
+      <FulfillmentProgress data={data} />
       <nav className="trip-tabs" aria-label="旅程内容">{tabs.map(item => <button key={item.key} className={tab === item.key ? "active" : ""} aria-selected={tab === item.key} onClick={() => setTab(item.key)}>{item.label}<span>{item.key === "itinerary" ? "去哪" : item.key === "story" ? "为什么来" : item.key === "experience" ? "做什么" : "顺路有什么"}</span></button>)}</nav>
       {tab === "itinerary" && <ProductItinerarySection itinerary={data.itinerary} username={username} />}
-      {tab === "story" && <ProductStorySection snapshot={data.story} />}
-      {tab === "experience" && <ProductExperienceSection snapshot={data.experience} />}
-      {tab === "resources" && <ProductResourcesSection snapshot={data.resources} />}
+      {tab === "story" && <ProductStorySection snapshot={data.story} onRetry={retryFulfillment} />}
+      {tab === "experience" && <ProductExperienceSection snapshot={data.experience} onRetry={retryFulfillment} />}
+      {tab === "resources" && <ProductResourcesSection snapshot={data.resources} onRetry={retryFulfillment} />}
     </section>
   );
 }

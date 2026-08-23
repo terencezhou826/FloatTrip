@@ -85,3 +85,20 @@ test("restores waiting_user and ignores duplicate durable events", () => {
   assert.equal(ProductState.shouldReconnect("waiting_user"), true);
   assert.equal(ProductState.shouldReconnect("succeeded"), false);
 });
+
+test("fulfillment polling continues only for visible non-terminal stages", () => {
+  const running = {
+    story: { status: "available" },
+    experience: { status: "generating" },
+    resources: { status: "pending" },
+  };
+  assert.equal(ProductState.shouldPollFulfillment(running, true), true);
+  assert.equal(ProductState.shouldPollFulfillment(running, false), false);
+  const terminal = {
+    story: { status: "available" },
+    experience: { status: "available" },
+    resources: { status: "not_applicable" },
+  };
+  assert.equal(ProductState.isFulfillmentTerminal(terminal), true);
+  assert.equal(ProductState.shouldPollFulfillment(terminal, true), false);
+});

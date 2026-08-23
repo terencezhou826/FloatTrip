@@ -17,6 +17,7 @@ from app.planning.runtime_worker import (
     revision_snapshot_to_state,
     snapshot_to_state,
 )
+from app.product.fulfillment import build_product_fulfillment_executor
 from app.runtime.manager import RunManager
 from app.runtime.models import RunKind
 from app.runtime.scheduler import RuntimeScheduler
@@ -42,6 +43,7 @@ chat_worker: GraphRuntimeWorker | None = None
 planning_worker: GraphRuntimeWorker | None = None
 revision_worker: GraphRuntimeWorker | None = None
 memory_worker = MemoryExtractionWorker(manager.db_path)
+product_fulfillment_executor = build_product_fulfillment_executor(db_path=manager.db_path)
 _checkpoint_context = None
 
 
@@ -80,11 +82,13 @@ async def start_runtime() -> None:
     scheduler.register(RunKind.REVISION, revision_worker)
     await scheduler.start()
     await memory_worker.start()
+    await product_fulfillment_executor.start()
 
 
 async def stop_runtime() -> None:
     await memory_worker.stop()
     await scheduler.stop()
+    await product_fulfillment_executor.stop()
     await close_async_http_client()
     if _checkpoint_context is not None:
         await _checkpoint_context.__aexit__(None, None, None)
