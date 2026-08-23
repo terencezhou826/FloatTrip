@@ -9,6 +9,7 @@ from typing import Protocol, runtime_checkable
 from app.catalog.models import (
     Anchor,
     AnchorCoordinateIdentity,
+    AnchorLocalityIdentity,
     CatalogTheme,
     ContentPackage,
     ContentPackageManifest,
@@ -93,6 +94,18 @@ class CatalogRepository(Protocol):
     def list_verified_navigation_access_points_for_anchor(
         self, anchor_id: str
     ) -> tuple[NavigationAccessPoint, ...]: ...
+
+    def get_locality_identity(
+        self, locality_identity_id: str
+    ) -> AnchorLocalityIdentity | None: ...
+
+    def list_locality_identities_for_anchor(
+        self, anchor_id: str
+    ) -> tuple[AnchorLocalityIdentity, ...]: ...
+
+    def list_verified_locality_identities_for_anchor(
+        self, anchor_id: str
+    ) -> tuple[AnchorLocalityIdentity, ...]: ...
 
     def list_manifests(self) -> tuple[ContentPackageManifest, ...]: ...
 
@@ -179,6 +192,7 @@ class InMemoryCatalogRepository:
         poi_bindings: Iterable[ExternalPoiBinding] = (),
         spatial_identities: Iterable[AnchorCoordinateIdentity] = (),
         navigation_access_points: Iterable[NavigationAccessPoint] = (),
+        locality_identities: Iterable[AnchorLocalityIdentity] = (),
         knowledge_sources: Iterable[KnowledgeSource] = (),
         knowledge_claims: Iterable[KnowledgeClaim] = (),
         knowledge_evidence: Iterable[KnowledgeEvidence] = (),
@@ -198,6 +212,7 @@ class InMemoryCatalogRepository:
         self._poi_bindings = tuple(poi_bindings)
         self._spatial_identities = tuple(spatial_identities)
         self._navigation_access_points = tuple(navigation_access_points)
+        self._locality_identities = tuple(locality_identities)
         self._knowledge_sources = tuple(knowledge_sources)
         self._knowledge_claims = tuple(knowledge_claims)
         self._knowledge_evidence = tuple(knowledge_evidence)
@@ -220,6 +235,9 @@ class InMemoryCatalogRepository:
         }
         self._navigation_access_points_by_id = {
             item.access_point_id: item for item in self._navigation_access_points
+        }
+        self._locality_identities_by_id = {
+            item.locality_identity_id: item for item in self._locality_identities
         }
         self._knowledge_sources_by_id = {
             item.source_id: item for item in self._knowledge_sources
@@ -351,6 +369,27 @@ class InMemoryCatalogRepository:
         return tuple(
             item
             for item in self._navigation_access_points
+            if item.anchor_id == anchor_id and item.is_runtime_eligible
+        )
+
+    def get_locality_identity(
+        self, locality_identity_id: str
+    ) -> AnchorLocalityIdentity | None:
+        return self._locality_identities_by_id.get(locality_identity_id)
+
+    def list_locality_identities_for_anchor(
+        self, anchor_id: str
+    ) -> tuple[AnchorLocalityIdentity, ...]:
+        return tuple(
+            item for item in self._locality_identities if item.anchor_id == anchor_id
+        )
+
+    def list_verified_locality_identities_for_anchor(
+        self, anchor_id: str
+    ) -> tuple[AnchorLocalityIdentity, ...]:
+        return tuple(
+            item
+            for item in self._locality_identities
             if item.anchor_id == anchor_id and item.is_runtime_eligible
         )
 

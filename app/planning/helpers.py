@@ -236,6 +236,14 @@ def _spot_line(s: dict[str, Any]) -> str:
             identity += f" curated_anchor_id={s['curated_anchor_id']}"
         if s.get("is_mandatory"):
             identity += " is_mandatory=true"
+    if s.get("degraded"):
+        identity += (
+            f" resolution_level={s.get('resolution_level')}"
+            f" placement_status={s.get('placement_status')}"
+            f" navigation_name={s.get('navigation_name')}"
+            " exact_anchor_location_available=false"
+            f" disclosure={s.get('disclosure_text')}"
+        )
     return (
         f"- {s['name']}（区域 {area}，评分 {rating}，开放 {open_t}，"
         f"{coord}{identity}）"

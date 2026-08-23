@@ -125,15 +125,21 @@ def test_formal_fajiushan_binding_is_unique_verified_amap(catalog):
     assert binding.verification_note
 
 
-def test_other_changzhi_anchors_have_no_verified_binding(catalog):
+def test_changzhi_provider_bindings_match_current_spatial_rollout(catalog):
     package = catalog.get_package(PACKAGE_ID)
     other_anchor_ids = {item.id for item in package.anchors} - {ANCHOR_ID}
 
     assert len(other_anchor_ids) == 3
-    assert all(
-        not catalog.list_verified_bindings_for_anchor(anchor_id)
-        for anchor_id in other_anchor_ids
+    assert not catalog.list_verified_bindings_for_anchor(
+        "changzhi.anchor.tiantaishan"
     )
+    for anchor_id in (
+        "changzhi.anchor.laodingshan",
+        "changzhi.anchor.laoyeshan",
+    ):
+        bindings = catalog.list_verified_bindings_for_anchor(anchor_id)
+        assert len(bindings) == 1
+        assert bindings[0].provider is PoiProvider.AMAP
 
 
 def test_verified_binding_resolves_exact_provider_identity(catalog, context):

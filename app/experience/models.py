@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from pydantic import Field, computed_field, field_validator, model_validator
+from pydantic import StrictBool, Field, computed_field, field_validator, model_validator
 
 from app.catalog.models import (
     CatalogModel,
@@ -275,12 +275,15 @@ class ActivityBinding(CatalogModel):
     story_chapter_ids: tuple[StableId, ...]
     anchor_ids: tuple[StableId, ...]
     resolved_poi_ids: tuple[StoryPoiIdentity, ...]
+    resolved_spatial_identity_ids: tuple[StableId, ...] = ()
     itinerary_stop_ids: tuple[str, ...]
     placement_type: ExperiencePlacementType
     trigger_hint: StoryTriggerHint
     recommended_duration_sec: int = Field(ge=1, le=3600)
     placement_reason: str = Field(min_length=1, max_length=500)
     safety_context: tuple[str, ...]
+    spatial_degraded: StrictBool = False
+    location_disclosure: str | None = Field(default=None, min_length=1, max_length=1000)
 
 
 class ExperienceKnowledgeSnapshot(CatalogModel):

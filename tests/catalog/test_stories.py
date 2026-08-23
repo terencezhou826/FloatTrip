@@ -23,6 +23,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CATALOG_ROOT = PROJECT_ROOT / "content" / "catalog"
 PACKAGE_ROOT = Path("packages") / "shanxi" / "changzhi"
 STORY_ID = "changzhi.story.jingwei-fajiushan"
+NUWA_STORY_ID = "changzhi.story.nuwa-tiantaishan"
+SHENNONG_STORY_ID = "changzhi.story.shennong-laodingshan"
+HOUYI_STORY_ID = "changzhi.story.houyi-laoyeshan"
 INTERNAL_CLAIM_ID = "changzhi.claim.fajiushan-yandi-residence"
 
 
@@ -107,11 +110,85 @@ def test_jingwei_story_and_five_chapters_load(catalog):
     stories = catalog.list_stories()
     chapters = catalog.list_story_chapters(STORY_ID)
 
-    assert len(stories) == 1
-    assert stories[0].story_id == STORY_ID
-    assert stories[0].story_type is StoryType.MYTHOLOGY
+    assert [story.story_id for story in stories] == [
+        HOUYI_STORY_ID,
+        STORY_ID,
+        NUWA_STORY_ID,
+        SHENNONG_STORY_ID,
+    ]
+    assert catalog.get_story(STORY_ID).story_type is StoryType.MYTHOLOGY
     assert len(chapters) == 5
     assert [chapter.sequence for chapter in chapters] == list(range(5))
+
+
+def test_nuwa_story_has_four_ordered_claim_isolated_chapters(catalog):
+    chapters = catalog.list_story_chapters(NUWA_STORY_ID)
+
+    assert [chapter.sequence for chapter in chapters] == list(range(4))
+    assert [chapter.required_claim_ids for chapter in chapters] == [
+        ["changzhi.claim.nuwa-tiantaishan-shanghao-official-narrative"],
+        ["changzhi.claim.huainanzi-nuwa-cosmic-disaster"],
+        ["changzhi.claim.huainanzi-nuwa-mends-sky"],
+        ["changzhi.claim.huainanzi-nuwa-restores-order"],
+    ]
+    assert all(chapter.optional_claim_ids == [] for chapter in chapters)
+    assert all(chapter.poi_binding_ids == [] for chapter in chapters)
+
+
+def test_nuwa_story_contains_no_exact_tiantaishan_arrival_wording(catalog):
+    prohibited = ("站在天台山", "到达天台山", "天台山脚下")
+    for chapter in catalog.list_story_chapters(NUWA_STORY_ID):
+        text = " ".join(
+            (
+                chapter.narrative_goal,
+                chapter.opening_hook,
+                chapter.transition_goal,
+                chapter.visitor_takeaway,
+            )
+        )
+        assert not any(wording in text for wording in prohibited)
+
+
+def test_shennong_story_has_four_grounded_chapters_and_parent_binding(catalog):
+    chapters = catalog.list_story_chapters(SHENNONG_STORY_ID)
+
+    assert [chapter.sequence for chapter in chapters] == list(range(4))
+    assert [chapter.required_claim_ids for chapter in chapters] == [
+        ["changzhi.claim.laodingshan-forest-park-identity"],
+        ["changzhi.claim.huainanzi-shennong-five-grains"],
+        ["changzhi.claim.huainanzi-shennong-tastes-plants"],
+        ["changzhi.claim.laodingshan-shennong-official-narrative"],
+    ]
+    assert {tuple(chapter.poi_binding_ids) for chapter in chapters} == {
+        ("changzhi.binding.laodingshan.amap",)
+    }
+    assert all(chapter.optional_claim_ids == [] for chapter in chapters)
+
+
+def test_houyi_story_preserves_yi_and_ten_suns_source_wording(catalog):
+    chapters = catalog.list_story_chapters(HOUYI_STORY_ID)
+
+    assert [chapter.sequence for chapter in chapters] == list(range(4))
+    assert [chapter.required_claim_ids for chapter in chapters] == [
+        ["changzhi.claim.laoyeshan-scenic-area-identity"],
+        ["changzhi.claim.huainanzi-ten-suns-appear"],
+        ["changzhi.claim.huainanzi-yi-shoots-ten-suns"],
+        ["changzhi.claim.laoyeshan-yi-official-narrative"],
+    ]
+    assert {tuple(chapter.poi_binding_ids) for chapter in chapters} == {
+        ("changzhi.binding.laoyeshan.amap",)
+    }
+    ancient_text = " ".join(
+        (
+            chapters[1].narrative_goal,
+            chapters[1].visitor_takeaway,
+            chapters[2].narrative_goal,
+            chapters[2].visitor_takeaway,
+        )
+    )
+    assert "十日" in ancient_text
+    assert "射下九个太阳" not in ancient_text
+    assert "不自动改写为后羿" in ancient_text
 
 
 def test_story_and_chapter_json_round_trip(catalog):
@@ -128,7 +205,9 @@ def test_repository_route_filter_and_ordering(catalog):
     assert catalog.list_stories("changzhi.route.jingwei-fajiushan") == (
         catalog.get_story(STORY_ID),
     )
-    assert catalog.list_stories("changzhi.route.nuwa-tiantaishan") == ()
+    assert catalog.list_stories("changzhi.route.nuwa-tiantaishan") == (
+        catalog.get_story(NUWA_STORY_ID),
+    )
     chapters = catalog.list_story_chapters(STORY_ID)
     assert catalog.get_story_chapter(chapters[2].chapter_id) == chapters[2]
 

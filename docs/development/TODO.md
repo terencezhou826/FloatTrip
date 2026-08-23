@@ -1,19 +1,22 @@
 # TODO
 
-Updated: 2026-08-22 22:55:38 +08:00
+Updated: 2026-08-23 11:01:21 +08:00
 
-M8 stopped after M8B-0:
+M8 Spatial Fallback and four-route rollout completed:
 
-- [x] Pass start gate at checkpoint `9dca326`: Jingwei benchmark, full Python, frontend, compileall, and diff check.
-- [x] Complete M8A generic route replication contract without cultural facts.
-- [x] Run Nuwa multi-angle real Amap discovery and authoritative place-relationship research.
-- [x] Stop at the Nuwa POI identity hard gate after finding no unique Shangdang Tiantaishan Provider entity.
-- [x] Complete M8B-0 generic Provider POI / verified coordinate / navigation access-point architecture without adding Tiantaishan data.
-- [x] Preserve Jingwei Provider identity and pass 153/153 benchmark, 730 Python tests plus 18 subtests, and 32 frontend tests.
-- [ ] Obtain human-reviewed authoritative Tiantaishan location/access evidence and create exactly one runtime-unambiguous verified coordinate or navigation access point, unless a unique Provider POI is later confirmed.
-- [ ] Keep Tiantaishan `SPATIAL_VERIFICATION_PENDING`; do not create Nuwa Knowledge, Story, Experience, or resume M8B until spatial verification passes.
-- [ ] Keep Shennong, Houyi, and four-route final readiness unstarted until Nuwa passes all M8B gates.
-- [ ] Do not commit, push, or enter M9.
+- [x] Complete M8A Route Replication Contract.
+- [x] Complete the generic Spatial Fallback hierarchy and truthful degraded-locality disclosure.
+- [x] Complete Nuwa with `VERIFIED_LOCALITY` / `LOCALITY_PLACED`, Shanghao Village navigation disclosure, and no asserted exact Tiantaishan coordinate.
+- [x] Complete Shennong with verified `amap/B016300684` identity and all Knowledge, Story, Experience, Planning, persistence, golden, and readiness gates.
+- [x] Complete Houyi with verified `amap/B0FFG79UY3` identity and all Knowledge, Story, Experience, Planning, persistence, golden, and readiness gates.
+- [x] Complete M8E four-route readiness, capability, isolation, snapshot, browser, benchmark, and regression gates.
+- [x] Refresh Jingwei, Nuwa, and Shennong through formal Runtime/API runs at Catalog `0.6.0`; retain the formal Houyi `0.6.0` snapshots.
+- [x] Preserve exact `amap/B0FFF49AFB`, `amap/B016300684`, and `amap/B0FFG79UY3` identities and Nuwa `VERIFIED_LOCALITY` placement.
+- [x] Pass offline benchmark 173/173, four-route READY, complete Python 772 plus 18 subtests, frontend 32, compileall, hardcoding, secret, persistence, refresh, and browser gates.
+- [x] Keep the Houyi uncovered lunch truthful and visible without changing Planner or inventing a restaurant.
+- [ ] Review the M8 staged diff and content.
+- [ ] Create an independent M8 Git checkpoint after review.
+- [ ] Scope M9 AI Video / Short Drama Engine separately and obtain explicit approval.
 
 M7 in progress on 2026-08-22:
 

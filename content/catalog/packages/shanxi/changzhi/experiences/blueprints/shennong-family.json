@@ -1,0 +1,28 @@
+{
+  "blueprints": [
+    {
+      "experience_id": "changzhi.experience.shennong-family",
+      "title": "神农老顶山亲子文化体验",
+      "package_id": "shanxi.changzhi",
+      "region_id": "cn.shanxi.changzhi.luzhou",
+      "theme_id": "changzhi.shennong",
+      "route_id": "changzhi.route.shennong-laodingshan",
+      "story_id": "changzhi.story.shennong-laodingshan",
+      "experience_type": "family",
+      "target_audiences": ["family", "child", "student", "culture"],
+      "experience_goal": "通过地点辨识、古籍问答、植物安全判断和家庭反思理解神农文化叙事，全程不采集、不接触、不闻嗅、不食用未知植物。",
+      "activity_ids": [
+        "changzhi.experience.shennong-family.activity.place-boundary",
+        "changzhi.experience.shennong-family.activity.land-question",
+        "changzhi.experience.shennong-family.activity.plant-safety",
+        "changzhi.experience.shennong-family.activity.responsibility-reflection"
+      ],
+      "verification_status": "verified",
+      "enabled": true,
+      "version": "0.1.0",
+      "estimated_total_duration_sec": 600,
+      "media_slot_ids": [],
+      "metadata": {"plant_interaction": "prohibited"}
+    }
+  ]
+}

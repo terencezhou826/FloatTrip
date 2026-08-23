@@ -115,7 +115,7 @@ def test_story_snapshot_preserves_formal_associations_and_catalog_version(
 
     assert loaded.package.run_id == "run-1"
     assert loaded.package.itinerary_id == "itinerary-1"
-    assert loaded.package.catalog_version.content_version == "0.3.0"
+    assert loaded.package.catalog_version.content_version == "0.6.0"
 
 
 def test_story_snapshot_preserves_claim_citation_qualifier_and_identity(
@@ -229,7 +229,7 @@ def test_experience_snapshot_preserves_all_formal_associations(
     )
 
     assert loaded.package.story_snapshot_hash == package.story_snapshot_hash
-    assert loaded.package.catalog_version.content_version == "0.3.0"
+    assert loaded.package.catalog_version.content_version == "0.6.0"
 
 
 def test_experience_snapshot_preserves_rendered_content_and_safety(

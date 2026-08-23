@@ -48,6 +48,9 @@ class FileCatalogLoader:
                 for package in enabled
                 for item in package.navigation_access_points
             ],
+            locality_identities=[
+                item for package in enabled for item in package.locality_identities
+            ],
             knowledge_sources=[
                 item for package in enabled for item in package.knowledge_sources
             ],
@@ -111,6 +114,9 @@ class FileCatalogLoader:
                 "navigation_access_points": self._read_optional_collection(
                     directory / "navigation_access_points.json",
                     "navigation_access_points",
+                ),
+                "locality_identities": self._read_optional_collection(
+                    directory / "anchor_localities.json", "locality_identities"
                 ),
             }
             package_payload.update(self._load_knowledge(directory / "knowledge"))

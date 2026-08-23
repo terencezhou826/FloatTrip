@@ -1,0 +1,68 @@
+{
+  "fixture_id": "shennong-golden.1.0.0",
+  "source": "Audited Catalog 0.6.0 and formal M8 Shennong persisted snapshots; no live Provider credential or generated narration text is copied.",
+  "package_id": "shanxi.changzhi",
+  "catalog_schema_version": "1.0",
+  "catalog_content_version": "0.6.0",
+  "route_id": "changzhi.route.shennong-laodingshan",
+  "mandatory_anchor_identity": {
+    "anchor_id": "changzhi.anchor.laodingshan",
+    "spatial_identity_type": "provider_poi",
+    "binding_id": "changzhi.binding.laodingshan.amap",
+    "provider": "amap",
+    "external_poi_id": "B016300684"
+  },
+  "expected_chapter_ids": [
+    "changzhi.story.shennong-laodingshan.chapter.place",
+    "changzhi.story.shennong-laodingshan.chapter.five-grains",
+    "changzhi.story.shennong-laodingshan.chapter.taste-and-avoid",
+    "changzhi.story.shennong-laodingshan.chapter.local-memory"
+  ],
+  "expected_activity_ids": [
+    "changzhi.experience.shennong-family.activity.place-boundary",
+    "changzhi.experience.shennong-family.activity.land-question",
+    "changzhi.experience.shennong-family.activity.plant-safety",
+    "changzhi.experience.shennong-family.activity.responsibility-reflection"
+  ],
+  "approved_claim_ids": [
+    "changzhi.claim.laodingshan-forest-park-identity",
+    "changzhi.claim.laodingshan-shennong-official-narrative",
+    "changzhi.claim.huainanzi-shennong-five-grains",
+    "changzhi.claim.huainanzi-shennong-tastes-plants"
+  ],
+  "forbidden_claim_ids": ["changzhi.claim.fajiushan-yandi-residence"],
+  "snapshot_identity": {
+    "run_id": "16c963a2-45fb-4e45-969e-9277a4c79209",
+    "itinerary_id": "d8938c52-6433-4e5d-99b2-c7c2f47bf418",
+    "story_package_id": "story-package.3f9283e75c1f80320672e4d8",
+    "story_snapshot_hash": "5442c9fad5df22cd8459bc8c2faf0e58a5ee79227a5b96aac517eeb2512d4985",
+    "experience_package_id": "experience-package.9326ab8b06b296bc031ba61a",
+    "experience_snapshot_hash": "e577dcb8dd38a88f7f343a6f3c36168c2c4d2f513d939eb0be8286c1fd462446",
+    "resource_package_id": null,
+    "resource_snapshot_hash": null
+  },
+  "capability_expectation": {
+    "planning_available": true,
+    "knowledge_available": true,
+    "story_available": true,
+    "experience_available": true,
+    "resources_available": false,
+    "product_ready": true,
+    "spatial_resolution": "exact_provider_poi",
+    "location_disclosure_required": false,
+    "exact_anchor_location_available": true,
+    "navigation_available": true
+  },
+  "safety_contract": {
+    "unsafe_instruction_count": 0,
+    "environmental_harm_count": 0,
+    "wild_plant_consumption_count": 0,
+    "plant_collection_count": 0,
+    "child_unsupervised_count": 0,
+    "restricted_area_instruction_count": 0,
+    "current_observation_hallucination_count": 0,
+    "unverified_botanical_fact_count": 0,
+    "agricultural_historical_hallucination_count": 0
+  },
+  "not_locked": ["narration_text", "meal_names", "dynamic_poi_names", "weather"]
+}

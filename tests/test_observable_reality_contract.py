@@ -230,6 +230,13 @@ def test_observation_visibility_validator_rejects_rendered_target_tampering(
         ("选择一个当前能看到的自然景物，捡起对象。", "environmental_harm"),
         ("选择一个当前能看到的自然景物，带走石块。", "environmental_harm"),
         ("选择一个当前能看到的自然景物，采集植物。", "environmental_harm"),
+        ("选择一个当前能看到的自然景物，闻未知植物。", "wild_plant_consumption"),
+        ("选择一个当前能看到的自然景物，品尝未知植物。", "wild_plant_consumption"),
+        ("选择一个当前能看到的自然景物，食用野生植物。", "wild_plant_consumption"),
+        ("选择一个当前能看到的自然景物，模仿尝百草。", "wild_plant_consumption"),
+        ("选择一个当前能看到的自然景物，使用弓箭射击。", "weapon_activity"),
+        ("选择一个当前能看到的自然景物，投掷石块。", "dangerous_projectile"),
+        ("选择一个当前能看到的自然景物，站在崖边。", "cliff_risk"),
         ("让儿童单独寻找当前能看到的自然景物。", "child_unsupervised"),
     ],
 )

@@ -12,8 +12,27 @@
   }
 
   function canStart(route) {
+    const required = [
+      "catalog_available",
+      "planning_available",
+      "knowledge_available",
+      "story_available",
+      "experience_available",
+    ];
     return route?.availability === "ready"
-      && Object.values(route.capabilities || {}).every(Boolean);
+      && required.every(key => Boolean(route.capabilities?.[key]));
+  }
+
+  function spatialView(level) {
+    const labels = {
+      exact_provider_poi: "精确导航",
+      verified_coordinate: "文化地点定位",
+      verified_access_point: "入口导航",
+      verified_locality: "近域导航",
+      verified_township: "定位待现场确认",
+      administrative_area: "区域预览",
+    };
+    return labels[level] || "定位信息待完善";
   }
 
   function flattenCollections(payload) {
@@ -84,7 +103,7 @@
   }
 
   global.ProductState = {
-    STATUS, availabilityView, canStart, flattenCollections,
+    STATUS, availabilityView, canStart, spatialView, flattenCollections,
     buildTripRequest, restoreRun, applyRunEvent, shouldReconnect,
   };
 })(typeof window === "undefined" ? globalThis : window);

@@ -7,7 +7,16 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.catalog.models import PoiProvider, SpatialIdentityType, StableId
+from app.catalog.models import (
+    LocalityNavigationReference,
+    SpatialAccuracy,
+    SpatialConfidence,
+    SpatialIdentityType,
+    SpatialPlacementStatus,
+    SpatialResolutionLevel,
+    PoiProvider,
+    StableId,
+)
 from app.catalog.repository import CatalogRepository
 from app.planning.catalog_context import CatalogContext
 from app.planning.mandatory_pois import (
@@ -15,6 +24,25 @@ from app.planning.mandatory_pois import (
     MandatoryPoiResolver,
 )
 from app.providers.poi_identity import ExactPoiProvider, PoiLocation
+
+
+class ResolvedCulturalIdentity(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    anchor_id: StableId
+    anchor_name: str = Field(min_length=1, max_length=256)
+    location: PoiLocation | None = None
+    exact_location_available: bool
+
+
+class ResolvedNavigationIdentity(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    name: str = Field(min_length=1, max_length=256)
+    location: PoiLocation
+    identity_type: SpatialIdentityType
+    provider: PoiProvider | None = None
+    external_poi_id: str | None = Field(default=None, min_length=1, max_length=256)
 
 
 class ResolvedMandatorySpatialCandidate(BaseModel):
@@ -40,6 +68,20 @@ class ResolvedMandatorySpatialCandidate(BaseModel):
     cultural_anchor_location: PoiLocation | None = None
     navigation_location: PoiLocation | None = None
     navigation_name: str | None = Field(default=None, min_length=1, max_length=256)
+    resolution_level: SpatialResolutionLevel
+    placement_status: SpatialPlacementStatus
+    cultural_identity: ResolvedCulturalIdentity
+    navigation_identity: ResolvedNavigationIdentity
+    navigation_reference: LocalityNavigationReference | None = None
+    precision: SpatialAccuracy
+    confidence: SpatialConfidence
+    degraded: bool = False
+    disclosure_required: bool = False
+    disclosure_text: str | None = Field(default=None, min_length=1, max_length=1000)
+    safety_constraints: tuple[str, ...] = ()
+    exact_anchor_location_available: bool
+    road_verified_to_navigation_target: bool = False
+    road_verified_to_cultural_anchor: bool = False
 
 
 class MandatorySpatialResolver:
@@ -90,6 +132,26 @@ class MandatorySpatialResolver:
                         spatial_identity_id=poi.binding_id,
                         provenance_id=poi.binding_id,
                         cultural_anchor_location=poi.location,
+                        navigation_location=poi.location,
+                        navigation_name=poi.name,
+                        resolution_level=SpatialResolutionLevel.EXACT_PROVIDER_POI,
+                        placement_status=SpatialPlacementStatus.EXACTLY_PLACED,
+                        cultural_identity=ResolvedCulturalIdentity(
+                            anchor_id=anchor_id,
+                            anchor_name=anchor.name,
+                            location=poi.location,
+                            exact_location_available=True,
+                        ),
+                        navigation_identity=ResolvedNavigationIdentity(
+                            name=poi.name,
+                            location=poi.location,
+                            identity_type=SpatialIdentityType.PROVIDER_POI,
+                            provider=poi.provider,
+                            external_poi_id=poi.external_poi_id,
+                        ),
+                        precision=SpatialAccuracy.PRECISE,
+                        confidence=SpatialConfidence.HIGH,
+                        exact_anchor_location_available=True,
                     )
                 )
                 continue
@@ -118,6 +180,33 @@ class MandatorySpatialResolver:
                             lng=identity.location.longitude,
                             lat=identity.location.latitude,
                         ),
+                        navigation_location=PoiLocation(
+                            lng=identity.location.longitude,
+                            lat=identity.location.latitude,
+                        ),
+                        navigation_name=anchor.name,
+                        resolution_level=SpatialResolutionLevel.VERIFIED_COORDINATE,
+                        placement_status=SpatialPlacementStatus.EXACTLY_PLACED,
+                        cultural_identity=ResolvedCulturalIdentity(
+                            anchor_id=anchor_id,
+                            anchor_name=anchor.name,
+                            location=PoiLocation(
+                                lng=identity.location.longitude,
+                                lat=identity.location.latitude,
+                            ),
+                            exact_location_available=True,
+                        ),
+                        navigation_identity=ResolvedNavigationIdentity(
+                            name=anchor.name,
+                            location=PoiLocation(
+                                lng=identity.location.longitude,
+                                lat=identity.location.latitude,
+                            ),
+                            identity_type=SpatialIdentityType.VERIFIED_COORDINATE,
+                        ),
+                        precision=identity.accuracy,
+                        confidence=identity.confidence,
+                        exact_anchor_location_available=True,
                     )
                 )
                 continue
@@ -150,6 +239,101 @@ class MandatorySpatialResolver:
                         provenance_id=access.provenance.provenance_id,
                         navigation_location=navigation_location,
                         navigation_name=access.name,
+                        resolution_level=SpatialResolutionLevel.VERIFIED_ACCESS_POINT,
+                        placement_status=SpatialPlacementStatus.ACCESS_PLACED,
+                        cultural_identity=ResolvedCulturalIdentity(
+                            anchor_id=anchor_id,
+                            anchor_name=anchor.name,
+                            exact_location_available=False,
+                        ),
+                        navigation_identity=ResolvedNavigationIdentity(
+                            name=access.name,
+                            location=navigation_location,
+                            identity_type=SpatialIdentityType.NAVIGATION_ACCESS_POINT,
+                        ),
+                        precision=access.accuracy,
+                        confidence=access.confidence,
+                        safety_constraints=(access.note,),
+                        exact_anchor_location_available=False,
+                    )
+                )
+                continue
+
+            localities = (
+                self._repository.list_verified_locality_identities_for_anchor(anchor_id)
+            )
+            if localities:
+                if len(localities) > 1:
+                    raise MandatoryPoiResolutionError(
+                        f"mandatory anchor {anchor_id} has multiple verified locality "
+                        "identities"
+                    )
+                locality = localities[0]
+                reference = locality.navigation_reference
+                navigation_location = PoiLocation(
+                    lng=reference.location.longitude,
+                    lat=reference.location.latitude,
+                )
+                identity_type = {
+                    SpatialResolutionLevel.VERIFIED_LOCALITY: (
+                        SpatialIdentityType.VERIFIED_LOCALITY
+                    ),
+                    SpatialResolutionLevel.VERIFIED_TOWNSHIP: (
+                        SpatialIdentityType.VERIFIED_TOWNSHIP
+                    ),
+                    SpatialResolutionLevel.ADMINISTRATIVE_AREA: (
+                        SpatialIdentityType.ADMINISTRATIVE_AREA
+                    ),
+                }[locality.resolution_level]
+                placement_status = {
+                    SpatialResolutionLevel.VERIFIED_LOCALITY: (
+                        SpatialPlacementStatus.LOCALITY_PLACED
+                    ),
+                    SpatialResolutionLevel.VERIFIED_TOWNSHIP: (
+                        SpatialPlacementStatus.TOWNSHIP_PLACED
+                    ),
+                    SpatialResolutionLevel.ADMINISTRATIVE_AREA: (
+                        SpatialPlacementStatus.ADMINISTRATIVE_ONLY
+                    ),
+                }[locality.resolution_level]
+                resolved.append(
+                    ResolvedMandatorySpatialCandidate(
+                        name=f"{locality.locality_name}（{anchor.name}文化地点近域导航）",
+                        location=navigation_location,
+                        curated_anchor_id=anchor_id,
+                        spatial_identity_type=identity_type,
+                        spatial_identity_id=locality.locality_identity_id,
+                        provenance_id=locality.provenance[0].provenance_id,
+                        provider=reference.provider,
+                        external_poi_id=reference.external_poi_id,
+                        region_name=locality.locality_name,
+                        address=reference.address,
+                        navigation_location=navigation_location,
+                        navigation_name=reference.name,
+                        resolution_level=locality.resolution_level,
+                        placement_status=placement_status,
+                        cultural_identity=ResolvedCulturalIdentity(
+                            anchor_id=anchor_id,
+                            anchor_name=anchor.name,
+                            exact_location_available=False,
+                        ),
+                        navigation_identity=ResolvedNavigationIdentity(
+                            name=reference.name,
+                            location=navigation_location,
+                            identity_type=identity_type,
+                            provider=reference.provider,
+                            external_poi_id=reference.external_poi_id,
+                        ),
+                        navigation_reference=reference,
+                        precision=locality.accuracy,
+                        confidence=locality.confidence,
+                        degraded=True,
+                        disclosure_required=True,
+                        disclosure_text=locality.disclosure_text,
+                        safety_constraints=tuple(
+                            item.value for item in locality.safety_constraints
+                        ),
+                        exact_anchor_location_available=False,
                     )
                 )
                 continue
@@ -185,16 +369,22 @@ def _as_dict(item: Any) -> dict[str, Any]:
 
 
 def spatial_identity(item: Mapping[str, Any]) -> tuple[str, ...] | None:
+    identity_type = item.get("spatial_identity_type")
+    if hasattr(identity_type, "value"):
+        identity_type = identity_type.value
+    spatial_identity_id = item.get("spatial_identity_id")
+    if (
+        identity_type
+        and spatial_identity_id
+        and identity_type != SpatialIdentityType.PROVIDER_POI.value
+    ):
+        return str(identity_type), str(spatial_identity_id)
     provider = item.get("provider")
     external_poi_id = item.get("external_poi_id")
     if hasattr(provider, "value"):
         provider = provider.value
     if provider and external_poi_id:
         return "provider_poi", str(provider), str(external_poi_id)
-    identity_type = item.get("spatial_identity_type")
-    if hasattr(identity_type, "value"):
-        identity_type = identity_type.value
-    spatial_identity_id = item.get("spatial_identity_id")
     if identity_type and spatial_identity_id:
         return str(identity_type), str(spatial_identity_id)
     return None
@@ -261,6 +451,13 @@ def mandatory_spatial_constraint_block(mandatory: Sequence[Any]) -> str:
                 if identity[0] == "provider_poi"
                 else ""
             )
+            + (
+                f" | placement_status={item.get('placement_status')} | "
+                f"navigation_name={item.get('navigation_name')} | "
+                f"disclosure={item.get('disclosure_text')}"
+                if item.get("degraded")
+                else ""
+            )
         )
     heading = "mandatory POI" if provider_only else "mandatory spatial Anchor"
     return (
@@ -268,5 +465,8 @@ def mandatory_spatial_constraint_block(mandatory: Sequence[Any]) -> str:
         "以下文化地点必须在最终路线中至少安排一次，输出时必须原样保留其稳定空间身份、"
         "curated_anchor_id 和 is_mandatory；Provider POI 还必须保留 provider 与 "
         "external_poi_id。不得按名称猜测、搜索替代或使用附近地点：\n"
+        "若标记 degraded/locality_placed，只能将其描述为文化地点近域到达；不得声称已"
+        "精确到达 Cultural Anchor，不得生成未经验证的步行接近路线，并必须保留披露与"
+        "安全约束：\n"
         + "\n".join(lines)
     )

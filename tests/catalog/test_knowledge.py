@@ -315,6 +315,39 @@ def test_evidence_coverage_is_one_hundred_percent():
     assert coverage == 1.0
 
 
+def test_nuwa_claims_are_fully_evidenced_and_qualified():
+    catalog = FileCatalogLoader(CATALOG_ROOT).load()
+    claim_ids = {
+        "changzhi.claim.nuwa-tiantaishan-shanghao-official-narrative",
+        "changzhi.claim.huainanzi-nuwa-cosmic-disaster",
+        "changzhi.claim.huainanzi-nuwa-mends-sky",
+        "changzhi.claim.huainanzi-nuwa-restores-order",
+    }
+
+    claims = {claim.claim_id: claim for claim in catalog.list_claims(theme_id="changzhi.nuwa")}
+    assert set(claims) == claim_ids
+    for claim_id in claim_ids:
+        assert catalog.is_claim_production_eligible(claim_id)
+        assert claims[claim_id].promotion_policy.required_qualifier
+        evidence = catalog.list_evidence_for_claim(claim_id)
+        assert len(evidence) == 1
+        assert evidence[0].verification_status is KnowledgeVerificationStatus.VERIFIED
+
+
+def test_nuwa_ancient_text_claims_do_not_claim_modern_spatial_scope():
+    catalog = FileCatalogLoader(CATALOG_ROOT).load()
+    ancient_claim_ids = {
+        "changzhi.claim.huainanzi-nuwa-cosmic-disaster",
+        "changzhi.claim.huainanzi-nuwa-mends-sky",
+        "changzhi.claim.huainanzi-nuwa-restores-order",
+    }
+
+    for claim_id in ancient_claim_ids:
+        claim = catalog.get_claim(claim_id)
+        assert claim.region_ids == []
+        assert claim.anchor_ids == []
+
+
 def test_repository_queries_and_round_trip():
     catalog = FileCatalogLoader(CATALOG_ROOT).load()
 
@@ -378,6 +411,7 @@ def test_recursive_multi_file_loading_order_is_deterministic(tmp_path):
     _remove_stories(root)
     knowledge_root = root / PACKAGE_ROOT / "knowledge"
     shutil.rmtree(knowledge_root)
+    (root / PACKAGE_ROOT / "anchor_localities.json").unlink()
     _write_json(knowledge_root / "z" / "sources.json", {"sources": [_source("z.source")]})
     _write_json(knowledge_root / "a" / "sources.json", {"sources": [_source("a.source")]})
 
@@ -402,6 +436,7 @@ def test_old_package_without_knowledge_directory_remains_compatible(tmp_path):
     root = _catalog_copy(tmp_path)
     _remove_stories(root)
     shutil.rmtree(root / PACKAGE_ROOT / "knowledge")
+    (root / PACKAGE_ROOT / "anchor_localities.json").unlink()
 
     catalog = FileCatalogLoader(root).load()
     package = catalog.get_package("shanxi.changzhi")

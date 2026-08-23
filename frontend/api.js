@@ -730,12 +730,16 @@ function adaptPlan(backendPlan, username) {
         curatedAnchorId: it.curated_anchor_id || null,
         spatialIdentityType: it.spatial_identity_type || null,
         spatialIdentityId: it.spatial_identity_id || null,
-        spatialLocationLabel: (
-          it.spatial_identity_type && it.spatial_identity_type !== "provider_poi"
-            ? "文化地点定位"
-            : null
-        ),
+        spatialLocationLabel: it.resolution_level
+          ? ProductState.spatialView(it.resolution_level)
+          : (it.spatial_identity_type && it.spatial_identity_type !== "provider_poi" ? "文化地点定位" : null),
         navigationName: it.navigation_name || null,
+        placementStatus: it.placement_status || null,
+        spatialDegraded: Boolean(it.degraded),
+        locationDisclosure: it.disclosure_text || null,
+        exactAnchorLocationAvailable: it.exact_anchor_location_available ?? null,
+        roadVerifiedToNavigationTarget: Boolean(it.road_verified_to_navigation_target),
+        roadVerifiedToCulturalAnchor: Boolean(it.road_verified_to_cultural_anchor),
       };
       if (it.type === "attraction") {
         return {
@@ -786,11 +790,10 @@ function adaptPlan(backendPlan, username) {
         mandatory: Boolean(it.is_mandatory),
         spatialIdentityType: it.spatial_identity_type || null,
         spatialIdentityId: it.spatial_identity_id || null,
-        spatialLocationLabel: (
-          it.spatial_identity_type && it.spatial_identity_type !== "provider_poi"
-            ? "文化地点定位"
-            : null
-        ),
+        spatialLocationLabel: it.resolution_level
+          ? ProductState.spatialView(it.resolution_level)
+          : (it.spatial_identity_type && it.spatial_identity_type !== "provider_poi" ? "文化地点定位" : null),
+        locationDisclosure: it.disclosure_text || null,
         info: {
           type: it.type,
           rating: it.rating,
@@ -801,6 +804,8 @@ function adaptPlan(backendPlan, username) {
           addr: it.address,
           reason: it.reason,
           photo: it.photo || null,
+          spatialLabel: it.resolution_level ? ProductState.spatialView(it.resolution_level) : null,
+          disclosure: it.disclosure_text || null,
         },
       }));
 

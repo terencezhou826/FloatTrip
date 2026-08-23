@@ -17,7 +17,10 @@ from app.experience.models import (
     ExperiencePlacementType,
     ExperienceSafetySummary,
 )
-from app.story.binding import _itinerary_stops_by_identity
+from app.story.binding import (
+    _itinerary_stops_by_identity,
+    _itinerary_stops_by_spatial_identity,
+)
 from app.story.models import (
     PlacementType,
     StoryPackage,
@@ -73,6 +76,9 @@ class ExperienceItineraryBinder:
             item.chapter_id: item for item in story_package.chapter_bindings
         }
         stops_by_identity = _itinerary_stops_by_identity(request.itinerary)
+        stops_by_spatial_identity = _itinerary_stops_by_spatial_identity(
+            request.itinerary
+        )
         bad_weather = any(item.get("is_bad") is True for item in request.weather)
         bindings: list[ActivityBinding] = []
         for activity in activities:
@@ -86,6 +92,7 @@ class ExperienceItineraryBinder:
                         story_chapter_ids=tuple(activity.story_chapter_ids),
                         anchor_ids=(),
                         resolved_poi_ids=(),
+                        resolved_spatial_identity_ids=(),
                         itinerary_stop_ids=(),
                         placement_type=ExperiencePlacementType.CONTEXT_ONLY,
                         trigger_hint=StoryTriggerHint.AFTER_VISIT,
@@ -100,6 +107,7 @@ class ExperienceItineraryBinder:
                 activity,
                 chapter_bindings,
                 stops_by_identity,
+                stops_by_spatial_identity,
             )
             if matched is None:
                 bindings.append(
@@ -108,6 +116,7 @@ class ExperienceItineraryBinder:
                         story_chapter_ids=tuple(activity.story_chapter_ids),
                         anchor_ids=tuple(activity.anchor_ids),
                         resolved_poi_ids=(),
+                        resolved_spatial_identity_ids=(),
                         itinerary_stop_ids=(),
                         placement_type=ExperiencePlacementType.UNPLACED,
                         trigger_hint=StoryTriggerHint.UNAVAILABLE,
@@ -118,7 +127,7 @@ class ExperienceItineraryBinder:
                 )
                 continue
 
-            identities, stop_ids, trigger_hint = matched
+            identities, spatial_ids, stop_ids, trigger_hint, degraded, disclosure, safety = matched
             if bad_weather and activity.weather_sensitive:
                 bindings.append(
                     ActivityBinding(
@@ -126,15 +135,19 @@ class ExperienceItineraryBinder:
                         story_chapter_ids=tuple(activity.story_chapter_ids),
                         anchor_ids=tuple(activity.anchor_ids),
                         resolved_poi_ids=identities,
+                        resolved_spatial_identity_ids=spatial_ids,
                         itinerary_stop_ids=(),
                         placement_type=ExperiencePlacementType.WEATHER_ADAPTED,
                         trigger_hint=StoryTriggerHint.AFTER_VISIT,
                         recommended_duration_sec=generated.estimated_duration_sec,
                         placement_reason="weather_sensitive_activity_adapted_to_context_only",
                         safety_context=tuple(activity.safety_constraints)
+                        + safety
                         + (
                             "complete_in_a_safe_sheltered_area_or_after_the_visit_without_extra_movement",
                         ),
+                        spatial_degraded=degraded,
+                        location_disclosure=disclosure,
                     )
                 )
                 continue
@@ -145,12 +158,19 @@ class ExperienceItineraryBinder:
                     story_chapter_ids=tuple(activity.story_chapter_ids),
                     anchor_ids=tuple(activity.anchor_ids),
                     resolved_poi_ids=identities,
+                    resolved_spatial_identity_ids=spatial_ids,
                     itinerary_stop_ids=stop_ids,
                     placement_type=ExperiencePlacementType.PLACED,
                     trigger_hint=trigger_hint,
                     recommended_duration_sec=generated.estimated_duration_sec,
-                    placement_reason="story_chapter_verified_provider_identity_match",
-                    safety_context=tuple(activity.safety_constraints),
+                    placement_reason=(
+                        "story_chapter_verified_locality_identity_match"
+                        if degraded
+                        else "story_chapter_verified_spatial_identity_match"
+                    ),
+                    safety_context=tuple(activity.safety_constraints) + safety,
+                    spatial_degraded=degraded,
+                    location_disclosure=disclosure,
                 )
             )
 
@@ -202,7 +222,13 @@ class ExperienceItineraryBinder:
             binding_metrics=ExperienceBindingMetrics(),
         )
 
-    def _match_activity(self, activity, chapter_bindings, stops_by_identity):
+    def _match_activity(
+        self,
+        activity,
+        chapter_bindings,
+        stops_by_identity,
+        stops_by_spatial_identity,
+    ):
         allowed_identities = {
             (binding.provider, binding.external_poi_id)
             for binding in (
@@ -213,10 +239,8 @@ class ExperienceItineraryBinder:
             and binding.is_runtime_eligible
             and binding.anchor_id in activity.anchor_ids
         }
-        if not allowed_identities:
-            return None
-
         identities: list[StoryPoiIdentity] = []
+        spatial_ids: list[str] = []
         stop_ids: list[str] = []
         trigger_hint = StoryTriggerHint.ARRIVAL
         for chapter_id in activity.story_chapter_ids:
@@ -235,24 +259,66 @@ class ExperienceItineraryBinder:
                     (identity.provider, identity.external_poi_id)
                 )
             ]
-            if not matched:
+            matched_spatial = [
+                identity_id
+                for identity_id in chapter_binding.resolved_spatial_identity_ids
+                if any(
+                    identity_id == key[1] and stops_by_spatial_identity.get(key)
+                    for key in stops_by_spatial_identity
+                )
+            ]
+            if matched:
+                identity = matched[0]
+                expected_stops = stops_by_identity[
+                    (identity.provider, identity.external_poi_id)
+                ]
+                identities.append(identity)
+            elif matched_spatial:
+                identity_id = matched_spatial[0]
+                expected_stops = [
+                    stop_id
+                    for key, values in stops_by_spatial_identity.items()
+                    if key[1] == identity_id
+                    for stop_id in values
+                ]
+                spatial_ids.append(identity_id)
+            else:
                 return None
-            identity = matched[0]
-            expected_stops = stops_by_identity[(identity.provider, identity.external_poi_id)]
             chapter_stops = [
-                stop_id
-                for stop_id in chapter_binding.itinerary_stop_ids
+                stop_id for stop_id in chapter_binding.itinerary_stop_ids
                 if stop_id in expected_stops
             ]
             if not chapter_stops:
                 return None
-            identities.append(identity)
             stop_ids.extend(chapter_stops)
             trigger_hint = chapter_binding.trigger_hint
+        locality_records = [
+            locality
+            for anchor_id in activity.anchor_ids
+            for locality in self._repository.list_verified_locality_identities_for_anchor(
+                anchor_id
+            )
+            if locality.locality_identity_id in spatial_ids
+        ]
+        degraded = bool(locality_records)
+        disclosure = (
+            locality_records[0].disclosure_text if locality_records else None
+        )
+        safety = tuple(
+            dict.fromkeys(
+                constraint.value
+                for locality in locality_records
+                for constraint in locality.safety_constraints
+            )
+        )
         return (
             tuple(dict.fromkeys(identities)),
+            tuple(dict.fromkeys(spatial_ids)),
             tuple(dict.fromkeys(stop_ids)),
             trigger_hint,
+            degraded,
+            disclosure,
+            safety,
         )
 
 

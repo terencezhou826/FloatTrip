@@ -1,0 +1,68 @@
+{
+  "fixture_id": "houyi-golden.1.0.0",
+  "source": "Audited Catalog 0.6.0 and formal M8 Houyi persisted snapshots; no live Provider credential or generated narration text is copied.",
+  "package_id": "shanxi.changzhi",
+  "catalog_schema_version": "1.0",
+  "catalog_content_version": "0.6.0",
+  "route_id": "changzhi.route.houyi-laoyeshan",
+  "mandatory_anchor_identity": {
+    "anchor_id": "changzhi.anchor.laoyeshan",
+    "spatial_identity_type": "provider_poi",
+    "binding_id": "changzhi.binding.laoyeshan.amap",
+    "provider": "amap",
+    "external_poi_id": "B0FFG79UY3"
+  },
+  "expected_chapter_ids": [
+    "changzhi.story.houyi-laoyeshan.chapter.place",
+    "changzhi.story.houyi-laoyeshan.chapter.ten-suns",
+    "changzhi.story.houyi-laoyeshan.chapter.yi-action",
+    "changzhi.story.houyi-laoyeshan.chapter.local-legend"
+  ],
+  "expected_activity_ids": [
+    "changzhi.experience.houyi-family.activity.place-boundary",
+    "changzhi.experience.houyi-family.activity.number-reading",
+    "changzhi.experience.houyi-family.activity.story-sequence",
+    "changzhi.experience.houyi-family.activity.legend-reflection"
+  ],
+  "approved_claim_ids": [
+    "changzhi.claim.laoyeshan-scenic-area-identity",
+    "changzhi.claim.laoyeshan-yi-official-narrative",
+    "changzhi.claim.huainanzi-ten-suns-appear",
+    "changzhi.claim.huainanzi-yi-shoots-ten-suns"
+  ],
+  "forbidden_claim_ids": ["changzhi.claim.fajiushan-yandi-residence"],
+  "snapshot_identity": {
+    "run_id": "59bf09e4-965a-4208-a957-41cfb193cb23",
+    "itinerary_id": "6c921972-6df4-4744-ae4f-f314fdf80418",
+    "story_package_id": "story-package.e14350da0d7a42871e9bf52e",
+    "story_snapshot_hash": "5823c9bf746585c1ac67476d972d243fc1acf8fbe020fdf9abdd207cfdd2e6a8",
+    "experience_package_id": "experience-package.3700589aa6bd3ffd1691acf2",
+    "experience_snapshot_hash": "655d23f0f2422c29afa405201b1f9bfa2014e59eb49e2680a70b466e902875da",
+    "resource_package_id": null,
+    "resource_snapshot_hash": null
+  },
+  "capability_expectation": {
+    "planning_available": true,
+    "knowledge_available": true,
+    "story_available": true,
+    "experience_available": true,
+    "resources_available": false,
+    "product_ready": true,
+    "spatial_resolution": "exact_provider_poi",
+    "location_disclosure_required": false,
+    "exact_anchor_location_available": true,
+    "navigation_available": true
+  },
+  "safety_contract": {
+    "unsafe_instruction_count": 0,
+    "environmental_harm_count": 0,
+    "weapon_activity_count": 0,
+    "dangerous_projectile_count": 0,
+    "cliff_risk_count": 0,
+    "child_unsupervised_count": 0,
+    "restricted_area_instruction_count": 0,
+    "current_observation_hallucination_count": 0,
+    "mythology_promotion_count": 0
+  },
+  "not_locked": ["narration_text", "meal_names", "dynamic_poi_names", "weather"]
+}

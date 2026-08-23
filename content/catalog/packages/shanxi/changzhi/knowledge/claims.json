@@ -261,6 +261,258 @@
       "metadata": {
         "review_note": "县文旅页面有此表述，但 M2A 未取得可独立验证其历史事实属性的来源。"
       }
+    },
+    {
+      "claim_id": "changzhi.claim.nuwa-tiantaishan-shanghao-official-narrative",
+      "subject_ids": [
+        "changzhi.subject.nuwa",
+        "changzhi.subject.tiantaishan",
+        "changzhi.subject.shanghao-village"
+      ],
+      "claim_type": "official_narrative",
+      "statement": "山西省人民政府转载的资料将女娲故事表述为发端于长治市上党区上郝村天台山。",
+      "normalized_statement": "山西省政府转载资料将女娲故事发端地表述为上党区上郝村天台山",
+      "region_ids": [
+        "cn.shanxi.changzhi",
+        "cn.shanxi.changzhi.shangdang"
+      ],
+      "theme_ids": ["changzhi.nuwa"],
+      "anchor_ids": ["changzhi.anchor.tiantaishan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据山西省人民政府转载资料，女娲故事被表述为发端于上党区上郝村天台山。",
+        "required_qualifier": "据山西省人民政府转载资料",
+        "forbidden_wordings": [
+          "女娲补天是已经证实的历史事件",
+          "上郝村村中心就是天台山精确位置"
+        ]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {
+        "spatial_scope": "locality_relationship_only"
+      }
+    },
+    {
+      "claim_id": "changzhi.claim.huainanzi-nuwa-cosmic-disaster",
+      "subject_ids": ["changzhi.subject.huainanzi", "changzhi.subject.nuwa"],
+      "claim_type": "mythology",
+      "statement": "《淮南子·览冥训》的神话叙事描写了四极倾废、九州断裂、火水成灾的失序景象。",
+      "normalized_statement": "淮南子览冥训神话叙事描写四极废九州裂及水火灾变",
+      "region_ids": [],
+      "theme_ids": ["changzhi.nuwa"],
+      "anchor_ids": [],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《淮南子·览冥训》的神话叙事，当时出现了“四极废，九州裂”以及水火成灾的失序景象。",
+        "required_qualifier": "据《淮南子·览冥训》的神话叙事",
+        "forbidden_wordings": ["四极倾废和九州断裂是已经证实的历史事件"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.huainanzi-nuwa-mends-sky",
+      "subject_ids": ["changzhi.subject.huainanzi", "changzhi.subject.nuwa"],
+      "claim_type": "mythology",
+      "statement": "《淮南子·览冥训》的神话叙事称女娲炼五色石补天，并断鳌足支撑四极。",
+      "normalized_statement": "淮南子览冥训神话叙事称女娲炼五色石补天断鳌足立四极",
+      "region_ids": [],
+      "theme_ids": ["changzhi.nuwa"],
+      "anchor_ids": [],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《淮南子·览冥训》的神话叙事，女娲“炼五色石以补苍天，断鳌足以立四极”。",
+        "required_qualifier": "据《淮南子·览冥训》的神话叙事",
+        "forbidden_wordings": ["女娲补天是已经证实的历史事件", "天台山存在女娲补天使用的五色石"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.huainanzi-nuwa-restores-order",
+      "subject_ids": ["changzhi.subject.huainanzi", "changzhi.subject.nuwa"],
+      "claim_type": "mythology",
+      "statement": "《淮南子·览冥训》的神话叙事在女娲修补之后写到苍天补、四极正、洪水退去。",
+      "normalized_statement": "淮南子览冥训神话叙事写女娲修补后苍天补四极正淫水涸",
+      "region_ids": [],
+      "theme_ids": ["changzhi.nuwa"],
+      "anchor_ids": [],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《淮南子·览冥训》的神话叙事，修补之后“苍天补，四极正，淫水涸”。",
+        "required_qualifier": "据《淮南子·览冥训》的神话叙事",
+        "forbidden_wordings": ["女娲补天修复了真实发生的地质灾害"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.laodingshan-forest-park-identity",
+      "subject_ids": ["changzhi.subject.laodingshan", "changzhi.subject.laodingshan-forest-park"],
+      "claim_type": "geographic_fact",
+      "statement": "长治市人民政府发布的资料以“老顶山（国家森林公园）”为题，并将老顶山国家森林公园作为长治城东的老顶山游览空间加以介绍。",
+      "normalized_statement": "长治市政府资料将老顶山与老顶山国家森林公园作为同一游览空间介绍",
+      "region_ids": ["cn.shanxi.changzhi", "cn.shanxi.changzhi.luzhou"],
+      "theme_ids": ["changzhi.shennong"],
+      "anchor_ids": ["changzhi.anchor.laodingshan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据长治市人民政府发布资料，老顶山国家森林公园是长治城东的老顶山游览空间。",
+        "required_qualifier": "据长治市人民政府发布资料",
+        "forbidden_wordings": ["老顶山的所有自然山体边界都等同于高德公园 POI 边界"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {"identity_scope": "visitor_space"}
+    },
+    {
+      "claim_id": "changzhi.claim.laodingshan-shennong-official-narrative",
+      "subject_ids": ["changzhi.subject.laodingshan", "changzhi.subject.shennong", "changzhi.subject.yandi"],
+      "claim_type": "official_narrative",
+      "statement": "长治市人民政府发布的资料以“相传”限定语表述炎帝曾在老顶山活动，并把尝百草、植五谷、教农耕列入当地始祖文化叙事。",
+      "normalized_statement": "长治市政府资料以相传表述炎帝在老顶山活动并关联尝百草植五谷教农耕",
+      "region_ids": ["cn.shanxi.changzhi", "cn.shanxi.changzhi.luzhou"],
+      "theme_ids": ["changzhi.shennong"],
+      "anchor_ids": ["changzhi.anchor.laodingshan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据长治市人民政府发布资料，当地相传炎帝曾在老顶山活动，并将其与尝百草、植五谷、教农耕的始祖文化叙事相联系。",
+        "required_qualifier": "据长治市人民政府发布资料，当地相传",
+        "forbidden_wordings": ["炎帝在老顶山尝百草是已经证实的历史事实"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.huainanzi-shennong-five-grains",
+      "subject_ids": ["changzhi.subject.huainanzi", "changzhi.subject.shennong"],
+      "claim_type": "mythology",
+      "statement": "《淮南子·脩务训》的古代叙事称神农开始教民播种五谷，并察看土地的燥湿、肥瘠与高下条件。",
+      "normalized_statement": "淮南子脩务训叙事称神农教民播种五谷并察看土地条件",
+      "region_ids": [],
+      "theme_ids": ["changzhi.shennong"],
+      "anchor_ids": [],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《淮南子·脩务训》的古代叙事，神农“始教民播种五谷”，并察看土地条件。",
+        "required_qualifier": "据《淮南子·脩务训》的古代叙事",
+        "forbidden_wordings": ["《淮南子》证明长治农业起源于老顶山"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.huainanzi-shennong-tastes-plants",
+      "subject_ids": ["changzhi.subject.huainanzi", "changzhi.subject.shennong"],
+      "claim_type": "mythology",
+      "statement": "《淮南子·脩务训》的古代叙事称神农尝百草与水泉滋味，使人知道避就，并写到一日遇七十毒。",
+      "normalized_statement": "淮南子脩务训叙事称神农尝百草水泉使民知避就且一日遇七十毒",
+      "region_ids": [],
+      "theme_ids": ["changzhi.shennong"],
+      "anchor_ids": [],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《淮南子·脩务训》的古代叙事，神农尝百草与水泉滋味，使人知道避就，并有“一日而遇七十毒”的记述。",
+        "required_qualifier": "据《淮南子·脩务训》的古代叙事",
+        "forbidden_wordings": ["游客可以模仿神农品尝野生植物", "古籍证明老顶山今天生长特定药用植物"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {}
+    },
+    {
+      "claim_id": "changzhi.claim.laoyeshan-scenic-area-identity",
+      "subject_ids": ["changzhi.subject.laoyeshan", "changzhi.subject.laoyeshan-scenic-area"],
+      "claim_type": "geographic_fact",
+      "statement": "长治市人民政府发布的资料将屯留区老爷山称为老爷山旅游风景区，并说明其古称三嵕山，是省级森林公园的核心景区。",
+      "normalized_statement": "长治市政府资料将屯留老爷山作为旅游风景区并称其古称三嵕山",
+      "region_ids": ["cn.shanxi.changzhi", "cn.shanxi.changzhi.tunliu"],
+      "theme_ids": ["changzhi.houyi"],
+      "anchor_ids": ["changzhi.anchor.laoyeshan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据长治市人民政府发布资料，屯留区老爷山旅游风景区古称三嵕山，是省级森林公园的核心景区。",
+        "required_qualifier": "据长治市人民政府发布资料",
+        "forbidden_wordings": ["所有名为老爷山的地点都属于屯留老爷山风景区"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {"identity_scope": "scenic_area"}
+    },
+    {
+      "claim_id": "changzhi.claim.laoyeshan-yi-official-narrative",
+      "subject_ids": ["changzhi.subject.laoyeshan", "changzhi.subject.yi"],
+      "claim_type": "official_narrative",
+      "statement": "长治市人民政府发布的资料以“传说”限定语表述老爷山东峰麟山是羿神射日故事所指的地方。",
+      "normalized_statement": "长治市政府资料以传说表述老爷山东峰麟山为羿神射日之地",
+      "region_ids": ["cn.shanxi.changzhi", "cn.shanxi.changzhi.tunliu"],
+      "theme_ids": ["changzhi.houyi"],
+      "anchor_ids": ["changzhi.anchor.laoyeshan"],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据长治市人民政府发布资料，传说老爷山东峰麟山是神话故事中羿神射日的地方。",
+        "required_qualifier": "据长治市人民政府发布资料，传说",
+        "forbidden_wordings": ["羿射日是已经证实的历史事件", "羿与后羿在所有文献中完全等同"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {"character_name_scope": "羿"}
+    },
+    {
+      "claim_id": "changzhi.claim.huainanzi-ten-suns-appear",
+      "subject_ids": ["changzhi.subject.huainanzi", "changzhi.subject.yi", "changzhi.subject.ten-suns"],
+      "claim_type": "mythology",
+      "statement": "《淮南子·本经训》的古代叙事写到尧时十日并出，造成禾稼焦枯、草木死亡。",
+      "normalized_statement": "淮南子本经训叙事写尧时十日并出焦禾稼杀草木",
+      "region_ids": [],
+      "theme_ids": ["changzhi.houyi"],
+      "anchor_ids": [],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《淮南子·本经训》的古代叙事，尧时“十日并出”，并写到禾稼焦枯、草木受损。",
+        "required_qualifier": "据《淮南子·本经训》的古代叙事",
+        "forbidden_wordings": ["十日并出是已经证实的天文事件", "古籍原文写的是九日并出"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {"source_number_wording": "十日"}
+    },
+    {
+      "claim_id": "changzhi.claim.huainanzi-yi-shoots-ten-suns",
+      "subject_ids": ["changzhi.subject.huainanzi", "changzhi.subject.yi", "changzhi.subject.ten-suns"],
+      "claim_type": "mythology",
+      "statement": "《淮南子·本经训》的古代叙事称尧使羿除害，其中原文写作“上射十日”。",
+      "normalized_statement": "淮南子本经训叙事称尧使羿除害并写上射十日",
+      "region_ids": [],
+      "theme_ids": ["changzhi.houyi"],
+      "anchor_ids": [],
+      "verification_status": "verified",
+      "promotion_policy": {
+        "status": "allowed_with_qualification",
+        "approved_wording": "据《淮南子·本经训》的古代叙事，尧使羿除害，原文写作“上射十日”。",
+        "required_qualifier": "据《淮南子·本经训》的古代叙事",
+        "forbidden_wordings": ["《淮南子》原文写羿射下九个太阳", "古籍中的羿可无条件改写为后羿"]
+      },
+      "valid_from": null,
+      "valid_to": null,
+      "metadata": {"character_name_scope": "羿", "source_number_wording": "十日"}
     }
   ]
 }

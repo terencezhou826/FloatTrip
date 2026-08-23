@@ -20,7 +20,7 @@ from app.experience import (
     ExperienceValidationStatus,
     render_experience_activity,
 )
-from app.story import PlacementType
+from app.story import PlacementType, StoryBindingRequest, StoryItineraryBinder
 from tests.test_experience_generation import _contexts, _valid_activity
 from tests.test_story_binding import (
     ANCHOR_ID,
@@ -28,6 +28,7 @@ from tests.test_story_binding import (
     _bind as bind_story,
     _generated_story,
     _itinerary,
+    _locality_repository,
 )
 
 
@@ -256,7 +257,7 @@ def test_package_round_trip_and_snapshots(repository):
     package = _bind(repository)
 
     assert ExperiencePackage.model_validate_json(package.model_dump_json()) == package
-    assert package.catalog_version.content_version == "0.3.0"
+    assert package.catalog_version.content_version == "0.6.0"
     assert package.knowledge_snapshot.used_claim_ids
     assert package.completion_tracking_slots == ()
     assert package.validation_status is ExperiencePackageValidationStatus.PASSED
@@ -267,6 +268,42 @@ def test_safety_summary_is_machine_checkable_and_zero(repository):
 
     assert summary
     assert all(value == 0 for value in summary.values())
+
+
+def test_locality_binding_carries_degraded_disclosure_and_safety(repository):
+    locality_repository, locality = _locality_repository(repository)
+    itinerary = _itinerary()
+    itinerary["days"][0]["timeline"][0].update(
+        provider=None,
+        external_poi_id=None,
+        name="Verified locality navigation reference",
+        spatial_identity_type="verified_locality",
+        spatial_identity_id=locality.locality_identity_id,
+    )
+    story_package = StoryItineraryBinder(locality_repository).bind(
+        _generated_story(repository),
+        StoryBindingRequest(
+            itinerary_id="itinerary-locality",
+            run_id="run-1",
+            route_id=ROUTE_ID,
+            itinerary=itinerary,
+        ),
+    )
+
+    package = ExperienceItineraryBinder(locality_repository).bind(
+        _draft(repository),
+        story_package,
+        _request(itinerary=itinerary, itinerary_id="itinerary-locality"),
+    )
+    placed = package.activity_bindings[0]
+
+    assert placed.resolved_poi_ids == ()
+    assert placed.resolved_spatial_identity_ids == (locality.locality_identity_id,)
+    assert placed.spatial_degraded is True
+    assert placed.location_disclosure == locality.disclosure_text
+    assert set(placed.safety_context).issuperset(
+        item.value for item in locality.safety_constraints
+    )
 
 
 def test_binding_has_no_gps_frontend_or_regional_special_cases():

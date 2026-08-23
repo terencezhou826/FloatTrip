@@ -1313,6 +1313,43 @@ def _finalize_impl(state: TravelPlanState) -> dict[str, Any]:
                 "navigation_name": (
                     spot.get("navigation_name") or info.get("navigation_name")
                 ),
+                "resolution_level": (
+                    spot.get("resolution_level") or info.get("resolution_level")
+                ),
+                "placement_status": (
+                    spot.get("placement_status") or info.get("placement_status")
+                ),
+                "cultural_identity": (
+                    spot.get("cultural_identity") or info.get("cultural_identity")
+                ),
+                "navigation_identity": (
+                    spot.get("navigation_identity") or info.get("navigation_identity")
+                ),
+                "navigation_reference": (
+                    spot.get("navigation_reference") or info.get("navigation_reference")
+                ),
+                "precision": spot.get("precision") or info.get("precision"),
+                "confidence": spot.get("confidence") or info.get("confidence"),
+                "degraded": bool(spot.get("degraded") or info.get("degraded")),
+                "disclosure_required": bool(
+                    spot.get("disclosure_required")
+                    or info.get("disclosure_required")
+                ),
+                "disclosure_text": (
+                    spot.get("disclosure_text") or info.get("disclosure_text")
+                ),
+                "safety_constraints": (
+                    spot.get("safety_constraints")
+                    or info.get("safety_constraints")
+                    or []
+                ),
+                "exact_anchor_location_available": (
+                    spot.get("exact_anchor_location_available")
+                    if spot.get("exact_anchor_location_available") is not None
+                    else info.get("exact_anchor_location_available")
+                ),
+                "road_verified_to_navigation_target": False,
+                "road_verified_to_cultural_anchor": False,
             })
             if spot.get("name") == morning_anchor_name and not lunch_inserted:
                 lunch_inserted = True
@@ -1414,6 +1451,15 @@ def _finalize_impl(state: TravelPlanState) -> dict[str, Any]:
                 leg.duration_s / 60, 1
             )
             following["travel_feasibility_from_prev"] = feasibility
+            for endpoint in (previous, following):
+                if endpoint.get("type") != "attraction" or not endpoint.get(
+                    "is_mandatory"
+                ):
+                    continue
+                endpoint["road_verified_to_navigation_target"] = True
+                endpoint["road_verified_to_cultural_anchor"] = bool(
+                    endpoint.get("exact_anchor_location_available")
+                )
             verified_legs.append({
                 "day": day["day"],
                 **leg.model_dump(mode="json"),

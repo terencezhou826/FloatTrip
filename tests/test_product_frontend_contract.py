@@ -1,7 +1,12 @@
 from pathlib import Path
 
+from fastapi.testclient import TestClient
+
+from app.main import app
+
 
 ROOT = Path(__file__).resolve().parents[1]
+CLIENT = TestClient(app)
 
 
 def test_product_run_uses_formal_runtime_and_resume_apis():
@@ -43,3 +48,20 @@ def test_non_provider_spatial_points_use_neutral_map_label():
     assert '"文化地点定位"' in api
     assert "spatialLocationLabel" in page
     assert "高德景区" not in api
+
+
+def test_locality_route_exposes_visible_precision_and_safety_disclosure():
+    route = CLIENT.get(
+        "/api/catalog/packages/shanxi.changzhi/routes/"
+        "changzhi.route.nuwa-tiantaishan"
+    ).json()
+    page = (ROOT / "frontend" / "product-pages.jsx").read_text(encoding="utf-8")
+    state = (ROOT / "frontend" / "product-state.js").read_text(encoding="utf-8")
+
+    assert route["capabilities"]["spatial_resolution"] == "verified_locality"
+    assert route["capabilities"]["location_disclosure_required"] is True
+    assert route["location_disclosures"]
+    assert "上郝村" in route["location_disclosures"][0]
+    assert "农田" in route["location_disclosures"][0]
+    assert "location_disclosures" in page
+    assert "近域导航" in state

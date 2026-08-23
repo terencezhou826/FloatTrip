@@ -59,6 +59,7 @@ function RouteCard({ route, onOpen }) {
         <span className="journey-theme">{route.theme?.name || "主题线路"}</span>
       </div>
       <h2>{route.name}</h2>
+      {route.capabilities?.spatial_resolution && <p className={`spatial-status${route.capabilities.spatial_degraded ? " degraded" : ""}`}>{ProductState.spatialView(route.capabilities.spatial_resolution)}</p>}
       <dl className="journey-meta">
         <div><dt>区域</dt><dd>{route.primary_region?.name || "未提供"}</dd></div>
         <div><dt>核心地点</dt><dd>{primaryAnchor?.name || "未提供"}</dd></div>
@@ -160,6 +161,7 @@ function ThemeRoutePreviewPage({ routeId, onBack, onStart, currentUsername, onRe
           <p className="product-kicker">{route.region_hierarchy?.map(item => item.name).join(" · ")}</p>
           <h1>{route.name}</h1>
           <p className="route-intro">围绕 {route.anchors?.map(item => item.name).join("、")} 展开的策展主题线路。文化预览仅展示已有证据支持、可用于生产的 Catalog 内容。</p>
+          {route.capabilities?.spatial_resolution && <p className={`spatial-status${route.capabilities.spatial_degraded ? " degraded" : ""}`}>{ProductState.spatialView(route.capabilities.spatial_resolution)}</p>}
         </div>
         <div className="route-anchor-mark"><span>主题</span><strong>{route.theme?.name}</strong></div>
       </header>
@@ -167,6 +169,7 @@ function ThemeRoutePreviewPage({ routeId, onBack, onStart, currentUsername, onRe
         <div className="route-preview-main">
           <h2>核心地点</h2>
           {(route.anchors || []).map(anchor => <div className="anchor-row" key={anchor.id}><strong>{anchor.name}</strong>{anchor.mandatory && <span>策展核心地点</span>}</div>)}
+          {(route.location_disclosures || []).map((text, index) => <div className="location-disclosure" role="note" key={index}><strong>位置说明</strong><p>{text}</p></div>)}
           <h2>文化预览</h2>
           {(route.cultural_preview || []).length ? route.cultural_preview.map(item => (
             <article className="preview-claim" key={item.claim_id}>
@@ -238,6 +241,7 @@ function ProductItinerarySection({ itinerary, username }) {
                 {item.end && <p className="timeline-meta">{item.start}–{item.end}</p>}
                 {item.roadDistanceKm != null && <p className="road-metric">驾车道路距离 {Number(item.roadDistanceKm).toFixed(1)} km{item.drivingMinutes != null ? ` · 约 ${Number(item.drivingMinutes).toFixed(1)} 分钟` : ""}</p>}
                 {item.address || item.addr ? <p className="timeline-meta">{item.address || item.addr}</p> : null}
+                {item.locationDisclosure && <div className="location-disclosure" role="note"><strong>位置说明</strong><p>{item.locationDisclosure}</p></div>}
                 {item.note && <p className="spot-tip">出行提示：{item.note}</p>}
                 {item.reason && <p className="resource-reason">{item.reason}</p>}
                 {item.mealCoverageNote && <p className="unknown-note">{item.mealCoverageNote}</p>}

@@ -26,23 +26,32 @@ def test_ready_route_audit_reuses_m7_readiness():
 
     assert audit.rollout_status is RouteRolloutStatus.READY
     assert audit.readiness.ready
-    assert all(item.status is RolloutLayerStatus.PASS for item in audit.layers)
+    assert all(
+        item.status in {RolloutLayerStatus.PASS, RolloutLayerStatus.OPTIONAL}
+        for item in audit.layers
+    )
 
 
-def test_catalog_only_routes_report_missing_capabilities_from_data():
+def test_non_ready_routes_report_stage_from_missing_capabilities():
     auditor, report = _auditor_and_report()
     coming_soon_routes = [
         item.route_id for item in report.route_readiness if not item.ready
     ]
-    assert len(coming_soon_routes) == 3
     for route_id in coming_soon_routes:
         audit = auditor.audit(route_id, report)
-        assert audit.rollout_status is RouteRolloutStatus.POI_PENDING
         assert audit.layer(RolloutLayer.CATALOG).status is RolloutLayerStatus.PASS
-        assert audit.layer(RolloutLayer.POI).status is RolloutLayerStatus.MISSING
-        assert audit.layer(RolloutLayer.KNOWLEDGE).status is RolloutLayerStatus.MISSING
-        assert audit.layer(RolloutLayer.RESOURCES).status is RolloutLayerStatus.OPTIONAL
+        assert audit.layer(RolloutLayer.RESOURCES).status in {
+            RolloutLayerStatus.PASS,
+            RolloutLayerStatus.OPTIONAL,
+        }
         assert audit.layer(RolloutLayer.PRODUCT).status is RolloutLayerStatus.MISSING
+        assert audit.rollout_status in {
+            RouteRolloutStatus.POI_PENDING,
+            RouteRolloutStatus.KNOWLEDGE_PENDING,
+            RouteRolloutStatus.STORY_PENDING,
+            RouteRolloutStatus.EXPERIENCE_PENDING,
+            RouteRolloutStatus.VALIDATION_PENDING,
+        }
 
 
 def test_unknown_route_is_rejected():

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
+from app.catalog.loader import FileCatalogLoader
 from app.main import app
 
 
@@ -16,20 +17,61 @@ def test_catalog_product_list_is_complete_and_data_driven():
     assert len(collections) == 1
     collection = collections[0]
     assert collection["package_id"] == "shanxi.changzhi"
-    assert collection["content_version"] == "0.3.0"
+    manifest = FileCatalogLoader("content/catalog").load().get_package(
+        "shanxi.changzhi"
+    ).manifest
+    assert collection["content_version"] == manifest.content_version
     assert collection["region"]["name"] == "长治市"
     assert len(collection["routes"]) == 4
 
 
 def test_route_capabilities_are_projected_from_verified_catalog_content():
     routes = client.get("/api/catalog/product-collections").json()["collections"][0]["routes"]
-    ready = [route for route in routes if route["availability"] == "ready"]
-    unavailable = [route for route in routes if route["availability"] != "ready"]
+    for route in routes:
+        capabilities = route["capabilities"]
+        required = (
+            "catalog_available",
+            "planning_available",
+            "knowledge_available",
+            "story_available",
+            "experience_available",
+        )
+        expected = (
+            "ready"
+            if all(capabilities[key] for key in required)
+            else "preview"
+            if any(capabilities[key] for key in required[1:])
+            else "coming_soon"
+        )
+        assert route["availability"] == expected
 
-    assert len(ready) == 1
-    assert all(ready[0]["capabilities"].values())
-    assert len(unavailable) == 3
-    assert all(not route["capabilities"]["planning_available"] for route in unavailable)
+    jingwei = next(
+        route["capabilities"]
+        for route in routes
+        if route["id"] == "changzhi.route.jingwei-fajiushan"
+    )
+    assert jingwei["spatial_resolution"] == "exact_provider_poi"
+    assert jingwei["spatial_degraded"] is False
+    assert jingwei["location_disclosure_required"] is False
+    assert jingwei["exact_anchor_location_available"] is True
+    assert jingwei["navigation_available"] is True
+
+    nuwa = next(
+        route
+        for route in routes
+        if route["id"] == "changzhi.route.nuwa-tiantaishan"
+    )
+    assert nuwa["availability"] == "ready"
+    assert nuwa["capabilities"]["planning_available"] is True
+    assert nuwa["capabilities"]["spatial_resolution"] == "verified_locality"
+    assert nuwa["capabilities"]["spatial_degraded"] is True
+    assert nuwa["capabilities"]["location_disclosure_required"] is True
+    assert nuwa["capabilities"]["exact_anchor_location_available"] is False
+    assert nuwa["capabilities"]["navigation_available"] is True
+
+    assert len(routes) == 4
+    assert all(route["availability"] == "ready" for route in routes)
+    assert all(route["capabilities"]["planning_available"] for route in routes)
 
 
 def test_route_detail_contains_catalog_identity_and_safe_preview():

@@ -18,6 +18,7 @@ from app.story import (
     StoryGenerationStatus,
     StoryTone,
     StoryValidationError,
+    StoryValidationStatus,
     grounded_story_messages,
     validate_generated_chapter,
 )
@@ -26,6 +27,9 @@ from app.story import (
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CATALOG_ROOT = PROJECT_ROOT / "content" / "catalog"
 STORY_ID = "changzhi.story.jingwei-fajiushan"
+NUWA_STORY_ID = "changzhi.story.nuwa-tiantaishan"
+SHENNONG_STORY_ID = "changzhi.story.shennong-laodingshan"
+HOUYI_STORY_ID = "changzhi.story.houyi-laoyeshan"
 
 
 class FakeStructuredLlm:
@@ -151,7 +155,7 @@ def test_chapter_context_hydrates_only_bound_claims(service):
         chapter.required_claim_ids + chapter.optional_claim_ids
     )
     assert all(hit.evidence and hit.sources for hit in context.claim_hits)
-    assert context.package_version.content_version == "0.3.0"
+    assert context.package_version.content_version == "0.6.0"
 
 
 def test_grounded_prompt_is_context_only(service):
@@ -184,12 +188,106 @@ def test_valid_chapter_has_full_deterministic_grounding(repository, service):
     assert generated.model_validate_json(generated.model_dump_json()) == generated
 
 
+def test_nuwa_full_story_passes_deterministic_grounding(repository):
+    builder = StoryGenerationService(repository)
+    contexts = [
+        builder.build_chapter_context(chapter.chapter_id)
+        for chapter in repository.list_story_chapters(NUWA_STORY_ID)
+    ]
+    generated = StoryGenerationService(
+        repository,
+        llm=FakeStructuredLlm([_valid_chapter(context) for context in contexts]),
+    ).generate(StoryGenerationRequest(story_id=NUWA_STORY_ID))
+
+    assert len(generated.chapters) == 4
+    assert generated.validation_status is StoryValidationStatus.PASSED
+    assert generated.package_version.content_version == "0.6.0"
+    assert all(chapter.grounding_metrics.grounding_coverage == 1.0 for chapter in generated.chapters)
+    assert all(chapter.grounding_metrics.context_fact_violation_count == 0 for chapter in generated.chapters)
+
+
+def test_shennong_full_story_passes_deterministic_grounding(repository):
+    builder = StoryGenerationService(repository)
+    contexts = [
+        builder.build_chapter_context(chapter.chapter_id)
+        for chapter in repository.list_story_chapters(SHENNONG_STORY_ID)
+    ]
+    generated = StoryGenerationService(
+        repository,
+        llm=FakeStructuredLlm([_valid_chapter(context) for context in contexts]),
+    ).generate(StoryGenerationRequest(story_id=SHENNONG_STORY_ID))
+
+    assert len(generated.chapters) == 4
+    assert generated.validation_status is StoryValidationStatus.PASSED
+    assert all(
+        chapter.grounding_metrics.grounding_coverage == 1.0
+        for chapter in generated.chapters
+    )
+    assert all(
+        chapter.grounding_metrics.context_fact_violation_count == 0
+        for chapter in generated.chapters
+    )
+
+
+def test_houyi_full_story_preserves_source_wording_and_grounding(repository):
+    builder = StoryGenerationService(repository)
+    contexts = [
+        builder.build_chapter_context(chapter.chapter_id)
+        for chapter in repository.list_story_chapters(HOUYI_STORY_ID)
+    ]
+    generated = StoryGenerationService(
+        repository,
+        llm=FakeStructuredLlm([_valid_chapter(context) for context in contexts]),
+    ).generate(StoryGenerationRequest(story_id=HOUYI_STORY_ID))
+
+    assert len(generated.chapters) == 4
+    assert generated.validation_status is StoryValidationStatus.PASSED
+    assert all(
+        chapter.grounding_metrics.grounding_coverage == 1.0
+        for chapter in generated.chapters
+    )
+    assert all(
+        chapter.grounding_metrics.qualifier_violation_count == 0
+        for chapter in generated.chapters
+    )
+
+
 def test_optional_claim_may_be_omitted(repository, service):
     context = service.build_chapter_context(
         service._repository.list_story_chapters(STORY_ID)[0].chapter_id
     )
 
     validate_generated_chapter(_valid_chapter(context), context, repository)
+
+
+def test_locality_resolution_rejects_exact_anchor_arrival_wording(repository):
+    locality = repository.list_verified_locality_identities_for_anchor(
+        "changzhi.anchor.tiantaishan"
+    )[0].model_copy(update={"anchor_id": "changzhi.anchor.fajiushan"})
+
+    class LocalityRepository:
+        def __getattr__(self, name):
+            return getattr(repository, name)
+
+        def list_verified_locality_identities_for_anchor(self, anchor_id):
+            return (locality,) if anchor_id == "changzhi.anchor.fajiushan" else ()
+
+    local_service = StoryGenerationService(LocalityRepository())
+    context = local_service.build_chapter_context(
+        repository.list_story_chapters(STORY_ID)[0].chapter_id
+    )
+    context = context.model_copy(
+        update={
+            "chapter": context.chapter.model_copy(
+                update={"opening_hook": "站在发鸠山，开始今天的故事。"}
+            )
+        }
+    )
+
+    with pytest.raises(StoryValidationError, match="degraded_spatial_location_overclaim"):
+        validate_generated_chapter(
+            _valid_chapter(context), context, LocalityRepository()
+        )
 
 
 def test_required_claim_cannot_be_omitted(repository, service):

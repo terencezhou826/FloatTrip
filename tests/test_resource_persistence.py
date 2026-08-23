@@ -125,7 +125,7 @@ def test_resource_package_hash_is_canonical(repository, snapshot_db):
 def test_resource_package_preserves_catalog_version(repository, snapshot_db):
     package = _package(repository, snapshot_db)
     assert (package.package_id, package.schema_version, package.content_version) == (
-        "shanxi.changzhi", "1.0", "0.3.0"
+        "shanxi.changzhi", "1.0", "0.6.0"
     )
 
 

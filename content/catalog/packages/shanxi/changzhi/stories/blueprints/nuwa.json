@@ -1,0 +1,34 @@
+{
+  "blueprints": [
+    {
+      "story_id": "changzhi.story.nuwa-tiantaishan",
+      "title": "女娲补天·天台山寻迹",
+      "package_id": "shanxi.changzhi",
+      "region_id": "cn.shanxi.changzhi.shangdang",
+      "theme_id": "changzhi.nuwa",
+      "route_id": "changzhi.route.nuwa-tiantaishan",
+      "story_type": "mythology",
+      "target_audiences": ["family", "student", "culture"],
+      "narrative_theme": "修复、协作与守护",
+      "narrative_goal": "从上郝村近域的地方文化表述进入古籍中的女娲补天神话，并把修复与守护明确作为当代策展反思。",
+      "chapter_ids": [
+        "changzhi.story.nuwa-tiantaishan.chapter.locality",
+        "changzhi.story.nuwa-tiantaishan.chapter.disorder",
+        "changzhi.story.nuwa-tiantaishan.chapter.repair",
+        "changzhi.story.nuwa-tiantaishan.chapter.reflection"
+      ],
+      "knowledge_claim_ids": [
+        "changzhi.claim.nuwa-tiantaishan-shanghao-official-narrative",
+        "changzhi.claim.huainanzi-nuwa-cosmic-disaster",
+        "changzhi.claim.huainanzi-nuwa-mends-sky",
+        "changzhi.claim.huainanzi-nuwa-restores-order"
+      ],
+      "verification_status": "verified",
+      "enabled": true,
+      "version": "0.1.0",
+      "media_slot_ids": [],
+      "experience_slot_ids": [],
+      "metadata": {"spatial_resolution": "verified_locality"}
+    }
+  ]
+}

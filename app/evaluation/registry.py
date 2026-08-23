@@ -61,6 +61,9 @@ def _build_metrics() -> tuple[EvalMetric, ...]:
             ("snapshot_context_preservation", *_BOOL),
             ("waiting_user_resume", *_BOOL),
             ("runtime_recovery", *_BOOL),
+            ("spatial_resolution_truthfulness", *_BOOL),
+            ("navigation_reference_identity", MetricType.IDENTITY_MATCH, MetricDirection.EXACT, True),
+            ("road_scope_truthfulness", *_BOOL),
         ),
         EvaluationDomain.KNOWLEDGE: (
             ("evidence_coverage", *_FULL),
@@ -69,10 +72,14 @@ def _build_metrics() -> tuple[EvalMetric, ...]:
             ("qualifier_preservation", *_FULL),
             ("claim_type_preservation", *_FULL),
             ("unsupported_fact_count", *_ZERO),
+            ("unverified_botanical_fact", *_ZERO),
+            ("agricultural_historical_hallucination", *_ZERO),
             ("internal_only_leakage", *_ZERO),
             ("review_required_leakage", *_ZERO),
             ("answerability_false_positive", *_ZERO),
             ("answerability_false_negative", *_ZERO),
+            ("locality_identity_verified", *_BOOL),
+            ("cultural_locality_relation_verified", *_BOOL),
         ),
         EvaluationDomain.STORY: (
             ("story_chapter_count_contract", MetricType.COUNT, MetricDirection.EXACT, 5),
@@ -92,6 +99,11 @@ def _build_metrics() -> tuple[EvalMetric, ...]:
             ("grounding_coverage", *_FULL),
             ("unsafe_instruction", *_ZERO),
             ("environmental_harm", *_ZERO),
+            ("wild_plant_consumption", *_ZERO),
+            ("plant_collection", *_ZERO),
+            ("weapon_activity", *_ZERO),
+            ("dangerous_projectile", *_ZERO),
+            ("cliff_risk", *_ZERO),
             ("cultural_property_harm", *_ZERO),
             ("child_supervision_violation", *_ZERO),
             ("observation_hallucination", *_ZERO),
@@ -106,6 +118,7 @@ def _build_metrics() -> tuple[EvalMetric, ...]:
             ("story_mutation", *_ZERO),
             ("itinerary_mutation", *_ZERO),
             ("planning_mutation", *_ZERO),
+            ("degraded_route_safety", *_BOOL),
         ),
         EvaluationDomain.RESOURCES: (
             ("fake_resource", *_ZERO),
@@ -144,6 +157,7 @@ def _build_metrics() -> tuple[EvalMetric, ...]:
             ("critical_responsive_failure", *_ZERO),
             ("critical_accessibility_failure", *_ZERO),
             ("product_journey_completion", *_BOOL),
+            ("location_disclosure_visibility", *_BOOL),
         ),
         EvaluationDomain.CROSS_LAYER: (
             ("catalog_version_consistency", *_BOOL),
@@ -156,6 +170,8 @@ def _build_metrics() -> tuple[EvalMetric, ...]:
             ("story_mutation", *_ZERO),
             ("experience_mutation", *_ZERO),
             ("itinerary_mutation", *_ZERO),
+            ("locality_as_anchor_conflation", *_ZERO),
+            ("false_exact_location", *_ZERO),
         ),
     }
     return tuple(

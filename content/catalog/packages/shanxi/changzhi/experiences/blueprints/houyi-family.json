@@ -1,0 +1,28 @@
+{
+  "blueprints": [
+    {
+      "experience_id": "changzhi.experience.houyi-family",
+      "title": "羿射日文本辨读亲子体验",
+      "package_id": "shanxi.changzhi",
+      "region_id": "cn.shanxi.changzhi.tunliu",
+      "theme_id": "changzhi.houyi",
+      "route_id": "changzhi.route.houyi-laoyeshan",
+      "story_id": "changzhi.story.houyi-laoyeshan",
+      "experience_type": "family",
+      "target_audiences": ["family", "child", "student", "culture"],
+      "experience_goal": "通过地点辨识、原文数字问答、故事次序与地方传说分层理解羿射日叙事，全程不使用武器、不投掷物品、不靠近崖边。",
+      "activity_ids": [
+        "changzhi.experience.houyi-family.activity.place-boundary",
+        "changzhi.experience.houyi-family.activity.number-reading",
+        "changzhi.experience.houyi-family.activity.story-sequence",
+        "changzhi.experience.houyi-family.activity.legend-reflection"
+      ],
+      "verification_status": "verified",
+      "enabled": true,
+      "version": "0.1.0",
+      "estimated_total_duration_sec": 600,
+      "media_slot_ids": [],
+      "metadata": {"projectile_activity": "prohibited"}
+    }
+  ]
+}

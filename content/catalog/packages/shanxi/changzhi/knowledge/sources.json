@@ -52,6 +52,97 @@
       "metadata": {
         "page_source_attribution": "方志山西"
       }
+    },
+    {
+      "source_id": "changzhi.source.shanxi-government-shangdang-culture-2024",
+      "title": "登临太行之巅 品味上党文化",
+      "source_type": "government",
+      "publisher_or_author": "山西日报；山西省人民政府（转载）",
+      "publication_date": "2024-11-22",
+      "url": "https://www.shanxi.gov.cn/zjsx/sxfg/cysx/202411/t20241122_9697099.shtml",
+      "document_reference": "山西省人民政府网站，走进山西/畅游山西",
+      "region_ids": [
+        "cn.shanxi.changzhi",
+        "cn.shanxi.changzhi.shangdang"
+      ],
+      "language": "zh-Hans",
+      "authority_level": "authoritative",
+      "verification_status": "verified",
+      "metadata": {
+        "page_source_attribution": "山西日报"
+      }
+    },
+    {
+      "source_id": "changzhi.source.huainanzi-ctext-lanming",
+      "title": "《淮南子·览冥训》",
+      "source_type": "ancient_text",
+      "publisher_or_author": "刘安及门客编撰；Chinese Text Project（数字版本）",
+      "publication_date": null,
+      "url": "https://ctext.org/huainanzi/lan-ming-xun/zh#n3125",
+      "document_reference": "《淮南子·览冥训》第9段，CTP node n3125",
+      "region_ids": [],
+      "language": "zh-Hant",
+      "authority_level": "primary",
+      "verification_status": "verified",
+      "metadata": {
+        "digital_repository": "Chinese Text Project"
+      }
+    },
+    {
+      "source_id": "changzhi.source.changzhi-laodingshan-2025",
+      "title": "·老顶山（国家森林公园）·",
+      "source_type": "government",
+      "publisher_or_author": "长治日报；长治市人民政府（发布）",
+      "publication_date": "2025-12-10",
+      "url": "https://www.changzhi.gov.cn/ztzl/cjwmwz/wmdt/202512/t20251210_3116901.shtml",
+      "document_reference": "长治市人民政府网站，文明城市建设专题/文明动态",
+      "region_ids": ["cn.shanxi.changzhi", "cn.shanxi.changzhi.luzhou"],
+      "language": "zh-Hans",
+      "authority_level": "authoritative",
+      "verification_status": "verified",
+      "metadata": {"page_source_attribution": "长治日报"}
+    },
+    {
+      "source_id": "changzhi.source.huainanzi-ctext-xiuwu",
+      "title": "《淮南子·脩务训》",
+      "source_type": "ancient_text",
+      "publisher_or_author": "刘安及门客编撰；Chinese Text Project（数字版本）",
+      "publication_date": null,
+      "url": "https://ctext.org/huainanzi/xiu-wu-xun/zh#n3425",
+      "document_reference": "《淮南子·脩务训》第1段，CTP node n3425",
+      "region_ids": [],
+      "language": "zh-Hant",
+      "authority_level": "primary",
+      "verification_status": "verified",
+      "metadata": {"digital_repository": "Chinese Text Project"}
+    },
+    {
+      "source_id": "changzhi.source.changzhi-laoyeshan-tourism-2025",
+      "title": "屯留区老爷山旅游风景区丰富旅游产品业态引来八方客",
+      "source_type": "government",
+      "publisher_or_author": "长治日报；长治市人民政府（发布）",
+      "publication_date": "2025-04-02",
+      "url": "https://www.changzhi.gov.cn/ztzl/5D/5D/202504/t20250402_3032207.shtml",
+      "document_reference": "长治市人民政府网站，全力打造“五大品牌”推动文旅康养深度融合",
+      "region_ids": ["cn.shanxi.changzhi", "cn.shanxi.changzhi.tunliu"],
+      "language": "zh-Hans",
+      "authority_level": "authoritative",
+      "verification_status": "verified",
+      "metadata": {"page_source_attribution": "长治日报"}
+    },
+    {
+      "source_id": "changzhi.source.huainanzi-ctext-benjing",
+      "title": "《淮南子·本经训》",
+      "source_type": "ancient_text",
+      "publisher_or_author": "刘安及门客编撰；Chinese Text Project（数字版本）",
+      "publication_date": null,
+      "url": "https://ctext.org/huainanzi/ben-jing-xun/zh#n361775",
+      "document_reference": "《淮南子·本经训》第6段，CTP node n361775",
+      "region_ids": [],
+      "language": "zh-Hant",
+      "authority_level": "primary",
+      "verification_status": "verified",
+      "metadata": {"digital_repository": "Chinese Text Project"}
     }
   ]
 }

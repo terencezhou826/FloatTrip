@@ -17,13 +17,16 @@ EXPECTED_NAMES = {
         "candidate_provenance", "fake_poi_count", "route_feasibility",
         "road_data_completeness", "meal_coverage", "meal_route_feasible",
         "provider_identity_mismatch", "snapshot_context_preservation",
-        "waiting_user_resume", "runtime_recovery",
+        "waiting_user_resume", "runtime_recovery", "spatial_resolution_truthfulness",
+        "navigation_reference_identity", "road_scope_truthfulness",
     },
     EvaluationDomain.KNOWLEDGE: {
         "evidence_coverage", "production_ineligible_leakage", "citation_identity_accuracy",
         "qualifier_preservation", "claim_type_preservation", "unsupported_fact_count",
+        "unverified_botanical_fact", "agricultural_historical_hallucination",
         "internal_only_leakage", "review_required_leakage",
         "answerability_false_positive", "answerability_false_negative",
+        "locality_identity_verified", "cultural_locality_relation_verified",
     },
     EvaluationDomain.STORY: {
         "story_chapter_count_contract", "story_grounding_coverage",
@@ -33,11 +36,14 @@ EXPECTED_NAMES = {
     },
     EvaluationDomain.EXPERIENCE: {
         "experience_activity_count_contract", "grounding_coverage", "unsafe_instruction",
-        "environmental_harm", "cultural_property_harm", "child_supervision_violation",
+        "environmental_harm", "wild_plant_consumption", "plant_collection",
+        "weapon_activity", "dangerous_projectile", "cliff_risk",
+        "cultural_property_harm", "child_supervision_violation",
         "observation_hallucination", "specific_observable_without_evidence",
         "forced_purchase", "restricted_area_instruction", "water_hazard", "road_hazard",
         "wildlife_hazard", "name_only_binding", "knowledge_mutation", "story_mutation",
         "itinerary_mutation", "planning_mutation",
+        "degraded_route_safety",
     },
     EvaluationDomain.RESOURCES: {
         "fake_resource", "unverified_curated_resource", "name_only_identity",
@@ -54,12 +60,14 @@ EXPECTED_NAMES = {
         "safety_visibility", "unknown_as_known", "hidden_sponsorship",
         "critical_responsive_failure", "critical_accessibility_failure",
         "product_journey_completion",
+        "location_disclosure_visibility",
     },
     EvaluationDomain.CROSS_LAYER: {
         "catalog_version_consistency", "run_to_story_version_consistency",
         "story_to_experience_consistency", "experience_to_resource_consistency",
         "mandatory_anchor_end_to_end", "snapshot_hash_stability", "knowledge_mutation",
         "story_mutation", "experience_mutation", "itinerary_mutation",
+        "locality_as_anchor_conflation", "false_exact_location",
     },
 }
 

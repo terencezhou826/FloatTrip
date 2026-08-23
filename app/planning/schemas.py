@@ -57,6 +57,20 @@ class SpotPlan(BaseModel):
     cultural_anchor_location: dict[str, float] | None = None
     navigation_location: dict[str, float] | None = None
     navigation_name: str | None = None
+    resolution_level: str | None = None
+    placement_status: str | None = None
+    cultural_identity: dict[str, Any] | None = None
+    navigation_identity: dict[str, Any] | None = None
+    navigation_reference: dict[str, Any] | None = None
+    precision: str | None = None
+    confidence: str | None = None
+    degraded: bool = False
+    disclosure_required: bool = False
+    disclosure_text: str | None = None
+    safety_constraints: tuple[str, ...] = ()
+    exact_anchor_location_available: bool | None = None
+    road_verified_to_navigation_target: bool = False
+    road_verified_to_cultural_anchor: bool = False
 
 
 class DayRoute(BaseModel):

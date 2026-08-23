@@ -293,6 +293,22 @@ def validate_generated_chapter(
     if max_chapter_length is not None and len(generated.narration) > max_chapter_length:
         issues.append("max_chapter_length_exceeded")
 
+    for anchor_id in chapter.anchor_ids:
+        localities = repository.list_verified_locality_identities_for_anchor(anchor_id)
+        if not localities:
+            continue
+        anchor = repository.get_anchor(anchor_id)
+        if anchor is None:
+            continue
+        overclaims = (
+            f"站在{anchor.name}",
+            f"抵达{anchor.name}",
+            f"到达{anchor.name}",
+            f"来到{anchor.name}脚下",
+        )
+        if any(marker in generated.narration for marker in overclaims):
+            issues.append("degraded_spatial_location_overclaim")
+
     used = set(generated.used_claim_ids)
     required = set(chapter.required_claim_ids)
     available = set(hits)

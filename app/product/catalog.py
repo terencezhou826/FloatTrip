@@ -8,10 +8,10 @@ from typing import Any
 from app.catalog.models import (
     ExperienceVerificationStatus,
     KnowledgeVerificationStatus,
-    PoiVerificationStatus,
     StoryVerificationStatus,
 )
 from app.catalog.repository import CatalogRepository
+from app.catalog.spatial import project_anchor_spatial_resolution
 
 
 class ProductAvailability(StrEnum):
@@ -101,11 +101,17 @@ class CatalogProductService:
                     "mandatory": anchor.id in route.mandatory_anchor_ids,
                 }
             )
-        capabilities = self._capabilities(route)
-        values = tuple(capabilities.values())
-        if all(values):
+        capabilities, spatial_details = self._capabilities(route)
+        required_capabilities = (
+            "catalog_available",
+            "planning_available",
+            "knowledge_available",
+            "story_available",
+            "experience_available",
+        )
+        if all(capabilities[key] for key in required_capabilities):
             availability = ProductAvailability.READY
-        elif any(values[1:]):
+        elif any(capabilities[key] for key in required_capabilities[1:]):
             availability = ProductAvailability.PREVIEW
         else:
             availability = ProductAvailability.COMING_SOON
@@ -133,6 +139,12 @@ class CatalogProductService:
             ),
             "anchors": anchors,
             "capabilities": capabilities,
+            "spatial_details": spatial_details,
+            "location_disclosures": [
+                item["disclosure_text"]
+                for item in spatial_details
+                if item["disclosure_required"] and item["disclosure_text"]
+            ],
             "availability": availability.value,
             "experience_types": sorted({item.experience_type.value for item in experiences}),
         }
@@ -140,13 +152,13 @@ class CatalogProductService:
             result["cultural_preview"] = self._cultural_preview(route)
         return result
 
-    def _capabilities(self, route) -> dict[str, bool]:
-        planning_available = bool(route.mandatory_anchor_ids) and all(
-            any(
-                binding.verification_status is PoiVerificationStatus.VERIFIED
-                for binding in self.repository.list_bindings_for_anchor(anchor_id)
-            )
+    def _capabilities(self, route) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+        spatial = [
+            project_anchor_spatial_resolution(self.repository, anchor_id)
             for anchor_id in route.mandatory_anchor_ids
+        ]
+        planning_available = bool(spatial) and all(
+            item.planning_available for item in spatial
         )
         claims = [
             claim
@@ -173,14 +185,34 @@ class CatalogProductService:
             and any(story.story_id == item.story_id for story in stories)
         ]
         experience_available = bool(experiences)
-        return {
+        levels = {
+            item.resolution_level.value
+            for item in spatial
+            if item.resolution_level is not None
+        }
+        spatial_resolution = next(iter(levels)) if len(levels) == 1 else (
+            "mixed" if levels else None
+        )
+        capabilities: dict[str, Any] = {
             "catalog_available": True,
             "planning_available": planning_available,
             "knowledge_available": knowledge_available,
             "story_available": story_available,
             "experience_available": experience_available,
             "resources_available": planning_available and experience_available,
+            "spatial_resolution": spatial_resolution,
+            "spatial_degraded": any(item.degraded for item in spatial),
+            "location_disclosure_required": any(
+                item.disclosure_required for item in spatial
+            ),
+            "exact_anchor_location_available": bool(spatial) and all(
+                item.exact_anchor_location_available for item in spatial
+            ),
+            "navigation_available": bool(spatial) and all(
+                item.navigation_available for item in spatial
+            ),
         }
+        return capabilities, [item.model_dump(mode="json") for item in spatial]
 
     def _cultural_preview(self, route) -> list[dict[str, Any]]:
         previews: list[dict[str, Any]] = []

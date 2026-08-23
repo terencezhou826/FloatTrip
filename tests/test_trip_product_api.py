@@ -40,7 +40,7 @@ def trip_client(tmp_path, catalog):
     context = {
         "package_id": "shanxi.changzhi",
         "schema_version": "1.0",
-        "content_version": "0.3.0",
+        "content_version": "0.6.0",
         "route_id": "changzhi.route.jingwei-fajiushan",
         "route_name": "精卫填海·发鸠山探秘",
     }

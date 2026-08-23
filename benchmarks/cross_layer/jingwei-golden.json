@@ -1,9 +1,9 @@
 {
   "fixture_id": "jingwei-golden.1.0.0",
-  "source": "Audited Catalog 0.3.0 and formal M5/M6 persisted snapshots; no live Provider data or narration text is copied.",
+  "source": "Audited Catalog 0.6.0 and formal M8 persisted snapshots; no live Provider credential or generated narration text is copied.",
   "package_id": "shanxi.changzhi",
   "catalog_schema_version": "1.0",
-  "catalog_content_version": "0.3.0",
+  "catalog_content_version": "0.6.0",
   "route_id": "changzhi.route.jingwei-fajiushan",
   "mandatory_anchor_identity": {
     "anchor_id": "changzhi.anchor.fajiushan",
@@ -39,14 +39,14 @@
   ],
   "forbidden_claim_ids": ["changzhi.claim.fajiushan-yandi-residence"],
   "snapshot_identity": {
-    "run_id": "87e1e50d-e4fa-4817-8e8d-563859f46480",
-    "itinerary_id": "84f32a03-2323-468f-b7ca-81459719cf1e",
-    "story_package_id": "story-package.0d7a0337095e6a1e32ccdda8",
-    "story_snapshot_hash": "214abccd53bd1b285c33cd2918166b2da38672040e4c0056752065ac170e754b",
-    "experience_package_id": "experience-package.abbc847bc8ab2e51de0e0733",
-    "experience_snapshot_hash": "209fe0b54622eaacb493a74fd54de25cbabbe39c199e75d718047b2861014456",
-    "resource_package_id": "resource-package.c0a72c99ca7b3accbe323263",
-    "resource_snapshot_hash": "fd4424b3b4d9c949ea1e7250c1561198a8b7297c351a5151f13b4f8492ee55ca"
+    "run_id": "36eda6d0-6b02-4b06-850a-dc01e0661c62",
+    "itinerary_id": "7299362a-458c-4c1c-b113-604ea920b9f2",
+    "story_package_id": "story-package.57b770c31899d8afdd61b515",
+    "story_snapshot_hash": "5441844965182e97ce6963aaed5a13b3f5307a068842d0a45cd91ca0e2939bc0",
+    "experience_package_id": "experience-package.91883838ab73c022e36a8d64",
+    "experience_snapshot_hash": "c8864d8fcc07f3a20ebb5320f4eedf62391d4ec3e5cc7690ae833c690075593d",
+    "resource_package_id": "resource-package.3fdaefa08f2b8698f4cafd7c",
+    "resource_snapshot_hash": "7f8c28266c633c4e0fcee9f9fa059ae09b4c6493ed528dd303901e6d3adf2750"
   },
   "capability_expectation": {
     "planning_available": true,

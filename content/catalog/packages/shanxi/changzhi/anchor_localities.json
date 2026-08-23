@@ -1,0 +1,86 @@
+{
+  "locality_identities": [
+    {
+      "locality_identity_id": "changzhi.locality.tiantaishan.shanghao-village",
+      "anchor_id": "changzhi.anchor.tiantaishan",
+      "region_id": "cn.shanxi.changzhi.shangdang",
+      "locality_name": "上郝村",
+      "locality_type": "village",
+      "provider": "amap",
+      "external_id": null,
+      "location": {
+        "longitude": 113.018072,
+        "latitude": 36.132944
+      },
+      "verification_status": "verified",
+      "verification_method": "provider_geocode",
+      "verified_at": "2026-08-23T00:59:50+08:00",
+      "provenance": [
+        {
+          "provenance_id": "changzhi.provenance.shanghao-village-geocode",
+          "verification_method": "provider_geocode",
+          "verified_at": "2026-08-23T00:59:50+08:00",
+          "source_reference": "amap-geocode-v3:山西省长治市上党区郝家庄镇上郝村",
+          "audit_reference": null,
+          "verification_note": "Amap Geocoding v3 returned the formatted village address, district 上党区, adcode 140404, and level 村庄."
+        },
+        {
+          "provenance_id": "changzhi.provenance.shanghao-committee-exact-poi",
+          "verification_method": "provider_exact_id",
+          "verified_at": "2026-08-23T00:59:50+08:00",
+          "source_reference": "amap-place-detail-v3:B0H1P64PGR",
+          "audit_reference": null,
+          "verification_note": "Amap exact Place Detail returned 上郝村民委员会 in 上党区, adcode 140404."
+        },
+        {
+          "provenance_id": "changzhi.provenance.tiantaishan-shanghao-official",
+          "verification_method": "official_source",
+          "verified_at": "2026-08-23T00:59:50+08:00",
+          "source_reference": "https://www.shanxi.gov.cn/zjsx/sxfg/cysx/202411/t20241122_9697099.shtml",
+          "audit_reference": null,
+          "verification_note": "Official narrative links the Nuwa story and Tiantaishan to Shanghao Village, but supplies no exact Cultural Anchor coordinate."
+        }
+      ],
+      "source_reference": "https://www.shanxi.gov.cn/zjsx/sxfg/cysx/202411/t20241122_9697099.shtml",
+      "administrative_path": [
+        "cn.shanxi",
+        "cn.shanxi.changzhi",
+        "cn.shanxi.changzhi.shangdang"
+      ],
+      "accuracy": "area_centroid",
+      "confidence": "high",
+      "verification_note": "Verified locality relationship and village reference only; this is not Tiantaishan's exact coordinate or confirmed visitor entrance.",
+      "relationship_evidence_ids": [
+        "changzhi.evidence.nuwa-tiantaishan-shanghao-official-narrative"
+      ],
+      "navigation_reference": {
+        "provider": "amap",
+        "external_poi_id": "B0H1P64PGR",
+        "name": "上郝村民委员会",
+        "location": {
+          "longitude": 113.017551,
+          "latitude": 36.133562
+        },
+        "provider_region_code": "140404",
+        "address": "山西省长治市上党区郝家庄镇上郝村",
+        "publicly_navigable": true,
+        "safety_reviewed": true,
+        "note": "General village navigation reference only; it is not Tiantaishan or a confirmed Tiantaishan visitor entrance."
+      },
+      "disclosure_text": "天台山为当地传统文化地点，目前地图平台暂无经审核的独立精确导航点。本路线导航至上郝村近域参考点；抵达后请遵循现场公开指引或咨询当地工作人员。如无法确认安全开放路径，可在村域完成文化体验。请勿进入农田、私人区域、未开放区域或危险地形。",
+      "safety_constraints": [
+        "public_reference_only",
+        "follow_public_guidance",
+        "no_private_land",
+        "no_farmland_entry",
+        "no_restricted_area",
+        "no_dangerous_terrain"
+      ],
+      "metadata": {
+        "cultural_anchor_coordinate_known": false,
+        "visitor_entrance_confirmed": false,
+        "geocode_level": "村庄"
+      }
+    }
+  ]
+}

@@ -69,7 +69,12 @@ def test_region_types_and_unconfirmed_admin_codes_load(catalog):
         "cn.shanxi.changzhi.luzhou": RegionType.DISTRICT,
         "cn.shanxi.changzhi.tunliu": RegionType.DISTRICT,
     }
-    assert all(region.admin_code is None for region in regions.values())
+    assert regions["cn.shanxi.changzhi.shangdang"].admin_code == "140404"
+    assert all(
+        region.admin_code is None
+        for region_id, region in regions.items()
+        if region_id != "cn.shanxi.changzhi.shangdang"
+    )
 
 
 def test_four_changzhi_subregions_load(catalog):
@@ -167,7 +172,7 @@ def test_manifest_loads_and_repository_contract_is_satisfied(catalog):
     assert manifests[0].model_dump() == {
         "package_id": "shanxi.changzhi",
         "schema_version": "1.0",
-        "content_version": "0.3.0",
+        "content_version": "0.6.0",
         "region_id": "cn.shanxi.changzhi",
         "enabled": True,
     }

@@ -131,6 +131,132 @@
       "metadata": {
         "review_note": "该摘录可证明官方页面有此表述，但不足以将其审核为历史事实。"
       }
+    },
+    {
+      "evidence_id": "changzhi.evidence.nuwa-tiantaishan-shanghao-official-narrative",
+      "claim_id": "changzhi.claim.nuwa-tiantaishan-shanghao-official-narrative",
+      "source_id": "changzhi.source.shanxi-government-shangdang-culture-2024",
+      "locator": {
+        "paragraph": "该节第2段",
+        "other": "长治是当之无愧的“中国神话之乡”，也是当仁不让的“中国曲艺名城”"
+      },
+      "quote_excerpt": "女娲的故事就发端于今长治市的上党区上郝村天台山上",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {
+        "supports_locality_relationship": true,
+        "does_not_support_exact_coordinate": true
+      }
+    },
+    {
+      "evidence_id": "changzhi.evidence.huainanzi-nuwa-cosmic-disaster",
+      "claim_id": "changzhi.claim.huainanzi-nuwa-cosmic-disaster",
+      "source_id": "changzhi.source.huainanzi-ctext-lanming",
+      "locator": {"chapter": "览冥训", "paragraph": "9", "url_fragment": "n3125"},
+      "quote_excerpt": "往古之時，四極廢，九州裂，天不兼覆，地不周載，火爁炎而不滅，水浩洋而不息。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.huainanzi-nuwa-mends-sky",
+      "claim_id": "changzhi.claim.huainanzi-nuwa-mends-sky",
+      "source_id": "changzhi.source.huainanzi-ctext-lanming",
+      "locator": {"chapter": "览冥训", "paragraph": "9", "url_fragment": "n3125"},
+      "quote_excerpt": "於是女媧煉五色石以補蒼天，斷鼇足以立四極。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.huainanzi-nuwa-restores-order",
+      "claim_id": "changzhi.claim.huainanzi-nuwa-restores-order",
+      "source_id": "changzhi.source.huainanzi-ctext-lanming",
+      "locator": {"chapter": "览冥训", "paragraph": "9", "url_fragment": "n3125"},
+      "quote_excerpt": "蒼天補，四極正，淫水涸，冀州平，狡蟲死，顓民生。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.laodingshan-forest-park-identity",
+      "claim_id": "changzhi.claim.laodingshan-forest-park-identity",
+      "source_id": "changzhi.source.changzhi-laodingshan-2025",
+      "locator": {"paragraph": "标题及正文第1段"},
+      "quote_excerpt": "·老顶山（国家森林公园）·……东山，正是雄踞长治城东的老顶山。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {"supports_provider_parent_identity": true}
+    },
+    {
+      "evidence_id": "changzhi.evidence.laodingshan-shennong-official-narrative",
+      "claim_id": "changzhi.claim.laodingshan-shennong-official-narrative",
+      "source_id": "changzhi.source.changzhi-laodingshan-2025",
+      "locator": {"paragraph": "人文寻根：始祖文化的永恒回响，第2段"},
+      "quote_excerpt": "相传始祖炎帝曾在此活动，开创了“尝百草、植五谷、教农耕”的万世伟业。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {"qualifier_in_source": "相传"}
+    },
+    {
+      "evidence_id": "changzhi.evidence.huainanzi-shennong-five-grains",
+      "claim_id": "changzhi.claim.huainanzi-shennong-five-grains",
+      "source_id": "changzhi.source.huainanzi-ctext-xiuwu",
+      "locator": {"chapter": "脩务训", "paragraph": "1", "url_fragment": "n3425"},
+      "quote_excerpt": "於是神農乃始教民播種五穀，相土地宜，燥濕肥墝高下。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.huainanzi-shennong-tastes-plants",
+      "claim_id": "changzhi.claim.huainanzi-shennong-tastes-plants",
+      "source_id": "changzhi.source.huainanzi-ctext-xiuwu",
+      "locator": {"chapter": "脩务训", "paragraph": "1", "url_fragment": "n3425"},
+      "quote_excerpt": "嘗百草之滋味，水泉之甘苦，令民知所辟就。當此之時，一日而遇七十毒。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {"does_not_support_visitor_consumption": true}
+    },
+    {
+      "evidence_id": "changzhi.evidence.laoyeshan-scenic-area-identity",
+      "claim_id": "changzhi.claim.laoyeshan-scenic-area-identity",
+      "source_id": "changzhi.source.changzhi-laoyeshan-tourism-2025",
+      "locator": {"paragraph": "筑牢生态屏障 守护绿水青山，第2段"},
+      "quote_excerpt": "老爷山，古称“三嵕山”，是省级森林公园的核心景区。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {"supports_provider_parent_identity": true}
+    },
+    {
+      "evidence_id": "changzhi.evidence.laoyeshan-yi-official-narrative",
+      "claim_id": "changzhi.claim.laoyeshan-yi-official-narrative",
+      "source_id": "changzhi.source.changzhi-laoyeshan-tourism-2025",
+      "locator": {"paragraph": "发展“三色”旅游 产业提档升级，第1段"},
+      "quote_excerpt": "传说老爷山东峰麟山是神话故事羿神射日的地方。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {"qualifier_in_source": "传说", "character_wording": "羿神"}
+    },
+    {
+      "evidence_id": "changzhi.evidence.huainanzi-ten-suns-appear",
+      "claim_id": "changzhi.claim.huainanzi-ten-suns-appear",
+      "source_id": "changzhi.source.huainanzi-ctext-benjing",
+      "locator": {"chapter": "本经训", "paragraph": "6", "url_fragment": "n361775"},
+      "quote_excerpt": "逮至堯之時，十日並出，焦禾稼，殺草木，而民無所食。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {}
+    },
+    {
+      "evidence_id": "changzhi.evidence.huainanzi-yi-shoots-ten-suns",
+      "claim_id": "changzhi.claim.huainanzi-yi-shoots-ten-suns",
+      "source_id": "changzhi.source.huainanzi-ctext-benjing",
+      "locator": {"chapter": "本经训", "paragraph": "6", "url_fragment": "n361775"},
+      "quote_excerpt": "堯乃使羿誅鑿齒于疇華之野，殺九嬰于凶水之上，繳大風於青丘之澤，上射十日而下殺猰貐。",
+      "evidence_relation": "supports",
+      "verification_status": "verified",
+      "metadata": {"character_wording": "羿", "number_wording": "十日"}
     }
   ]
 }

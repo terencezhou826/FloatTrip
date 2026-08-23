@@ -20,6 +20,7 @@ from app.evaluation.models import (
     RouteReadinessResult,
 )
 from app.product.catalog import CatalogProductService
+from app.catalog.spatial import project_anchor_spatial_resolution
 
 
 CATALOG_ROOT = Path(__file__).resolve().parents[2] / "content" / "catalog"
@@ -31,6 +32,7 @@ class RouteReadinessProfile(EvaluationModel):
     route_id: str
     catalog_complete: StrictBool
     mandatory_poi_identity: StrictBool
+    mandatory_spatial_identity: StrictBool
     planning_available: StrictBool
     knowledge_available: StrictBool
     story_available: StrictBool
@@ -92,9 +94,17 @@ class RouteReadinessEvaluator:
             and route.anchor_ids
             and all(self.repository.get_anchor(item) for item in route.anchor_ids)
         )
-        mandatory_identity = bool(route.mandatory_anchor_ids) and all(
-            self.repository.list_verified_bindings_for_anchor(anchor_id)
+        spatial = tuple(
+            project_anchor_spatial_resolution(self.repository, anchor_id)
             for anchor_id in route.mandatory_anchor_ids
+        )
+        mandatory_poi_identity = bool(spatial) and all(
+            item.resolution_level is not None
+            and item.resolution_level.value == "exact_provider_poi"
+            for item in spatial
+        )
+        mandatory_identity = bool(spatial) and all(
+            item.ready_capable for item in spatial
         )
         planning = mandatory_identity and self._domain_passes(
             report, EvaluationDomain.PLANNING
@@ -175,7 +185,8 @@ class RouteReadinessEvaluator:
             package_id=package_id,
             route_id=route.id,
             catalog_complete=catalog_complete,
-            mandatory_poi_identity=mandatory_identity,
+            mandatory_poi_identity=mandatory_poi_identity,
+            mandatory_spatial_identity=mandatory_identity,
             planning_available=planning,
             knowledge_available=knowledge,
             story_available=story_available,
@@ -280,14 +291,27 @@ class RouteReadinessEvaluator:
             or identity.get("anchor_id") not in route.mandatory_anchor_ids
         ):
             return False
-        binding = self.repository.get_poi_binding(identity.get("binding_id", ""))
-        if binding is None or (
-            binding.anchor_id != identity.get("anchor_id")
-            or binding.provider.value != identity.get("provider")
-            or binding.external_poi_id != identity.get("external_poi_id")
-            or not binding.is_runtime_eligible
-        ):
-            return False
+        spatial_type = identity.get("spatial_identity_type", "provider_poi")
+        if spatial_type == "provider_poi":
+            binding = self.repository.get_poi_binding(identity.get("binding_id", ""))
+            if binding is None or (
+                binding.anchor_id != identity.get("anchor_id")
+                or binding.provider.value != identity.get("provider")
+                or binding.external_poi_id != identity.get("external_poi_id")
+                or not binding.is_runtime_eligible
+            ):
+                return False
+        else:
+            resolution = project_anchor_spatial_resolution(
+                self.repository, identity.get("anchor_id", "")
+            )
+            if (
+                resolution.identity_id != identity.get("spatial_identity_id")
+                or resolution.resolution_level is None
+                or resolution.resolution_level.value != identity.get("resolution_level")
+                or not resolution.ready_capable
+            ):
+                return False
         expected_chapters = tuple(golden.get("expected_chapter_ids", ()))
         expected_activities = tuple(golden.get("expected_activity_ids", ()))
         stories = self.repository.list_stories(route.id)

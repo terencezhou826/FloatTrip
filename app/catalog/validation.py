@@ -8,6 +8,7 @@ import re
 from app.catalog.models import (
     Anchor,
     AnchorCoordinateIdentity,
+    AnchorLocalityIdentity,
     CatalogTheme,
     ContentPackage,
     CuratedRoute,
@@ -56,6 +57,9 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
     navigation_access_points = [
         item for package in packages for item in package.navigation_access_points
     ]
+    locality_identities = [
+        item for package in packages for item in package.locality_identities
+    ]
     knowledge_sources = [
         item for package in packages for item in package.knowledge_sources
     ]
@@ -93,6 +97,7 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
         poi_bindings,
         spatial_identities,
         navigation_access_points,
+        locality_identities,
         knowledge_sources,
         knowledge_claims,
         knowledge_evidence,
@@ -113,6 +118,8 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
     source_ids = {item.source_id for item in knowledge_sources}
     claim_ids = {item.claim_id for item in knowledge_claims}
     sources_by_id = {item.source_id: item for item in knowledge_sources}
+    claims_by_id = {item.claim_id: item for item in knowledge_claims}
+    evidence_by_id = {item.evidence_id: item for item in knowledge_evidence}
     routes_by_id = {item.id: item for item in routes}
     bindings_by_id = {item.binding_id: item for item in poi_bindings}
     stories_by_id = {item.story_id: item for item in story_blueprints}
@@ -186,6 +193,28 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
                 f"navigation access point {access_point.access_point_id} references "
                 f"missing anchor {access_point.anchor_id}"
             )
+
+    for locality in locality_identities:
+        if locality.anchor_id not in anchor_ids:
+            issues.append(
+                f"locality identity {locality.locality_identity_id} references missing "
+                f"anchor {locality.anchor_id}"
+            )
+        if locality.region_id not in region_ids:
+            issues.append(
+                f"locality identity {locality.locality_identity_id} references missing "
+                f"region {locality.region_id}"
+            )
+        _validate_locality_identity(
+            locality,
+            anchors_by_id,
+            region_ids,
+            parents,
+            claims_by_id,
+            evidence_by_id,
+            sources_by_id,
+            issues,
+        )
 
     for source in knowledge_sources:
         for region_id in source.region_ids:
@@ -280,6 +309,13 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
         ) is not None
         and source.verification_status is KnowledgeVerificationStatus.VERIFIED
         and evidence.claim_id in production_claim_ids
+    }
+    degraded_spatial_anchor_ids = {
+        locality.anchor_id
+        for locality in locality_identities
+        if locality.is_runtime_eligible
+        and locality.resolution_level.value
+        in {"verified_locality", "verified_township", "administrative_area"}
     }
 
     binding_identities: dict[tuple[str, str], set[str]] = {}
@@ -395,6 +431,8 @@ def validate_catalog(regions: list[Region], packages: list[ContentPackage]) -> N
                 bindings_by_id,
                 claim_ids,
                 production_claim_ids,
+                current_presence_claim_ids,
+                degraded_spatial_anchor_ids,
                 issues,
             )
         package_resource_source_ids = {
@@ -428,6 +466,7 @@ def _check_duplicate_ids(
     poi_bindings: list[ExternalPoiBinding],
     spatial_identities: list[AnchorCoordinateIdentity],
     navigation_access_points: list[NavigationAccessPoint],
+    locality_identities: list[AnchorLocalityIdentity],
     knowledge_sources: list[KnowledgeSource],
     knowledge_claims: list[KnowledgeClaim],
     knowledge_evidence: list[KnowledgeEvidence],
@@ -453,6 +492,10 @@ def _check_duplicate_ids(
             ("navigation_access_point", item.access_point_id)
             for item in navigation_access_points
         ]
+        + [
+            ("locality_identity", item.locality_identity_id)
+            for item in locality_identities
+        ]
         + [("knowledge_source", item.source_id) for item in knowledge_sources]
         + [("knowledge_claim", item.claim_id) for item in knowledge_claims]
         + [("knowledge_evidence", item.evidence_id) for item in knowledge_evidence]
@@ -473,6 +516,93 @@ def _check_duplicate_ids(
     for duplicate in sorted(item_id for item_id, count in counts.items() if count > 1):
         kinds = sorted(kind for kind, item_id in typed_items if item_id == duplicate)
         issues.append(f"duplicate id {duplicate} ({', '.join(kinds)})")
+
+
+def _validate_locality_identity(
+    locality: AnchorLocalityIdentity,
+    anchors_by_id: dict[str, Anchor],
+    region_ids: set[str],
+    parents: dict[str, str | None],
+    claims_by_id: dict[str, KnowledgeClaim],
+    evidence_by_id: dict[str, KnowledgeEvidence],
+    sources_by_id: dict[str, KnowledgeSource],
+    issues: list[str],
+) -> None:
+    identity_id = locality.locality_identity_id
+    if locality.administrative_path:
+        missing_regions = [
+            region_id
+            for region_id in locality.administrative_path
+            if region_id not in region_ids
+        ]
+        for region_id in missing_regions:
+            issues.append(
+                f"locality identity {identity_id} administrative path references "
+                f"missing region {region_id}"
+            )
+        if not missing_regions:
+            if locality.administrative_path[-1] != locality.region_id:
+                issues.append(
+                    f"locality identity {identity_id} administrative path must end "
+                    f"at region {locality.region_id}"
+                )
+            for parent_id, child_id in zip(
+                locality.administrative_path,
+                locality.administrative_path[1:],
+                strict=False,
+            ):
+                if parents.get(child_id) != parent_id:
+                    issues.append(
+                        f"locality identity {identity_id} has invalid administrative "
+                        f"path edge {parent_id} -> {child_id}"
+                    )
+
+    anchor = anchors_by_id.get(locality.anchor_id)
+    if (
+        anchor is not None
+        and locality.region_id in region_ids
+        and not is_same_or_descendant(locality.region_id, anchor.region_id, parents)
+    ):
+        issues.append(
+            f"locality identity {identity_id} region {locality.region_id} is "
+            f"incompatible with anchor region {anchor.region_id}"
+        )
+
+    for evidence_id in locality.relationship_evidence_ids:
+        evidence = evidence_by_id.get(evidence_id)
+        if evidence is None:
+            issues.append(
+                f"locality identity {identity_id} references missing relationship "
+                f"evidence {evidence_id}"
+            )
+            continue
+        claim = claims_by_id.get(evidence.claim_id)
+        source = sources_by_id.get(evidence.source_id)
+        if (
+            evidence.evidence_relation is not EvidenceRelation.SUPPORTS
+            or evidence.verification_status is not KnowledgeVerificationStatus.VERIFIED
+            or source is None
+            or source.verification_status is not KnowledgeVerificationStatus.VERIFIED
+            or claim is None
+            or claim.verification_status is not KnowledgeVerificationStatus.VERIFIED
+            or claim.promotion_policy.status.value
+            not in {"allowed", "allowed_with_qualification"}
+        ):
+            issues.append(
+                f"locality identity {identity_id} relationship evidence {evidence_id} "
+                "is not a verified supporting chain"
+            )
+            continue
+        if locality.anchor_id not in claim.anchor_ids:
+            issues.append(
+                f"locality identity {identity_id} relationship evidence {evidence_id} "
+                "does not support its anchor"
+            )
+        if locality.region_id not in claim.region_ids:
+            issues.append(
+                f"locality identity {identity_id} relationship evidence {evidence_id} "
+                "does not support its region"
+            )
 
 
 def _validate_local_resource(
@@ -791,6 +921,8 @@ def _validate_experience_activity(
     bindings_by_id: dict[str, ExternalPoiBinding],
     claim_ids: set[str],
     production_claim_ids: set[str],
+    current_presence_claim_ids: set[str],
+    degraded_spatial_anchor_ids: set[str],
     issues: list[str],
 ) -> None:
     if activity.experience_id not in package_experience_ids:
@@ -894,6 +1026,17 @@ def _validate_experience_activity(
                 "production eligible"
             )
     target = activity.observation_target
+    if set(activity.anchor_ids).intersection(degraded_spatial_anchor_ids) and (
+        target.target_mode
+        in {
+            ExperienceObservationTargetMode.VERIFIED_ENTITY,
+            ExperienceObservationTargetMode.SPECIFIC_CURRENT_OBSERVABLE,
+        }
+    ):
+        issues.append(
+            f"experience activity {activity.activity_id} cannot require an exact "
+            "observable at degraded locality resolution"
+        )
     if target.target_mode is ExperienceObservationTargetMode.VERIFIED_ENTITY:
         allowed_refs = set(activity.anchor_ids + activity.poi_binding_ids)
         if not set(target.entity_refs).issubset(allowed_refs):
@@ -976,6 +1119,20 @@ _UNSAFE_EXPERIENCE_MARKERS = (
     "采摘",
     "折树枝",
     "采集自然标本",
+    "闻未知植物",
+    "闻嗅未知植物",
+    "品尝未知植物",
+    "食用未知植物",
+    "食用野生植物",
+    "模仿尝百草",
+    "使用弓箭",
+    "拉弓射箭",
+    "使用弹弓",
+    "投掷石块",
+    "向高处投",
+    "向天空投",
+    "靠近崖边",
+    "站在崖边",
     "带走石块",
     "触摸文物",
     "攀爬文物",

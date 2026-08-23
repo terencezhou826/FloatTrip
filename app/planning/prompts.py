@@ -31,6 +31,9 @@ PLANNER_SYSTEM = (
     "   候选池若标记 mandatory identity，最终路线必须至少安排一次，并逐字段原样复制其"
     " spatial_identity_type、spatial_identity_id、curated_anchor_id、is_mandatory；"
     "Provider POI 还须复制 provider、external_poi_id；不得用名称近似项替代。\n"
+    "   若候选标记 resolution_level、placement_status、degraded、disclosure_text、"
+    "navigation_identity、navigation_reference 或 safety_constraints，也必须逐字段原样"
+    "复制；locality/degraded 地点只能描述为文化地点近域导航，不得声称精确到达文化地点本体。\n"
     "③ notes：一句话总结本轮主要改动。\n"
 
 )

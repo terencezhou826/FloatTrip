@@ -26,6 +26,53 @@
       "verification_method": "manual_review",
       "verified_at": "2026-08-21T22:19:34+08:00",
       "verification_note": "高德 Place Search v3 对发鸠山在长治市限定查询返回唯一候选‘发鸠山景区’，所属山西省长治市长子县，行政区、名称及风景名胜类型与 Catalog Anchor 一致；经人工审核确认作为该 Anchor 的高德运行时实体。"
+    },
+    {
+      "binding_id": "changzhi.binding.laodingshan.amap",
+      "anchor_id": "changzhi.anchor.laodingshan",
+      "provider": "amap",
+      "external_poi_id": "B016300684",
+      "external_name": "老顶山国家森林公园",
+      "verification_status": "verified",
+      "provider_region_code": "140403",
+      "provider_address": "001乡道北100米",
+      "metadata": {
+        "province": "山西省",
+        "city": "长治市",
+        "district": "潞州区",
+        "location": {"lng": 113.198477, "lat": 36.212623},
+        "entrance_location": {"lng": 113.170482, "lat": 36.197765},
+        "poi_type": "风景名胜;风景名胜;国家级景点",
+        "identity_source_ref": "changzhi.source.changzhi-laodingshan-2025",
+        "excluded_child_poi_ids": ["B0G2PMGL8R", "B01630MNG1", "B0FFGP8X8P"]
+      },
+      "verification_method": "manual_review",
+      "verified_at": "2026-08-23T07:16:42+08:00",
+      "verification_note": "高德 Place Detail v3 确认该 ID 为山西省长治市潞州区的老顶山国家森林公园，并将老顶山风景名胜区、神农古道景区和炎帝像列为其子 POI；长治市人民政府页面以“老顶山（国家森林公园）”呈现同一游览空间。人工审核据此选择父级公园实体，不以名称相似或子 POI 代替 Cultural Anchor。"
+    },
+    {
+      "binding_id": "changzhi.binding.laoyeshan.amap",
+      "anchor_id": "changzhi.anchor.laoyeshan",
+      "provider": "amap",
+      "external_poi_id": "B0FFG79UY3",
+      "external_name": "屯留老爷山风景区",
+      "verification_status": "verified",
+      "provider_region_code": "140405",
+      "provider_address": "上莲开发区695县道",
+      "metadata": {
+        "province": "山西省",
+        "city": "长治市",
+        "district": "屯留区",
+        "location": {"lng": 112.782065, "lat": 36.45506},
+        "entrance_location": {"lng": 112.788315, "lat": 36.449957},
+        "poi_type": "风景名胜;风景名胜;风景名胜",
+        "identity_source_ref": "changzhi.source.changzhi-laoyeshan-tourism-2025",
+        "excluded_separate_poi_ids": ["B01630N5Z0"],
+        "verified_child_poi_parent": "B0FFG79UY3"
+      },
+      "verification_method": "manual_review",
+      "verified_at": "2026-08-23T07:16:42+08:00",
+      "verification_note": "高德 Place Detail v3 确认该 ID 为山西省长治市屯留区的屯留老爷山风景区，多个老爷山八景和景区设施明确以其为父 POI；老爷山生态园为独立实体并排除。长治市人民政府资料以屯留区老爷山旅游风景区为统一景区实体，人工审核据此绑定 Cultural Anchor。"
     }
   ]
 }

@@ -1,0 +1,31 @@
+{
+  "blueprints": [
+    {
+      "experience_id": "changzhi.experience.nuwa-family",
+      "title": "女娲补天亲子文化体验",
+      "package_id": "shanxi.changzhi",
+      "region_id": "cn.shanxi.changzhi.shangdang",
+      "theme_id": "changzhi.nuwa",
+      "route_id": "changzhi.route.nuwa-tiantaishan",
+      "story_id": "changzhi.story.nuwa-tiantaishan",
+      "experience_type": "family",
+      "target_audiences": ["family", "child", "student", "culture"],
+      "experience_goal": "在公开可达的上郝村近域参考区域，通过安全的讲述、问答和家庭反思理解女娲补天神话及其地方文化叙事，同时保持文化地点与导航参考的边界。",
+      "activity_ids": [
+        "changzhi.experience.nuwa-family.activity.locality-boundary",
+        "changzhi.experience.nuwa-family.activity.disorder-question",
+        "changzhi.experience.nuwa-family.activity.repair-collaboration",
+        "changzhi.experience.nuwa-family.activity.restoration-reflection"
+      ],
+      "verification_status": "verified",
+      "enabled": true,
+      "version": "0.1.0",
+      "estimated_total_duration_sec": 600,
+      "media_slot_ids": [],
+      "metadata": {
+        "spatial_resolution": "verified_locality",
+        "location_disclosure_required": true
+      }
+    }
+  ]
+}

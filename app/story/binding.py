@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 import hashlib
 
-from app.catalog.models import PoiProvider, SpatialIdentityType
+from app.catalog.models import PoiProvider, SpatialIdentityType, SpatialResolutionLevel
 from app.catalog.repository import CatalogRepository
 from app.story.models import (
     ChapterBinding,
@@ -111,6 +111,10 @@ class StoryItineraryBinder:
                 )
                 resolved_spatial_ids: tuple[str, ...] = ()
                 placement_reason = "verified_provider_identity_match"
+                spatial_resolution = SpatialResolutionLevel.EXACT_PROVIDER_POI
+                spatial_degraded = False
+                location_disclosure = None
+                safety_context: tuple[str, ...] = ()
             else:
                 spatial_identity, stop_id = matched_spatial[0]
                 resolved_poi_ids = ()
@@ -119,7 +123,53 @@ class StoryItineraryBinder:
                     "verified_navigation_access_match"
                     if spatial_identity[0]
                     is SpatialIdentityType.NAVIGATION_ACCESS_POINT
-                    else "verified_cultural_coordinate_match"
+                    else (
+                        "verified_locality_match"
+                        if spatial_identity[0]
+                        in {
+                            SpatialIdentityType.VERIFIED_LOCALITY,
+                            SpatialIdentityType.VERIFIED_TOWNSHIP,
+                            SpatialIdentityType.ADMINISTRATIVE_AREA,
+                        }
+                        else "verified_cultural_coordinate_match"
+                    )
+                )
+                spatial_resolution = {
+                    SpatialIdentityType.VERIFIED_COORDINATE: (
+                        SpatialResolutionLevel.VERIFIED_COORDINATE
+                    ),
+                    SpatialIdentityType.NAVIGATION_ACCESS_POINT: (
+                        SpatialResolutionLevel.VERIFIED_ACCESS_POINT
+                    ),
+                    SpatialIdentityType.VERIFIED_LOCALITY: (
+                        SpatialResolutionLevel.VERIFIED_LOCALITY
+                    ),
+                    SpatialIdentityType.VERIFIED_TOWNSHIP: (
+                        SpatialResolutionLevel.VERIFIED_TOWNSHIP
+                    ),
+                    SpatialIdentityType.ADMINISTRATIVE_AREA: (
+                        SpatialResolutionLevel.ADMINISTRATIVE_AREA
+                    ),
+                }[spatial_identity[0]]
+                locality = next(
+                    (
+                        item
+                        for anchor_id in chapter.anchor_ids
+                        for item in self._repository.list_verified_locality_identities_for_anchor(
+                            anchor_id
+                        )
+                        if item.locality_identity_id == spatial_identity[1]
+                    ),
+                    None,
+                )
+                spatial_degraded = locality is not None
+                location_disclosure = (
+                    locality.disclosure_text if locality is not None else None
+                )
+                safety_context = (
+                    tuple(item.value for item in locality.safety_constraints)
+                    if locality is not None
+                    else ()
                 )
             placed_by_stop[stop_id].append(chapter.chapter_id)
             provisional.append(
@@ -133,6 +183,10 @@ class StoryItineraryBinder:
                     trigger_hint=StoryTriggerHint.ARRIVAL,
                     recommended_playback_duration=chapter.recommended_duration_sec,
                     placement_reason=placement_reason,
+                    spatial_resolution=spatial_resolution,
+                    spatial_degraded=spatial_degraded,
+                    location_disclosure=location_disclosure,
+                    safety_context=safety_context,
                 )
             )
 
@@ -230,6 +284,12 @@ class StoryItineraryBinder:
                     item.access_point_id,
                 )
                 for item in self._repository.list_verified_navigation_access_points_for_anchor(
+                    anchor_id
+                )
+            )
+            identities.extend(
+                (item.resolution_level_to_identity_type, item.locality_identity_id)
+                for item in self._repository.list_verified_locality_identities_for_anchor(
                     anchor_id
                 )
             )

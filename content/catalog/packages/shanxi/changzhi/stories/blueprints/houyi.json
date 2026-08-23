@@ -1,0 +1,34 @@
+{
+  "blueprints": [
+    {
+      "story_id": "changzhi.story.houyi-laoyeshan",
+      "title": "羿射九日·老爷山揽胜",
+      "package_id": "shanxi.changzhi",
+      "region_id": "cn.shanxi.changzhi.tunliu",
+      "theme_id": "changzhi.houyi",
+      "route_id": "changzhi.route.houyi-laoyeshan",
+      "story_type": "mythology",
+      "target_audiences": ["family", "student", "culture"],
+      "narrative_theme": "文本辨读、秩序与责任",
+      "narrative_goal": "从屯留老爷山真实景区身份出发，严格保留《淮南子》的羿与十日措辞，再与带有传说限定的老爷山地方叙事并置。",
+      "chapter_ids": [
+        "changzhi.story.houyi-laoyeshan.chapter.place",
+        "changzhi.story.houyi-laoyeshan.chapter.ten-suns",
+        "changzhi.story.houyi-laoyeshan.chapter.yi-action",
+        "changzhi.story.houyi-laoyeshan.chapter.local-legend"
+      ],
+      "knowledge_claim_ids": [
+        "changzhi.claim.laoyeshan-scenic-area-identity",
+        "changzhi.claim.huainanzi-ten-suns-appear",
+        "changzhi.claim.huainanzi-yi-shoots-ten-suns",
+        "changzhi.claim.laoyeshan-yi-official-narrative"
+      ],
+      "verification_status": "verified",
+      "enabled": true,
+      "version": "0.1.0",
+      "media_slot_ids": [],
+      "experience_slot_ids": [],
+      "metadata": {"curated_title_not_evidence": true}
+    }
+  ]
+}

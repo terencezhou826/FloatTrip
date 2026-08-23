@@ -79,6 +79,41 @@ def test_jingwei_golden_locks_identity_structure_safety_not_dynamic_text():
     }
 
 
+def test_nuwa_golden_locks_verified_locality_and_disclosure_contract():
+    golden = BenchmarkCorpus.load().get_golden("changzhi.route.nuwa-tiantaishan")
+
+    assert golden["mandatory_anchor_identity"] == {
+        "anchor_id": "changzhi.anchor.tiantaishan",
+        "spatial_identity_type": "verified_locality",
+        "spatial_identity_id": "changzhi.locality.tiantaishan.shanghao-village",
+        "resolution_level": "verified_locality",
+    }
+    assert len(golden["expected_chapter_ids"]) == 4
+    assert len(golden["expected_activity_ids"]) == 4
+    assert golden["capability_expectation"]["location_disclosure_required"] is True
+    assert golden["capability_expectation"]["exact_anchor_location_available"] is False
+    assert all(value == 0 for value in golden["safety_contract"].values())
+
+
+def test_houyi_golden_locks_parent_identity_text_boundary_and_safety():
+    golden = BenchmarkCorpus.load().get_golden("changzhi.route.houyi-laoyeshan")
+
+    assert golden["mandatory_anchor_identity"] == {
+        "anchor_id": "changzhi.anchor.laoyeshan",
+        "spatial_identity_type": "provider_poi",
+        "binding_id": "changzhi.binding.laoyeshan.amap",
+        "provider": "amap",
+        "external_poi_id": "B0FFG79UY3",
+    }
+    assert len(golden["expected_chapter_ids"]) == 4
+    assert len(golden["expected_activity_ids"]) == 4
+    assert {
+        "changzhi.claim.huainanzi-ten-suns-appear",
+        "changzhi.claim.huainanzi-yi-shoots-ten-suns",
+    }.issubset(golden["approved_claim_ids"])
+    assert all(value == 0 for value in golden["safety_contract"].values())
+
+
 def test_manifest_supports_multiple_route_golden_fixtures(tmp_path):
     source = ROOT / "benchmarks"
     shutil.copytree(source, tmp_path, dirs_exist_ok=True)
@@ -96,7 +131,7 @@ def test_manifest_supports_multiple_route_golden_fixtures(tmp_path):
 
     corpus = BenchmarkCorpus.load(tmp_path)
 
-    assert len(corpus.goldens) == 2
+    assert len(corpus.goldens) == len(manifest["golden_fixtures"])
     assert corpus.get_golden("example.route.second") is not None
     assert corpus.get_golden("missing.route") is None
 

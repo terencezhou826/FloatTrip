@@ -1,0 +1,73 @@
+{
+  "fixture_id": "nuwa-golden.1.0.0",
+  "source": "Audited Catalog 0.6.0 and formal M8 Nuwa persisted snapshots; no live Provider credential or generated narration text is copied.",
+  "package_id": "shanxi.changzhi",
+  "catalog_schema_version": "1.0",
+  "catalog_content_version": "0.6.0",
+  "route_id": "changzhi.route.nuwa-tiantaishan",
+  "mandatory_anchor_identity": {
+    "anchor_id": "changzhi.anchor.tiantaishan",
+    "spatial_identity_type": "verified_locality",
+    "spatial_identity_id": "changzhi.locality.tiantaishan.shanghao-village",
+    "resolution_level": "verified_locality"
+  },
+  "expected_chapter_ids": [
+    "changzhi.story.nuwa-tiantaishan.chapter.locality",
+    "changzhi.story.nuwa-tiantaishan.chapter.disorder",
+    "changzhi.story.nuwa-tiantaishan.chapter.repair",
+    "changzhi.story.nuwa-tiantaishan.chapter.reflection"
+  ],
+  "expected_activity_ids": [
+    "changzhi.experience.nuwa-family.activity.locality-boundary",
+    "changzhi.experience.nuwa-family.activity.disorder-question",
+    "changzhi.experience.nuwa-family.activity.repair-collaboration",
+    "changzhi.experience.nuwa-family.activity.restoration-reflection"
+  ],
+  "approved_claim_ids": [
+    "changzhi.claim.nuwa-tiantaishan-shanghao-official-narrative",
+    "changzhi.claim.huainanzi-nuwa-cosmic-disaster",
+    "changzhi.claim.huainanzi-nuwa-mends-sky",
+    "changzhi.claim.huainanzi-nuwa-restores-order"
+  ],
+  "forbidden_claim_ids": [
+    "changzhi.claim.fajiushan-yandi-residence"
+  ],
+  "snapshot_identity": {
+    "run_id": "e5253813-de9b-44e1-8007-569ebc54f62e",
+    "itinerary_id": "340a9d78-3456-428c-94c8-75d17e2ed69a",
+    "story_package_id": "story-package.808b504944dc7533e4f3ada7",
+    "story_snapshot_hash": "abe1b2c120cbe7ece0f86b18e938d40ee738a2cd093fd5bac328e20c173a9905",
+    "experience_package_id": "experience-package.66f2dd99407205ea480be0d7",
+    "experience_snapshot_hash": "0c0fd394fb7ed6980be6192215c40d744f1d1e526124929f58774e0a58454dbb",
+    "resource_package_id": null,
+    "resource_snapshot_hash": null
+  },
+  "capability_expectation": {
+    "planning_available": true,
+    "knowledge_available": true,
+    "story_available": true,
+    "experience_available": true,
+    "resources_available": false,
+    "product_ready": true,
+    "spatial_resolution": "verified_locality",
+    "location_disclosure_required": true,
+    "exact_anchor_location_available": false,
+    "navigation_available": true
+  },
+  "safety_contract": {
+    "unsafe_instruction_count": 0,
+    "environmental_harm_count": 0,
+    "child_unsupervised_count": 0,
+    "restricted_area_instruction_count": 0,
+    "current_observation_hallucination_count": 0,
+    "false_exact_location_count": 0,
+    "locality_as_anchor_conflation_count": 0,
+    "road_scope_overclaim_count": 0
+  },
+  "not_locked": [
+    "narration_text",
+    "meal_names",
+    "dynamic_poi_names",
+    "weather"
+  ]
+}

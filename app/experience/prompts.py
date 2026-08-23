@@ -26,7 +26,8 @@ EVIDENCE_SAFE_EXPERIENCE_SYSTEM = """你是证据与游客安全双重约束的�
 9. observation_target 必须逐字段复制 Activity.observation_target，不得省略或改换 target_mode；无外部目标时也必须显式输出 target_mode=none。
 10. verified_entity 必须保留 Catalog stable identity；visitor_selected_visible_object 只能让游客从当前已经能看到的对象中自行选择，并保留 observe-only、不可触摸/移动/采集/带走、正常游客区域、监护和可跳过约束；specific_current_observable 只能使用 Context 中明确提供且 production-eligible 的 current-presence Evidence。
 11. 不得要求攀爬、翻越、离开步道、进入水域/限制区域、靠近水边、穿越道路、危险自拍或奔跑竞赛。
-12. 不得采摘、折枝、采集、移动或带走自然物；不得接触、攀爬、刻画文物或设施；不得接触或投喂野生动物。
+12. 不得采摘、折枝、采集、移动或带走自然物；不得闻嗅、品尝或食用未知/野生植物，不得以现实行为模仿“尝百草”；不得接触、攀爬、刻画文物或设施；不得接触或投喂野生动物。
+12a. 不得使用弓箭、弹弓或任何投射武器，不得投掷石块或物品，不得向高处/天空投物，不得在崖边模拟射日。
 13. 儿童必须与同行成年人共同完成并保持在其视线内，不得单独或分头行动。
 14. 不得要求购买、工作人员、专用道具、GPS、AR、视频或动态 POI 才能完成。
 15. activity_id、title、estimated_duration_sec、visitor_output_type 必须逐字复制 Activity；generation_status=generated，warnings 为空。

@@ -358,6 +358,64 @@ def test_navigation_access_placement_keeps_cultural_anchor_identity(repository):
     assert placed.placement_reason == "verified_navigation_access_match"
 
 
+def _locality_repository(repository):
+    locality = repository.list_verified_locality_identities_for_anchor(
+        "changzhi.anchor.tiantaishan"
+    )[0].model_copy(update={"anchor_id": ANCHOR_ID})
+
+    class LocalityRepository:
+        def __getattr__(self, name):
+            return getattr(repository, name)
+
+        def get_poi_binding(self, _binding_id):
+            return None
+
+        def list_verified_bindings_for_anchor(self, _anchor_id):
+            return ()
+
+        def list_verified_spatial_identities_for_anchor(self, _anchor_id):
+            return ()
+
+        def list_verified_navigation_access_points_for_anchor(self, _anchor_id):
+            return ()
+
+        def list_verified_locality_identities_for_anchor(self, anchor_id):
+            return (locality,) if anchor_id == ANCHOR_ID else ()
+
+    return LocalityRepository(), locality
+
+
+def test_locality_binding_projects_precision_disclosure_and_safety(repository):
+    locality_repository, locality = _locality_repository(repository)
+    itinerary = _itinerary()
+    itinerary["days"][0]["timeline"][0].update(
+        provider=None,
+        external_poi_id=None,
+        name="Verified locality navigation reference",
+        spatial_identity_type="verified_locality",
+        spatial_identity_id=locality.locality_identity_id,
+    )
+
+    package = StoryItineraryBinder(locality_repository).bind(
+        _generated_story(repository),
+        StoryBindingRequest(
+            itinerary_id="itinerary-locality",
+            route_id=ROUTE_ID,
+            itinerary=itinerary,
+        ),
+    )
+    placed = package.chapter_bindings[0]
+
+    assert placed.resolved_poi_ids == ()
+    assert placed.resolved_spatial_identity_ids == (locality.locality_identity_id,)
+    assert placed.spatial_resolution.value == "verified_locality"
+    assert placed.spatial_degraded is True
+    assert placed.location_disclosure == locality.disclosure_text
+    assert set(placed.safety_context) == {
+        item.value for item in locality.safety_constraints
+    }
+
+
 def test_story_binding_core_has_no_regional_or_planning_special_cases():
     prohibited_tokens = {
         "changzhi",

@@ -277,7 +277,7 @@ class RuntimeApiTests(unittest.TestCase):
         context = run["request_snapshot"]["catalog_context"]
         self.assertEqual(context["package_id"], "shanxi.changzhi")
         self.assertEqual(context["schema_version"], "1.0")
-        self.assertEqual(context["content_version"], "0.3.0")
+        self.assertEqual(context["content_version"], "0.6.0")
         self.assertEqual(context["route_id"], "changzhi.route.jingwei-fajiushan")
 
         self.client.post(f"/api/runs/{run['id']}/cancel", headers=self.owner_headers)

@@ -1,0 +1,34 @@
+{
+  "blueprints": [
+    {
+      "story_id": "changzhi.story.shennong-laodingshan",
+      "title": "神农尝草·老顶山农耕溯源",
+      "package_id": "shanxi.changzhi",
+      "region_id": "cn.shanxi.changzhi.luzhou",
+      "theme_id": "changzhi.shennong",
+      "route_id": "changzhi.route.shennong-laodingshan",
+      "story_type": "mythology",
+      "target_audiences": ["family", "student", "culture"],
+      "narrative_theme": "辨识、劳作与责任",
+      "narrative_goal": "从老顶山游览空间的真实身份出发，区分古籍神农叙事与地方官方文化叙事，并把安全辨识和审慎行动作为当代策展反思。",
+      "chapter_ids": [
+        "changzhi.story.shennong-laodingshan.chapter.place",
+        "changzhi.story.shennong-laodingshan.chapter.five-grains",
+        "changzhi.story.shennong-laodingshan.chapter.taste-and-avoid",
+        "changzhi.story.shennong-laodingshan.chapter.local-memory"
+      ],
+      "knowledge_claim_ids": [
+        "changzhi.claim.laodingshan-forest-park-identity",
+        "changzhi.claim.huainanzi-shennong-five-grains",
+        "changzhi.claim.huainanzi-shennong-tastes-plants",
+        "changzhi.claim.laodingshan-shennong-official-narrative"
+      ],
+      "verification_status": "verified",
+      "enabled": true,
+      "version": "0.1.0",
+      "media_slot_ids": [],
+      "experience_slot_ids": [],
+      "metadata": {}
+    }
+  ]
+}

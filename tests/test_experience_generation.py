@@ -24,6 +24,7 @@ from app.experience import (
     RenderedExperienceActivity,
     ExperienceTone,
     ExperienceValidationError,
+    ExperienceValidationStatus,
     GeneratedExperienceActivity,
     GroundedExperienceFact,
     evidence_safe_experience_messages,
@@ -32,12 +33,25 @@ from app.experience import (
     validate_rendered_activity,
 )
 from app.knowledge.models import KnowledgeCitation
+from app.story import (
+    GeneratedStoryChapter,
+    GroundedStoryFact,
+    StoryGenerationRequest,
+    StoryGenerationService,
+    StoryGenerationStatus,
+)
 from tests.test_story_binding import _generated_story
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CATALOG_ROOT = PROJECT_ROOT / "content" / "catalog"
 EXPERIENCE_ID = "changzhi.experience.jingwei-family"
+NUWA_EXPERIENCE_ID = "changzhi.experience.nuwa-family"
+NUWA_STORY_ID = "changzhi.story.nuwa-tiantaishan"
+SHENNONG_EXPERIENCE_ID = "changzhi.experience.shennong-family"
+SHENNONG_STORY_ID = "changzhi.story.shennong-laodingshan"
+HOUYI_EXPERIENCE_ID = "changzhi.experience.houyi-family"
+HOUYI_STORY_ID = "changzhi.story.houyi-laoyeshan"
 
 
 class FakeStructuredLlm:
@@ -141,6 +155,52 @@ def _valid_activity(context) -> GeneratedExperienceActivity:
     )
 
 
+def _generated_story_for(repository, story_id):
+    builder = StoryGenerationService(repository)
+    contexts = [
+        builder.build_chapter_context(chapter.chapter_id)
+        for chapter in repository.list_story_chapters(story_id)
+    ]
+    return StoryGenerationService(
+        repository,
+        llm=FakeStructuredLlm(
+            [
+                GeneratedStoryChapter(
+                    chapter_id=context.chapter.chapter_id,
+                    title=context.chapter.title,
+                    opening_text=context.chapter.opening_hook,
+                    factual_content=tuple(
+                        GroundedStoryFact(
+                            text=hit.approved_wording or hit.statement,
+                            claim_id=hit.claim_id,
+                        )
+                        for hit in context.claim_hits
+                        if hit.claim_id in context.chapter.required_claim_ids
+                    ),
+                    transition_text=context.chapter.transition_goal,
+                    closing_text=context.chapter.visitor_takeaway,
+                    used_claim_ids=tuple(context.chapter.required_claim_ids),
+                    citations=tuple(
+                        _citation(hit)
+                        for hit in context.claim_hits
+                        if hit.claim_id in context.chapter.required_claim_ids
+                    ),
+                    qualifiers_used=tuple(
+                        hit.required_qualifier
+                        for hit in context.claim_hits
+                        if hit.claim_id in context.chapter.required_claim_ids
+                        and hit.required_qualifier
+                    ),
+                    visitor_takeaway=context.chapter.visitor_takeaway,
+                    generation_status=StoryGenerationStatus.GENERATED,
+                    warnings=(),
+                )
+                for context in contexts
+            ]
+        ),
+    ).generate(StoryGenerationRequest(story_id=story_id))
+
+
 def _contexts(service):
     return [
         service.build_activity_context(item.activity_id)
@@ -164,7 +224,7 @@ def test_context_contains_only_bound_story_and_claims(service):
     assert {hit.claim_id for hit in context.claim_hits} == set(
         context.activity.required_claim_ids + context.activity.optional_claim_ids
     )
-    assert context.package_version.content_version == "0.3.0"
+    assert context.package_version.content_version == "0.6.0"
     assert context.safety_policy.guardian_required
     assert not context.safety_policy.purchase_required
 
@@ -481,6 +541,107 @@ def test_full_draft_aggregates_five_activities(repository, story):
     assert package.validation_status.value == "passed"
     assert ExperiencePackageDraft.model_validate_json(package.model_dump_json()) == package
     assert all(item.grounding_metrics.grounding_coverage == 1.0 for item in package.activities)
+
+
+def test_nuwa_full_experience_passes_deterministic_grounding(repository):
+    story = _generated_story_for(repository, NUWA_STORY_ID)
+    builder = ExperienceGenerationService(repository, story)
+    contexts = [
+        builder.build_activity_context(activity.activity_id)
+        for activity in repository.list_activities(NUWA_EXPERIENCE_ID)
+    ]
+    responses = []
+    for context in contexts:
+        generated = _valid_activity(context).model_copy(
+            update={
+                "instruction": context.activity.instruction_intent,
+                "prompt": context.activity.experience_goal,
+            }
+        )
+        responses.append(generated)
+    package = ExperienceGenerationService(
+        repository,
+        story,
+        llm=FakeStructuredLlm(responses),
+    ).generate(ExperienceGenerationRequest(experience_id=NUWA_EXPERIENCE_ID))
+
+    assert len(package.activities) == 4
+    assert package.validation_status is ExperienceValidationStatus.PASSED
+    assert package.catalog_version.content_version == "0.6.0"
+    assert all(activity.observation_target.target_mode.value == "none" for activity in package.activities)
+    assert all(activity.grounding_metrics.grounding_coverage == 1.0 for activity in package.activities)
+
+
+def test_shennong_full_experience_is_grounded_and_plant_safe(repository):
+    story = _generated_story_for(repository, SHENNONG_STORY_ID)
+    builder = ExperienceGenerationService(repository, story)
+    contexts = [
+        builder.build_activity_context(activity.activity_id)
+        for activity in repository.list_activities(SHENNONG_EXPERIENCE_ID)
+    ]
+    responses = [
+        _valid_activity(context).model_copy(
+            update={
+                "instruction": context.activity.instruction_intent,
+                "prompt": "和家人说说你愿意遵守的安全约定。",
+            }
+        )
+        for context in contexts
+    ]
+    package = ExperienceGenerationService(
+        repository,
+        story,
+        llm=FakeStructuredLlm(responses),
+    ).generate(ExperienceGenerationRequest(experience_id=SHENNONG_EXPERIENCE_ID))
+
+    assert len(package.activities) == 4
+    assert package.validation_status is ExperienceValidationStatus.PASSED
+    assert all(
+        activity.grounding_metrics.grounding_coverage == 1.0
+        for activity in package.activities
+    )
+    assert all(
+        activity.grounding_metrics.environmental_harm_count == 0
+        for activity in package.activities
+    )
+    assert all(
+        activity.grounding_metrics.unsafe_instruction_count == 0
+        for activity in package.activities
+    )
+
+
+def test_houyi_full_experience_is_grounded_and_weapon_safe(repository):
+    story = _generated_story_for(repository, HOUYI_STORY_ID)
+    builder = ExperienceGenerationService(repository, story)
+    contexts = [
+        builder.build_activity_context(activity.activity_id)
+        for activity in repository.list_activities(HOUYI_EXPERIENCE_ID)
+    ]
+    responses = [
+        _valid_activity(context).model_copy(
+            update={
+                "instruction": context.activity.instruction_intent,
+                "prompt": "和家人说说文本与传说的表达边界。",
+            }
+        )
+        for context in contexts
+    ]
+    package = ExperienceGenerationService(
+        repository,
+        story,
+        llm=FakeStructuredLlm(responses),
+    ).generate(ExperienceGenerationRequest(experience_id=HOUYI_EXPERIENCE_ID))
+
+    assert len(package.activities) == 4
+    assert package.validation_status is ExperienceValidationStatus.PASSED
+    assert all(
+        activity.grounding_metrics.grounding_coverage == 1.0
+        for activity in package.activities
+    )
+    assert all(
+        activity.grounding_metrics.unsafe_instruction_count == 0
+        for activity in package.activities
+    )
 
 
 def test_generation_does_not_mutate_story_or_knowledge(repository, story):

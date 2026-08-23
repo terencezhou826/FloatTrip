@@ -65,6 +65,26 @@ class SpatialIdentityType(StrEnum):
     PROVIDER_POI = "provider_poi"
     VERIFIED_COORDINATE = "verified_coordinate"
     NAVIGATION_ACCESS_POINT = "navigation_access_point"
+    VERIFIED_LOCALITY = "verified_locality"
+    VERIFIED_TOWNSHIP = "verified_township"
+    ADMINISTRATIVE_AREA = "administrative_area"
+
+
+class SpatialResolutionLevel(StrEnum):
+    EXACT_PROVIDER_POI = "exact_provider_poi"
+    VERIFIED_COORDINATE = "verified_coordinate"
+    VERIFIED_ACCESS_POINT = "verified_access_point"
+    VERIFIED_LOCALITY = "verified_locality"
+    VERIFIED_TOWNSHIP = "verified_township"
+    ADMINISTRATIVE_AREA = "administrative_area"
+
+
+class SpatialPlacementStatus(StrEnum):
+    EXACTLY_PLACED = "exactly_placed"
+    ACCESS_PLACED = "access_placed"
+    LOCALITY_PLACED = "locality_placed"
+    TOWNSHIP_PLACED = "township_placed"
+    ADMINISTRATIVE_ONLY = "administrative_only"
 
 
 class SpatialVerificationStatus(StrEnum):
@@ -75,6 +95,8 @@ class SpatialVerificationStatus(StrEnum):
 
 class SpatialVerificationMethod(StrEnum):
     MANUAL_MAP_REVIEW = "manual_map_review"
+    PROVIDER_GEOCODE = "provider_geocode"
+    PROVIDER_EXACT_ID = "provider_exact_id"
     OFFICIAL_SOURCE = "official_source"
     FIELD_SURVEY = "field_survey"
     AUTHORITATIVE_GIS = "authoritative_gis"
@@ -101,6 +123,25 @@ class NavigationAccessType(StrEnum):
     ROADSIDE_ACCESS = "roadside_access"
     GENERAL_ACCESS = "general_access"
     OTHER = "other"
+
+
+class LocalityType(StrEnum):
+    VILLAGE = "village"
+    COMMUNITY = "community"
+    TOWNSHIP = "township"
+    NEIGHBORHOOD = "neighborhood"
+    SCENIC_AREA = "scenic_area"
+    ADMINISTRATIVE_AREA = "administrative_area"
+    OTHER = "other"
+
+
+class LocalitySafetyConstraint(StrEnum):
+    PUBLIC_REFERENCE_ONLY = "public_reference_only"
+    FOLLOW_PUBLIC_GUIDANCE = "follow_public_guidance"
+    NO_PRIVATE_LAND = "no_private_land"
+    NO_FARMLAND_ENTRY = "no_farmland_entry"
+    NO_RESTRICTED_AREA = "no_restricted_area"
+    NO_DANGEROUS_TERRAIN = "no_dangerous_terrain"
 
 
 class LocalResourceType(StrEnum):
@@ -343,6 +384,11 @@ class ExperienceProhibitedAction(StrEnum):
     PICK_PLANTS = "pick_plants"
     COLLECT_NATURAL_SPECIMENS = "collect_natural_specimens"
     REMOVE_NATURAL_OBJECTS = "remove_natural_objects"
+    SMELL_UNKNOWN_PLANTS = "smell_unknown_plants"
+    CONSUME_UNKNOWN_PLANTS = "consume_unknown_plants"
+    USE_PROJECTILE_WEAPON = "use_projectile_weapon"
+    THROW_PROJECTILE = "throw_projectile"
+    APPROACH_CLIFF_EDGE = "approach_cliff_edge"
     TOUCH_OR_CLIMB_CULTURAL_PROPERTY = "touch_or_climb_cultural_property"
     WRITE_ON_CULTURAL_PROPERTY = "write_on_cultural_property"
     MOVE_SITE_FACILITIES = "move_site_facilities"
@@ -624,6 +670,96 @@ class NavigationAccessPoint(CatalogModel):
     @property
     def is_runtime_eligible(self) -> bool:
         return self.verification_status is SpatialVerificationStatus.VERIFIED
+
+
+class LocalityNavigationReference(CatalogModel):
+    provider: PoiProvider
+    external_poi_id: str = Field(min_length=1, max_length=256)
+    name: str = Field(min_length=1, max_length=256)
+    location: SpatialCoordinates
+    provider_region_code: str | None = Field(default=None, min_length=1, max_length=64)
+    address: str | None = Field(default=None, min_length=1, max_length=500)
+    publicly_navigable: StrictBool
+    safety_reviewed: StrictBool
+    note: str = Field(min_length=1, max_length=1000)
+
+
+class AnchorLocalityIdentity(CatalogModel):
+    locality_identity_id: StableId
+    anchor_id: StableId
+    region_id: StableId
+    locality_name: str = Field(min_length=1, max_length=256)
+    locality_type: LocalityType
+    provider: PoiProvider
+    external_id: str | None = Field(default=None, min_length=1, max_length=256)
+    location: SpatialCoordinates
+    verification_status: SpatialVerificationStatus
+    verification_method: SpatialVerificationMethod | None = None
+    verified_at: datetime | None = None
+    provenance: tuple[SpatialVerificationProvenance, ...] = ()
+    source_reference: str | None = Field(default=None, min_length=1, max_length=2048)
+    administrative_path: tuple[StableId, ...] = ()
+    accuracy: SpatialAccuracy | None = None
+    confidence: SpatialConfidence | None = None
+    verification_note: str | None = Field(default=None, min_length=1, max_length=1000)
+    relationship_evidence_ids: tuple[StableId, ...] = ()
+    navigation_reference: LocalityNavigationReference | None = None
+    disclosure_text: str | None = Field(default=None, min_length=1, max_length=1000)
+    safety_constraints: tuple[LocalitySafetyConstraint, ...] = ()
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_locality_identity(self) -> "AnchorLocalityIdentity":
+        if self.verification_status is SpatialVerificationStatus.VERIFIED:
+            missing = [
+                name
+                for name, value in (
+                    ("verification_method", self.verification_method),
+                    ("verified_at", self.verified_at),
+                    ("provenance", self.provenance),
+                    ("source_reference", self.source_reference),
+                    ("administrative_path", self.administrative_path),
+                    ("accuracy", self.accuracy),
+                    ("confidence", self.confidence),
+                    ("verification_note", self.verification_note),
+                    ("relationship_evidence_ids", self.relationship_evidence_ids),
+                    ("navigation_reference", self.navigation_reference),
+                    ("disclosure_text", self.disclosure_text),
+                    ("safety_constraints", self.safety_constraints),
+                )
+                if not value
+            ]
+            if missing:
+                raise ValueError(
+                    "verified locality identities require " + ", ".join(missing)
+                )
+            if not self.navigation_reference.publicly_navigable:
+                raise ValueError("verified locality navigation reference must be public")
+            if not self.navigation_reference.safety_reviewed:
+                raise ValueError(
+                    "verified locality navigation reference requires safety review"
+                )
+        return self
+
+    @property
+    def is_runtime_eligible(self) -> bool:
+        return self.verification_status is SpatialVerificationStatus.VERIFIED
+
+    @property
+    def resolution_level(self) -> SpatialResolutionLevel:
+        if self.locality_type is LocalityType.TOWNSHIP:
+            return SpatialResolutionLevel.VERIFIED_TOWNSHIP
+        if self.locality_type is LocalityType.ADMINISTRATIVE_AREA:
+            return SpatialResolutionLevel.ADMINISTRATIVE_AREA
+        return SpatialResolutionLevel.VERIFIED_LOCALITY
+
+    @property
+    def resolution_level_to_identity_type(self) -> SpatialIdentityType:
+        return {
+            SpatialResolutionLevel.VERIFIED_LOCALITY: SpatialIdentityType.VERIFIED_LOCALITY,
+            SpatialResolutionLevel.VERIFIED_TOWNSHIP: SpatialIdentityType.VERIFIED_TOWNSHIP,
+            SpatialResolutionLevel.ADMINISTRATIVE_AREA: SpatialIdentityType.ADMINISTRATIVE_AREA,
+        }[self.resolution_level]
 
 
 class ResourceProviderBinding(CatalogModel):
@@ -1108,6 +1244,7 @@ class ContentPackage(CatalogModel):
     poi_bindings: list[ExternalPoiBinding] = Field(default_factory=list)
     spatial_identities: list[AnchorCoordinateIdentity] = Field(default_factory=list)
     navigation_access_points: list[NavigationAccessPoint] = Field(default_factory=list)
+    locality_identities: list[AnchorLocalityIdentity] = Field(default_factory=list)
     knowledge_sources: list[KnowledgeSource] = Field(default_factory=list)
     knowledge_claims: list[KnowledgeClaim] = Field(default_factory=list)
     knowledge_evidence: list[KnowledgeEvidence] = Field(default_factory=list)

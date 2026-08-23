@@ -1,0 +1,188 @@
+{
+  "activities": [
+    {
+      "activity_id": "changzhi.experience.nuwa-family.activity.locality-boundary",
+      "experience_id": "changzhi.experience.nuwa-family",
+      "sequence": 0,
+      "title": "先说清我们在哪里",
+      "activity_type": "context",
+      "content_mode": "knowledge_grounded",
+      "story_chapter_ids": ["changzhi.story.nuwa-tiantaishan.chapter.locality"],
+      "anchor_ids": ["changzhi.anchor.tiantaishan"],
+      "poi_binding_ids": [],
+      "required_claim_ids": ["changzhi.claim.nuwa-tiantaishan-shanghao-official-narrative"],
+      "optional_claim_ids": [],
+      "experience_goal": "帮助家庭理解地方文化叙事、文化地点本体和近域导航参考之间的区别。",
+      "instruction_intent": "在公开可达的村域参考区域原地听取说明，由同行成年人和儿童一起复述：这里是与天台山文化叙事相关的上郝村近域导航参考，并非已经确认到达天台山本体。",
+      "observation_target": {
+        "target_mode": "none",
+        "target_text": null,
+        "entity_refs": [],
+        "supporting_claim_ids": [],
+        "interaction_mode": "none",
+        "selection_rule": null,
+        "safety_constraints": []
+      },
+      "visitor_output_type": "spoken_response",
+      "estimated_duration_sec": 120,
+      "audience_tags": ["family", "child", "student", "culture"],
+      "requires_guardian": true,
+      "weather_sensitive": false,
+      "risk_level": "low",
+      "safety_constraints": [
+        "仅在公开可达的村域参考区域停留。",
+        "如无法确认公开安全路径，在村域参考区域完成体验。"
+      ],
+      "prohibited_actions": [
+        "leave_official_path",
+        "enter_restricted_area",
+        "cross_barrier",
+        "child_unsupervised",
+        "child_out_of_sight"
+      ],
+      "materials_required": [],
+      "requires_purchase": false,
+      "requires_staff": false,
+      "media_slot_ids": [],
+      "content_status": "verified",
+      "metadata": {"spatial_degraded": true}
+    },
+    {
+      "activity_id": "changzhi.experience.nuwa-family.activity.disorder-question",
+      "experience_id": "changzhi.experience.nuwa-family",
+      "sequence": 1,
+      "title": "失序世界的线索",
+      "activity_type": "question",
+      "content_mode": "knowledge_grounded",
+      "story_chapter_ids": ["changzhi.story.nuwa-tiantaishan.chapter.disorder"],
+      "anchor_ids": ["changzhi.anchor.tiantaishan"],
+      "poi_binding_ids": [],
+      "required_claim_ids": ["changzhi.claim.huainanzi-nuwa-cosmic-disaster"],
+      "optional_claim_ids": [],
+      "experience_goal": "通过家庭问答理解古籍神话中的失序情境，不把它解释为现场现实。",
+      "instruction_intent": "根据刚才讲述的古籍神话内容，家庭成员轮流说出一个失序线索，并说明这是文本中的神话情境，不需要寻找任何现场对应物。",
+      "observation_target": {
+        "target_mode": "none",
+        "target_text": null,
+        "entity_refs": [],
+        "supporting_claim_ids": [],
+        "interaction_mode": "none",
+        "selection_rule": null,
+        "safety_constraints": []
+      },
+      "visitor_output_type": "spoken_response",
+      "estimated_duration_sec": 150,
+      "audience_tags": ["family", "child", "student", "culture"],
+      "requires_guardian": true,
+      "weather_sensitive": false,
+      "risk_level": "low",
+      "safety_constraints": [
+        "只使用已讲述的古籍神话内容。",
+        "活动原地完成，不以寻找地形或现场物体为目标。"
+      ],
+      "prohibited_actions": [
+        "leave_official_path",
+        "enter_restricted_area",
+        "child_unsupervised",
+        "child_out_of_sight"
+      ],
+      "materials_required": [],
+      "requires_purchase": false,
+      "requires_staff": false,
+      "media_slot_ids": [],
+      "content_status": "verified",
+      "metadata": {"spatial_degraded": true}
+    },
+    {
+      "activity_id": "changzhi.experience.nuwa-family.activity.repair-collaboration",
+      "experience_id": "changzhi.experience.nuwa-family",
+      "sequence": 2,
+      "title": "修补需要什么",
+      "activity_type": "family_collaboration",
+      "content_mode": "knowledge_grounded",
+      "story_chapter_ids": ["changzhi.story.nuwa-tiantaishan.chapter.repair"],
+      "anchor_ids": ["changzhi.anchor.tiantaishan"],
+      "poi_binding_ids": [],
+      "required_claim_ids": ["changzhi.claim.huainanzi-nuwa-mends-sky"],
+      "optional_claim_ids": [],
+      "experience_goal": "在保持神话属性的前提下，让家庭讨论修补行动中的分工与协作。",
+      "instruction_intent": "先回顾古籍神话中的补天行动，再由家庭成员各自说出一种面对破损时可以承担的协作角色；不把讨论内容说成古籍原意。",
+      "observation_target": {
+        "target_mode": "none",
+        "target_text": null,
+        "entity_refs": [],
+        "supporting_claim_ids": [],
+        "interaction_mode": "none",
+        "selection_rule": null,
+        "safety_constraints": []
+      },
+      "visitor_output_type": "spoken_response",
+      "estimated_duration_sec": 180,
+      "audience_tags": ["family", "child", "student", "culture"],
+      "requires_guardian": true,
+      "weather_sensitive": false,
+      "risk_level": "low",
+      "safety_constraints": [
+        "活动在公开可达区域原地完成。",
+        "儿童与同行成年人共同参与。"
+      ],
+      "prohibited_actions": [
+        "leave_official_path",
+        "enter_restricted_area",
+        "child_unsupervised",
+        "child_out_of_sight"
+      ],
+      "materials_required": [],
+      "requires_purchase": false,
+      "requires_staff": false,
+      "media_slot_ids": [],
+      "content_status": "verified",
+      "metadata": {"spatial_degraded": true}
+    },
+    {
+      "activity_id": "changzhi.experience.nuwa-family.activity.restoration-reflection",
+      "experience_id": "changzhi.experience.nuwa-family",
+      "sequence": 3,
+      "title": "带回今天的修复约定",
+      "activity_type": "reflection",
+      "content_mode": "knowledge_grounded",
+      "story_chapter_ids": ["changzhi.story.nuwa-tiantaishan.chapter.reflection"],
+      "anchor_ids": [],
+      "poi_binding_ids": [],
+      "required_claim_ids": ["changzhi.claim.huainanzi-nuwa-restores-order"],
+      "optional_claim_ids": [],
+      "experience_goal": "以古籍神话中的秩序恢复收束体验，并形成家庭自己的修复与守护约定。",
+      "instruction_intent": "回顾神话叙事中的秩序恢复，再由家庭共同说出一件回到日常后愿意修复或守护的小事，并明确这是今天的个人反思。",
+      "observation_target": {
+        "target_mode": "none",
+        "target_text": null,
+        "entity_refs": [],
+        "supporting_claim_ids": [],
+        "interaction_mode": "none",
+        "selection_rule": null,
+        "safety_constraints": []
+      },
+      "visitor_output_type": "spoken_response",
+      "estimated_duration_sec": 150,
+      "audience_tags": ["family", "child", "student", "culture"],
+      "requires_guardian": true,
+      "weather_sensitive": false,
+      "risk_level": "low",
+      "safety_constraints": [
+        "可在休息或离场后完成，不需要额外移动。",
+        "儿童与同行成年人共同完成。"
+      ],
+      "prohibited_actions": [
+        "child_unsupervised",
+        "child_out_of_sight",
+        "required_purchase"
+      ],
+      "materials_required": [],
+      "requires_purchase": false,
+      "requires_staff": false,
+      "media_slot_ids": [],
+      "content_status": "verified",
+      "metadata": {"spatial_degraded": true}
+    }
+  ]
+}

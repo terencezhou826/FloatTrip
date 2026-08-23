@@ -29,6 +29,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CATALOG_ROOT = PROJECT_ROOT / "content" / "catalog"
 PACKAGE_ROOT = Path("packages") / "shanxi" / "changzhi"
 EXPERIENCE_ID = "changzhi.experience.jingwei-family"
+NUWA_EXPERIENCE_ID = "changzhi.experience.nuwa-family"
+SHENNONG_EXPERIENCE_ID = "changzhi.experience.shennong-family"
+HOUYI_EXPERIENCE_ID = "changzhi.experience.houyi-family"
 STORY_ID = "changzhi.story.jingwei-fajiushan"
 INTERNAL_CLAIM_ID = "changzhi.claim.fajiushan-yandi-residence"
 
@@ -106,18 +109,99 @@ def test_global_safety_policy_covers_all_controlled_prohibitions():
     assert PRODUCTION_EXPERIENCE_PROHIBITED_ACTIONS == frozenset(
         ExperienceProhibitedAction
     )
-    assert len(PRODUCTION_EXPERIENCE_PROHIBITED_ACTIONS) == 20
+    assert len(PRODUCTION_EXPERIENCE_PROHIBITED_ACTIONS) == 25
 
 
 def test_jingwei_experience_and_five_activities_load(catalog):
     experiences = catalog.list_experiences()
     activities = catalog.list_activities(EXPERIENCE_ID)
 
-    assert len(experiences) == 1
-    assert experiences[0].experience_id == EXPERIENCE_ID
-    assert experiences[0].experience_type is ExperienceType.FAMILY
+    assert [experience.experience_id for experience in experiences] == [
+        HOUYI_EXPERIENCE_ID,
+        EXPERIENCE_ID,
+        NUWA_EXPERIENCE_ID,
+        SHENNONG_EXPERIENCE_ID,
+    ]
+    assert catalog.get_experience(EXPERIENCE_ID).experience_type is ExperienceType.FAMILY
     assert len(activities) == 5
     assert [item.sequence for item in activities] == list(range(5))
+
+
+def test_nuwa_locality_experience_is_safe_and_observation_independent(catalog):
+    activities = catalog.list_activities(NUWA_EXPERIENCE_ID)
+
+    assert [item.sequence for item in activities] == list(range(4))
+    assert all(item.observation_target.target_mode.value == "none" for item in activities)
+    assert all(item.poi_binding_ids == [] for item in activities)
+    assert all(item.risk_level is ExperienceRiskLevel.LOW for item in activities)
+    assert all(item.requires_guardian for item in activities)
+    assert all(not item.requires_purchase for item in activities)
+    assert all(not item.requires_staff for item in activities)
+
+
+def test_nuwa_activity_claims_are_isolated_to_bound_story_chapters(catalog):
+    activities = catalog.list_activities(NUWA_EXPERIENCE_ID)
+    expected_claim_ids = [
+        "changzhi.claim.nuwa-tiantaishan-shanghao-official-narrative",
+        "changzhi.claim.huainanzi-nuwa-cosmic-disaster",
+        "changzhi.claim.huainanzi-nuwa-mends-sky",
+        "changzhi.claim.huainanzi-nuwa-restores-order",
+    ]
+
+    assert [item.required_claim_ids for item in activities] == [
+        [claim_id] for claim_id in expected_claim_ids
+    ]
+    assert all(catalog.is_claim_production_eligible(claim_id) for claim_id in expected_claim_ids)
+    for activity in activities:
+        assert {ExperienceProhibitedAction.CHILD_UNSUPERVISED,
+                ExperienceProhibitedAction.CHILD_OUT_OF_SIGHT}.issubset(
+            activity.prohibited_actions
+        )
+
+
+def test_shennong_experience_is_plant_safe_and_claim_grounded(catalog):
+    activities = catalog.list_activities(SHENNONG_EXPERIENCE_ID)
+
+    assert [activity.sequence for activity in activities] == list(range(4))
+    assert all(activity.requires_guardian for activity in activities)
+    assert all(not activity.requires_purchase for activity in activities)
+    assert all(not activity.requires_staff for activity in activities)
+    plant_activity = next(
+        item for item in activities if item.activity_id.endswith("plant-safety")
+    )
+    assert plant_activity.observation_target.target_mode.value == "none"
+    assert {
+        ExperienceProhibitedAction.PICK_PLANTS,
+        ExperienceProhibitedAction.COLLECT_NATURAL_SPECIMENS,
+        ExperienceProhibitedAction.REMOVE_NATURAL_OBJECTS,
+        ExperienceProhibitedAction.SMELL_UNKNOWN_PLANTS,
+        ExperienceProhibitedAction.CONSUME_UNKNOWN_PLANTS,
+    }.issubset(plant_activity.prohibited_actions)
+    assert all(
+        catalog.is_claim_production_eligible(claim_id)
+        for activity in activities
+        for claim_id in activity.required_claim_ids
+    )
+
+
+def test_houyi_experience_prohibits_weapons_projectiles_and_cliff_risk(catalog):
+    activities = catalog.list_activities(HOUYI_EXPERIENCE_ID)
+    required = {
+        ExperienceProhibitedAction.USE_PROJECTILE_WEAPON,
+        ExperienceProhibitedAction.THROW_PROJECTILE,
+        ExperienceProhibitedAction.APPROACH_CLIFF_EDGE,
+    }
+
+    assert [activity.sequence for activity in activities] == list(range(4))
+    assert all(required.issubset(activity.prohibited_actions) for activity in activities)
+    assert all(activity.requires_guardian for activity in activities)
+    assert all(not activity.requires_purchase for activity in activities)
+    assert all(not activity.requires_staff for activity in activities)
+    assert all(
+        catalog.is_claim_production_eligible(claim_id)
+        for activity in activities
+        for claim_id in activity.required_claim_ids
+    )
 
 
 def test_experience_and_activity_round_trip_and_freezing(catalog):

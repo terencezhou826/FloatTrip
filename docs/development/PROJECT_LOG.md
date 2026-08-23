@@ -1,6 +1,58 @@
 # Project Log
 
-## 2026-08-22 22:55:38 +08:00 - M8B-0 generic spatial identity hard gate passed
+## Current status - M8 COMPLETE
+
+- Reconciled at 2026-08-23 11:01:21 +08:00. Catalog content version is `0.6.0`.
+- Jingwei, Nuwa, Shennong, and Houyi are READY. Nuwa's final route is `changzhi.route.nuwa-tiantaishan` in Shangdang District, with the Cultural Anchor at Shanghao Village Tiantai Mountain.
+- Nuwa is `VERIFIED_LOCALITY` / `LOCALITY_PLACED` and requires location disclosure. Shanghao Village Committee `amap/B0H1P64PGR` is only a navigation reference; it is not Tiantai Mountain. The exact Cultural Anchor location is unknown/unavailable.
+- Final gates: offline benchmark 173/173 PASS; full Python 772 passed plus 18 subtests; frontend 32 passed; browser smoke PASS; Hard FAIL 0; cross-route leakage 0; production business hardcoding 0.
+- Next action is review and an independent M8 Git checkpoint. M9 AI Video / Short Drama Engine requires separate approval.
+
+## 2026-08-23 00:59:50 +08:00 - OBSOLETE INTERMEDIATE ASSUMPTION: M8 stopped at Nuwa-Tiantai'an cultural relation gate
+
+This section records an intermediate user correction that temporarily identified Tiantai'an as the intended target. The user later explicitly corrected it: the final Nuwa target remains Shanghao Village Tiantai Mountain in Shangdang District. This section is historical only and defines no current blocker or action.
+
+- Correction and compatibility audit:
+  - At this intermediate point, user input temporarily identified `天台庵` in Pingshun County as the intended target instead of `上党区上郝村天台山`. This assumption was later explicitly corrected and is obsolete.
+  - Audited the obsolete `changzhi.route.nuwa-tiantaishan` and `changzhi.anchor.tiantaishan` IDs across Catalog, tests, readiness data, Runtime SQLite, and LangGraph checkpoints. Nuwa was never READY and no persisted Run or package snapshot uses those IDs, so the compatibility result is case A.
+  - Deleted the uncommitted `docs/rollout/reviews/TIANTAISHAN_SPATIAL_REVIEW.md`; it was produced solely for the corrected-away Tiantaishan rollout and must not participate in formal Nuwa content.
+- Spatial and place identity gates:
+  - Amap Place Detail v3 returned exactly one live `B01630MK7K` record named `天台庵`, at `113.405178,36.383467`, in Pingshun County (`140425`), type `风景名胜;风景名胜;寺庙道观`; exact identity passed.
+  - Shanxi Provincial Government page `探秘山西 中国仅存的四大唐代木结构建筑之三平顺天台庵` (published 2021-08-05) places Tiantai'an at Wangqu Village, Beidanche Township, Pingshun County and identifies it as a temple/cultural relic. Provider and official geography agree.
+- Cultural relation HARD GATE:
+  - `太行山水线路` (Shanxi Provincial Government, 2018-01-26) mentions Nuwa only in a broad Taihang-mythology paragraph and lists Pingshun Tiantai'an later in a separate route field. This is regional co-occurrence, not a Nuwa-to-Tiantai'an relation.
+  - `来长治避暑 享一夏清凉` (Shanxi Provincial Government, source shown as Shanxi Daily, 2025-07-18) likewise discusses Nuwa in a general Changzhi-mythology paragraph and Tiantai'an in the following ancient-architecture paragraph. It does not connect them.
+  - `登临太行之巅 品味上党文化` (Shanxi Provincial Government, source shown as Shanxi Daily, 2024-11-22) explicitly states `女娲的故事就发端于今长治市的上党区上郝村天台山上`; it names the distinct, corrected-away Tiantaishan location and does not mention Tiantai'an as the Nuwa site.
+  - A focused exact-term search found no government, gazetteer, heritage institution, research institution, or peer-reviewed source directly establishing `女娲 ↔ 天台庵`. The required cultural relation is therefore unverified.
+- Commands and results in this M8 master phase:
+  - `git diff --check`: passed at the starting and stopping audits.
+  - `python -m app.evaluation --offline`: Jingwei benchmark 153/153 passed.
+  - Focused Spatial/Catalog/Planning/Knowledge/Story/Experience/Resources/Product/Evaluation regression: 574 passed with four existing FastAPI warnings.
+  - Read-only SQLite audits found 4 Runs, 3 itineraries, 49 Runtime events, 423 LangGraph checkpoints, 1714 checkpoint writes, and zero obsolete Nuwa ID matches.
+- Stop status and boundary:
+  - Historical status at that time: `STOPPED_AT_M8B`; first failed gate was `M8B.5 女娲 ↔ 天台庵文化关联 Gate`. This stop was superseded by the corrected target and completed M8 rollout.
+  - No Catalog migration, ExternalPoiBinding, Nuwa Knowledge, Story, Experience, Planning, M8C, M8D, or M8E work was executed.
+  - Historical next action at that time was human review of a direct cultural source. It is no longer active because Tiantai'an is not the final route target.
+
+## 2026-08-23 00:16:14 +08:00 - HISTORICAL, SUPERSEDED: M8B-2 Tiantaishan human spatial review packet
+
+This was a pre-fallback review stage. It was later superseded by the approved verified-locality policy and the completed Nuwa rollout; it is not a current blocker.
+
+- Added `docs/rollout/reviews/TIANTAISHAN_SPATIAL_REVIEW.md` as a human-review-only packet. It records the live Amap Shanghao Village Committee POI `B0H1P64PGR`, its exact-detail coordinates and returned entrance, the separate village-level geocode, administrative cross-checks, identity boundaries, ten review questions, and empty Cultural-coordinate/Navigation-access candidate templates.
+- Reopened and inspected the Shanxi Provincial Government page `登临太行之巅 品味上党文化` (2024-11-22 16:20, source shown as Shanxi Daily). The exact cited sentence connects the Nuwa story with `长治市的上党区上郝村天台山上` but supplies no coordinate, entrance, access, or safety evidence.
+- The reviewed official page does not contain `上郝村西北` or `无影堆`. Focused exact-term searches did not yield a verifiable authoritative page before the government-domain search reached a CAPTCHA, which was not solved or bypassed. Both descriptions remain pending source corroboration and cannot narrow coordinates.
+- Files modified in this phase: the new review packet and canonical development tracking only. No Catalog, Planning, Knowledge, Story, Experience, Runtime, or test file changed; no automated tests were required for this documentation-only phase.
+- Historical status at that time: Tiantaishan lacked a human-approved exact Cultural coordinate or access point. The later verified-locality policy resolved production readiness without claiming an exact coordinate; Nuwa is now READY with disclosure.
+
+## 2026-08-22 23:17:55 +08:00 - M8 starting sanity gate passed
+
+- Verified clean starting checkpoint `8e34ec3cede9105fb4ceaa2e3ac30694abd6bd54`; required M8B-0 checkpoints `0553e66` and `8e34ec3` are in HEAD history, and the initial `git diff --check` passed.
+- Ran `python -m app.evaluation --offline`: Jingwei remained 153/153 PASS. Unified readiness remained data-driven: Jingwei READY; Nuwa, Shennong, and Houyi COMING_SOON with their route-scoped production prerequisites still missing.
+- Ran the focused Spatial Identity, Mandatory Spatial, Catalog, Knowledge, Story, Experience, Planning, Product, and Evaluation regression selection: 515 passed with four existing FastAPI lifespan deprecation warnings.
+- The first focused pytest attempt was invalidated by `PermissionError: [WinError 5]` at the inaccessible Windows system pytest temp root. Rerunning the unchanged selection with workspace-local `--basetemp=.pytest_tmp_m8_sanity` passed; no business regression or code fix was involved.
+- Files modified in this phase: canonical development tracking only. No M8B Catalog content, Knowledge, Story, Experience, Planning, Runtime, Product, spatial record, or production code was changed. M8B/M8C/M8D/M8E were not executed.
+
+## 2026-08-22 22:55:38 +08:00 - HISTORICAL, SUPERSEDED: M8B-0 generic spatial identity hard gate passed
 
 - Added route-neutral Catalog collections for verified Cultural Anchor coordinates and navigation access points. Verified runtime records require controlled status/method, ISO timestamp, source reference, provenance ID, verification note, accuracy, and confidence; manual map review also requires a non-sensitive audit reference. Existing `ExternalPoiBinding` remains unchanged and strict.
 - Added `MandatorySpatialResolver` with deterministic priority: unique verified Provider POI, then unique verified Cultural Anchor coordinate, then unique verified navigation access point. It has no name search, nearby-POI substitution, LLM, or route/region branch. Provider candidates retain the original `binding_id`, `provider`, and `external_poi_id` identity.
@@ -8,17 +60,19 @@
 - Files modified for M8B-0: `app/catalog/{models,loader,repository,validation,__init__}.py`, `app/planning/{mandatory_spatial,schemas,nodes,helpers,prompts,route_feasibility,graph,runtime_worker}.py`, `app/providers/travel_time.py`, `app/story/{models,binding}.py`, `app/main.py`, `frontend/{api,product-pages}.js*`, and focused tests. No Catalog content, Knowledge, Nuwa Story/Experience, or Tiantaishan coordinate was added.
 - Commands/results: Catalog spatial tests 17 PASS; focused compatibility 96 PASS and final 92 PASS; broad Catalog/Planning/Story/Runtime/Product regression 442 PASS; complete Python 730 PASS plus 18 subtests; frontend 32 PASS; Jingwei offline benchmark 153/153 PASS; compileall, hardcoding scan, and `git diff --check` PASS.
 - Existing Runtime concurrency `KNOWN_FLAKY` remains unchanged. One broad run emitted a single transient failure marker without a retained summary; immediate `--maxfail=1` rerun passed 442/442 and the complete suite passed 730/730.
-- Tiantaishan remains `SPATIAL_VERIFICATION_PENDING`. Next safe action is human review of an exact coordinate or navigation access point backed by an official GIS, field GPS, audited manual map point, or equivalent authoritative source. Do not resume Nuwa content or M8C until that record is verified.
+- Historical status at that time: Tiantaishan was `SPATIAL_VERIFICATION_PENDING`. This was later superseded by verified-locality resolution; the exact Cultural Anchor coordinate remains unknown, but Nuwa is READY with mandatory disclosure.
 
-## 2026-08-22 22:16:31 +08:00 - M8 stopped at Nuwa POI identity hard gate
+## 2026-08-22 22:16:31 +08:00 - HISTORICAL, SUPERSEDED: M8 stopped at Nuwa POI identity hard gate
+
+This section records the earlier exact-POI gate. Its `STOPPED_AT_M8B` status and next action were superseded by the later generic verified-locality policy and completed M8 rollout.
 
 - M8A remains passed: generic multi-route golden support, rollout audit/scaffold, six rollout documents, 46 focused tests, and the unchanged Jingwei 153/153 offline baseline.
 - Audited Nuwa Catalog IDs without changing content: route `changzhi.route.nuwa-tiantaishan`, mandatory Anchor `changzhi.anchor.tiantaishan`, and Region path Shanxi Province -> Changzhi City -> Shangdang District.
 - Ran real Amap Place Search v3 using the configured local provider and Catalog-derived scope. District exact/scenic/qualified queries, no-type variants, and prefecture no-type variants found no Shangdang `天台山` entity. The only target-like result was `天台庵` (`B01630MK7K`) in Pingshun County (`140425`), plus its parking lot; both were excluded.
 - Verified an official cultural-place relationship in the Shanxi Provincial Government article `登临太行之巅 品味上党文化` (2024-11-22, source: Shanxi Daily), which names `上党区上郝村天台山`. The article provides no Provider POI ID, coordinate, access point, or unique map identity.
-- HARD GATE result: `STOPPED_AT_M8B`, `HUMAN_REVIEW_REQUIRED`. No verified POI binding, Nuwa Knowledge, Story, Experience, benchmark, Planning E2E, or persistence snapshot was created. M8C/M8D/M8E were not executed.
+- Historical HARD GATE result at that time: `STOPPED_AT_M8B`, `HUMAN_REVIEW_REQUIRED`. No verified POI binding, Nuwa Knowledge, Story, Experience, benchmark, Planning E2E, or persistence snapshot had yet been created. M8C/M8D/M8E had not yet been executed; all were completed later under the corrected target and verified-locality policy.
 - Files modified in this stop phase: canonical development tracking only; M8A framework files remain as previously reported. Commands included bounded real Amap searches, official-site browser verification, repository scans, and Git audit. API credentials were neither printed nor persisted.
-- Safe next action: a human/content operator must identify the exact visitable Shanghao Village Tiantaishan map entity and provide an authoritative location/access reference that can be reconciled to one Provider POI ID. Do not use name-only verification or continue M8B content production until then.
+- Historical next action at that time required an exact visitable Tiantaishan identity. The later verified-locality policy superseded that requirement without claiming an exact Cultural Anchor coordinate.
 
 ## 2026-08-22 - M8A route replication contract passed
 
@@ -762,3 +816,40 @@
   - New Runtime Runs currently generate itinerary only; downstream Story/Experience/Resource orchestration remains a truthful separate boundary.
   - In-browser Babel/React development bundles are a production-readiness soft warning. Repository-local `.pytest_tmp_m6*` directories must not be staged.
   - Review the M6 diff and establish a checkpoint only after explicit approval. Do not enter M7 without a separately approved scope.
+
+## 2026-08-23 10:39:09 +08:00 - M8 Spatial Fallback and four-route rollout complete
+
+- Spatial fallback and Nuwa:
+  - Added provider-neutral resolution priority: verified Provider POI, Cultural coordinate, navigation access point, locality, township, and administrative area.
+  - Kept Cultural Anchor and Navigation identity distinct. Nuwa uses verified Shanghao Village locality and `amap/B0H1P64PGR` only as a navigation reference; Tiantaishan has no claimed exact coordinate.
+  - Nuwa is `LOCALITY_PLACED`, degraded, disclosure-required, and READY with safe village-area Experience behavior. The previously supplied Tiantai'an correction was superseded by the user's approved Spatial Fallback policy restoring Tiantaishan.
+- Route rollout:
+  - Shennong verified the parent Lao Dingshan National Forest Park `amap/B016300684`; child scenic POIs were not substituted for the Cultural Anchor.
+  - Houyi verified Tunliu Lao Yeshan Scenic Area `amap/B0FFG79UY3`; Lao Yeshan Ecological Park was excluded as a separate entity.
+  - Knowledge, Story, and Experience preserve source qualifiers, `羿` / `十日` wording, and deterministic plant, weapon, projectile, cliff, child, environmental, and restricted-area safety boundaries.
+  - Houyi remained truthfully `UNCOVERED` for lunch with self-provision guidance while the route itself was `FEASIBLE` with complete Provider road data. This is an allowed M1D degraded meal result, not fabricated coverage.
+- Formal Catalog `0.6.0` snapshots:
+  - Jingwei: Run `36eda6d0-6b02-4b06-850a-dc01e0661c62`, itinerary `7299362a-458c-4c1c-b113-604ea920b9f2`, Story hash `5441844965182e97ce6963aaed5a13b3f5307a068842d0a45cd91ca0e2939bc0`, Experience hash `c8864d8fcc07f3a20ebb5320f4eedf62391d4ec3e5cc7690ae833c690075593d`, Resource hash `7f8c28266c633c4e0fcee9f9fa059ae09b4c6493ed528dd303901e6d3adf2750`.
+  - Nuwa: Run `e5253813-de9b-44e1-8007-569ebc54f62e`, itinerary `340a9d78-3456-428c-94c8-75d17e2ed69a`, Story hash `abe1b2c120cbe7ece0f86b18e938d40ee738a2cd093fd5bac328e20c173a9905`, Experience hash `0c0fd394fb7ed6980be6192215c40d744f1d1e526124929f58774e0a58454dbb`.
+  - Shennong: Run `16c963a2-45fb-4e45-969e-9277a4c79209`, itinerary `d8938c52-6433-4e5d-99b2-c7c2f47bf418`, Story hash `5442c9fad5df22cd8459bc8c2faf0e58a5ee79227a5b96aac517eeb2512d4985`, Experience hash `e577dcb8dd38a88f7f343a6f3c36168c2c4d2f513d939eb0be8286c1fd462446`.
+  - Houyi: Run `59bf09e4-965a-4208-a957-41cfb193cb23`, itinerary `6c921972-6df4-4744-ae4f-f314fdf80418`, Story hash `5823c9bf746585c1ac67476d972d243fc1acf8fbe020fdf9abdd207cfdd2e6a8`, Experience hash `655d23f0f2422c29afa405201b1f9bfa2014e59eb49e2680a70b466e902875da`.
+- Commands and results:
+  - Formal Runtime/API runs used real Amap and OpenAI-compatible Providers. All successful runs observed `waiting_user`, resume, SSE reconnect, mandatory placement, real road feasibility, Story/Experience grounding, persistence, and load without regeneration. One Jingwei attempt received a transient Provider HTTP 503; one fresh retry succeeded.
+  - Offline benchmark: 173/173 PASS. Unified readiness: Jingwei, Nuwa, Shennong, Houyi all READY. Resources are available for Jingwei and optional/not generated for the other three routes.
+  - Focused stale-contract regression: 99 passed. Complete Python: 772 passed plus 18 subtests, 5 existing warnings. Frontend Node: 32 passed. Compileall passed.
+  - Production business-conditional scan, tracked-secret audit, exact snapshot/golden audit, and four-route live HTTP refresh stability passed.
+  - Browser smoke passed Catalog 0.6.0, four READY route cards, all route details, Nuwa locality disclosure, and correct exact/locality labels. Console contained only the existing in-browser Babel development warning.
+- Files modified in this phase:
+  - Generic spatial Catalog/Planning/Story/Experience/Product/Evaluation modules and their tests; Changzhi locality, Knowledge, Story, Experience, POI binding and region data; four route-scoped golden fixtures and benchmark cases; frontend data-driven labels; canonical and root project tracking.
+- Current risks:
+  - Runtime concurrency `KNOWN_FLAKY` did not reproduce and remains deferred.
+  - FastAPI lifespan deprecation, unset persistent local JWT secret, unavailable optional Redis cache, and in-browser Babel remain existing environment/deployment warnings.
+  - M8 worktree remains intentionally uncommitted. Do not enter M9, Video, another city, or another route without explicit approval.
+- Next recommended action: review the complete M8 diff and evidence, then create a Git checkpoint only after explicit approval.
+
+## 2026-08-23 10:42:57 +08:00 - M8 final handoff validation
+
+- Removed only task-owned `.codex/m8_nuwa_live.py`, `.codex/m8_resource_refresh.py`, `task_plan.md`, `findings.md`, `progress.md`, and `.pytest-tmp/`; retained benchmark reports and pre-existing pytest directories.
+- `python -m app.evaluation --output .benchmark_reports`: 173/173 PASS.
+- `python -m compileall -q app tests`: PASS. Port 8766 is not listening.
+- No business, Catalog, Knowledge, Story, Experience, Planning, or Runtime behavior was changed during this final validation.

@@ -32,10 +32,10 @@ class RouteRolloutAuditor:
             ),
             self._required_layer(
                 RolloutLayer.POI,
-                profile.mandatory_poi_identity,
-                "Every mandatory Anchor has a verified Provider identity.",
-                "A mandatory Anchor lacks verified Provider identity.",
-                ("mandatory_poi_identity",),
+                profile.mandatory_spatial_identity,
+                "Every mandatory Anchor has a production-capable verified spatial identity.",
+                "A mandatory Anchor lacks a production-capable verified spatial identity.",
+                ("mandatory_spatial_identity",),
             ),
             self._required_layer(
                 RolloutLayer.KNOWLEDGE,
@@ -132,7 +132,7 @@ class RouteRolloutAuditor:
             return RouteRolloutStatus.READY
         if not profile.catalog_complete:
             return RouteRolloutStatus.BLOCKED
-        if not profile.mandatory_poi_identity:
+        if not profile.mandatory_spatial_identity:
             return RouteRolloutStatus.POI_PENDING
         if not profile.knowledge_available:
             return RouteRolloutStatus.KNOWLEDGE_PENDING
