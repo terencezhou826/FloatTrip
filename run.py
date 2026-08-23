@@ -3,9 +3,15 @@
 用法：
     python run.py
     → http://localhost:8765
+
+    $env:PORT=8766
+    python run.py
+    → http://localhost:8766
 """
 
 import logging
+import os
+
 import uvicorn
 
 # 配置日志：INFO 级别保留主要流程信息；
@@ -20,7 +26,17 @@ logging.basicConfig(
 logging.getLogger("app.planning.helpers").setLevel(logging.DEBUG)
 logging.getLogger("app.planning.nodes").setLevel(logging.DEBUG)
 
-if __name__ == "__main__":
+
+def _resolve_port() -> int:
+    return int(os.environ.get("PORT", "8765"))
+
+
+def main() -> None:
+    port = _resolve_port()
     print("✈️  旅游规划助手启动中…")
-    print("   访问：http://localhost:8765")
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8765, reload=False)
+    print(f"   访问：http://localhost:{port}")
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=False)
+
+
+if __name__ == "__main__":
+    main()
